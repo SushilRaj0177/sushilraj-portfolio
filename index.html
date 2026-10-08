@@ -615,6 +615,8 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 .ink-fab .drop { width: 20px; height: 20px; border-radius: 0 50% 50% 50%; transform: rotate(45deg); background: var(--swatch); box-shadow: inset -3px -3px 6px rgba(0, 0, 0, .25), inset 2px 2px 4px rgba(255, 255, 255, .4); }
 .ink-fab::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1px solid var(--line-2); animation: pulse 2.6s var(--ease) infinite; }
 .ink-fab.seen::after { display: none; }
+/* small loops pause while they can't be seen: any running animation makes every frame restyle the page */
+.loop-off .cur, .loop-off i, .loop-off .pulse::after, .loop-off.ink-fab::after { animation-play-state: paused !important; }
 
 /* ink sheet */
 :root[data-layout="mobile"] .sheet-scrim { display: block; position: fixed; inset: 0; z-index: 64; background: rgba(0, 0, 0, .28); opacity: 0; pointer-events: none; transition: opacity .4s; }
@@ -1394,13 +1396,17 @@ Fixes proposed: 4
 
   /* ---------- phone: bar and ink button step aside while scrolling down ---------- */
   if (mobile) (function () {
-    var lastY = scrollY, hidden = false;
+    var lastY = scrollY, hidden = false, vh = innerHeight, docH = document.documentElement.scrollHeight;
+    // sizes are kept up to date as they change, so the scroll handler never has to measure the page
+    function sizes() { vh = innerHeight; docH = document.documentElement.scrollHeight; }
+    addEventListener('resize', sizes);
+    if ('ResizeObserver' in window) new ResizeObserver(sizes).observe(document.body);
     addEventListener('scroll', function () {
       var y = scrollY, dy = y - lastY;
       if (Math.abs(dy) < 8) return;
       lastY = y;
-      var nearEnd = y + innerHeight > document.documentElement.scrollHeight - 120;
-      var hide = dy > 0 && y > innerHeight * .6 && !nearEnd && !root.classList.contains('menu-open') && !root.classList.contains('sheet-open');
+      var nearEnd = y + vh > docH - 120;
+      var hide = dy > 0 && y > vh * .6 && !nearEnd && !root.classList.contains('menu-open') && !root.classList.contains('sheet-open');
       if (hide !== hidden) { hidden = hide; root.classList.toggle('bar-hidden', hide); }
     }, { passive: true });
   })();
@@ -1468,6 +1474,18 @@ Fixes proposed: 4
     });
   })();
 
+  /* ---------- looping animations pause while out of sight ---------- */
+  if ('IntersectionObserver' in window) (function () {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { e.target.classList.toggle('loop-off', !e.isIntersecting); }); });
+    document.querySelectorAll('.term, .swipe-hint, .now').forEach(function (el) { io.observe(el); });
+  })();
+  // the ink button's ring pauses once the button has finished shrinking away, and runs again as it comes back
+  (function () {
+    function away() { return !fab.classList.contains('show') || root.classList.contains('bar-hidden') || root.classList.contains('menu-open') || root.classList.contains('sheet-open'); }
+    fab.addEventListener('transitionend', function (e) { if (e.propertyName === 'transform' && e.target === fab) fab.classList.toggle('loop-off', away()); });
+    new MutationObserver(function () { if (!away()) fab.classList.remove('loop-off'); }).observe(root, { attributes: true, attributeFilter: ['class'] });
+  })();
+
   /* ---------- hanko: stamps itself when the contact section arrives; press it to stamp again ---------- */
   var seal = document.getElementById('hanko');
   function stampSeal(splash) {
@@ -1519,6 +1537,8 @@ Fixes proposed: 4
       if (k < 1) requestAnimationFrame(step);
     })(start);
   }
+  var scrollPos = { x: scrollX, y: scrollY }, nameH = document.getElementById('name');
+  addEventListener('scroll', function () { scrollPos.x = scrollX; scrollPos.y = scrollY; }, { passive: true });
   var nameText = document.getElementById('nameText'), nameTone = document.getElementById('nameTone'), heroEl = document.querySelector('.hero'), heroOn = true;
   if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { heroOn = es[0].isIntersecting; }).observe(heroEl);
   function lettersDodge() {
@@ -1545,18 +1565,39 @@ Fixes proposed: 4
       addEventListener('touchend', off, { passive: true }); addEventListener('touchcancel', off, { passive: true });
     }
     var reach = mobile ? 140 : 180, push = mobile ? 70 : 90;
+    // While every letter is at rest and the pointer is nowhere near the name, nothing is measured or written.
+    // Otherwise all ten letters are measured first and written after, so the page is laid out once per frame.
+    var zone = null, resting = false, rects = [];
+    function measureZone() {
+      // a letter's reach is at most about 1.1x the name's thickness; 1.6x plus room for the scroll drift is a safe bound
+      var r = nameH.getBoundingClientRect(), pad = Math.max(reach, 1.6 * Math.min(r.width, r.height)) + 140;
+      zone = { l: r.left + scrollPos.x - pad, r: r.right + scrollPos.x + pad, t: r.top + scrollPos.y - pad, b: r.bottom + scrollPos.y + pad };
+    }
+    function zoneDirty() { zone = null; }
+    addEventListener('resize', zoneDirty);
+    if (document.fonts) document.fonts.addEventListener('loadingdone', zoneDirty);
     (function tick() {
       if (heroOn) {
-        for (var i = 0; i < L.length; i++) {
-          var o = L[i], r = o.el.getBoundingClientRect();
-          var cx = r.left + r.width / 2 - o.x, cy = r.top + r.height / 2 - o.y;
-          var dx = cx - mx, dy = cy - my, d = Math.hypot(dx, dy), R = Math.max(reach, Math.max(r.width, r.height) * 0.9);
-          var fx = 0, fy = 0;
-          if (d < R) { var f = (1 - d / R) * (1 - d / R) * push; fx = dx / (d || 1) * f; fy = dy / (d || 1) * f; }
-          o.vx += (fx - o.x) * 0.08; o.vy += (fy - o.y) * 0.08; o.vr += ((fx * 0.25) - o.r) * 0.08;
-          o.vx *= 0.78; o.vy *= 0.78; o.vr *= 0.78;
-          o.x += o.vx; o.y += o.vy; o.r += o.vr;
-          o.el.style.transform = o.tw.style.transform = 'translate(' + o.x.toFixed(2) + 'px,' + o.y.toFixed(2) + 'px) rotate(' + o.r.toFixed(2) + 'deg)';
+        if (!zone) measureZone();
+        var near = mx + scrollPos.x > zone.l && mx + scrollPos.x < zone.r && my + scrollPos.y > zone.t && my + scrollPos.y < zone.b;
+        if (near || !resting) {
+          for (var i = 0; i < L.length; i++) rects[i] = L[i].el.getBoundingClientRect();
+          var still = true;
+          for (i = 0; i < L.length; i++) {
+            var o = L[i], r = rects[i];
+            var cx = r.left + r.width / 2 - o.x, cy = r.top + r.height / 2 - o.y;
+            var dx = cx - mx, dy = cy - my, d = Math.hypot(dx, dy), R = Math.max(reach, Math.max(r.width, r.height) * 0.9);
+            var fx = 0, fy = 0;
+            if (d < R) { var f = (1 - d / R) * (1 - d / R) * push; fx = dx / (d || 1) * f; fy = dy / (d || 1) * f; }
+            o.vx += (fx - o.x) * 0.08; o.vy += (fy - o.y) * 0.08; o.vr += ((fx * 0.25) - o.r) * 0.08;
+            o.vx *= 0.78; o.vy *= 0.78; o.vr *= 0.78;
+            o.x += o.vx; o.y += o.vy; o.r += o.vr;
+            if (fx || fy || Math.abs(o.x) + Math.abs(o.y) + Math.abs(o.r) + Math.abs(o.vx) + Math.abs(o.vy) + Math.abs(o.vr) > .004) still = false;
+            else { o.x = o.y = o.r = o.vx = o.vy = o.vr = 0; }
+            var tf = 'translate(' + o.x.toFixed(2) + 'px,' + o.y.toFixed(2) + 'px) rotate(' + o.r.toFixed(2) + 'deg)';
+            if (tf !== o.tf) o.el.style.transform = o.tw.style.transform = o.tf = tf;
+          }
+          resting = still;
         }
       }
       requestAnimationFrame(tick);
@@ -1569,7 +1610,7 @@ Fixes proposed: 4
   }
 
   /* computers: the name's reading in katakana, set over each word like furigana */
-  var kana = document.getElementById('kana'), nameH = document.getElementById('name');
+  var kana = document.getElementById('kana');
   function wordBox(n) {
     // once the letters dodge, each word has its own span, which the dodge never moves
     var words = nameText.querySelectorAll('.word');
@@ -1619,10 +1660,12 @@ Fixes proposed: 4
     var cx = innerWidth / 2, cy = innerHeight / 2, rx = cx, ry = cy;
     var ring = cursor.querySelector('.ring'), dot = cursor.querySelector('.dot');
     addEventListener('pointermove', function (e) { cx = e.clientX; cy = e.clientY; }, { passive: true });
+    var lastDot = '', lastRing = '';
     (function follow() {
       rx += (cx - rx) * 0.18; ry += (cy - ry) * 0.18;
-      dot.style.transform = 'translate(' + cx + 'px,' + cy + 'px)';
-      ring.style.transform = 'translate(' + rx + 'px,' + ry + 'px)';
+      var td = 'translate(' + cx + 'px,' + cy + 'px)', tr = 'translate(' + rx + 'px,' + ry + 'px)';
+      if (td !== lastDot) dot.style.transform = lastDot = td;
+      if (tr !== lastRing) ring.style.transform = lastRing = tr;
       requestAnimationFrame(follow);
     })();
     document.querySelectorAll('[data-cursor]').forEach(function (el) {
@@ -1683,7 +1726,7 @@ Fixes proposed: 4
     // leaving the hero: the name sinks back a little slower than the page and the intro lifts away;
     // scrolling back up brings both home
     if (!reduce) {
-      gsap.fromTo('.hero', { '--hero-y': '0px' }, { '--hero-y': (mobile ? 40 : 90) + 'px', ease: 'none',
+      gsap.fromTo([nameText, nameTone, kana], { '--hero-y': '0px' }, { '--hero-y': (mobile ? 40 : 90) + 'px', ease: 'none',
         scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
       gsap.to('.hero-top', { y: mobile ? -24 : -56, opacity: 0, ease: 'none',
         scrollTrigger: { trigger: '.hero', start: 'top top', end: '55% top', scrub: true } });
@@ -1695,15 +1738,23 @@ Fixes proposed: 4
     // marquee: drifts on its own, speeds up and leans with scroll velocity
     var mq = document.getElementById('marquee'), mq2 = document.getElementById('marquee2'), mq2t = document.getElementById('marquee2t'), mx = 0, mx2 = -400, skew = 0, boost = 0;
     ScrollTrigger.create({ trigger: '.marquee', start: 'top bottom', end: 'bottom top', onUpdate: function (s) { boost = gsap.utils.clamp(-40, 40, s.getVelocity() / 60); } });
+    // the widths are kept up to date as they change (the Japanese line gets its own font), never measured per frame
+    var mqW = mq.scrollWidth / 2, mq2W = mq2.scrollWidth / 3, mqOn = true, mqT = '', mq2T = '';
+    if ('ResizeObserver' in window) { var mqRO = new ResizeObserver(function () { mqW = mq.scrollWidth / 2; mq2W = mq2.scrollWidth / 3; }); mqRO.observe(mq); mqRO.observe(mq2); }
+    // While it's off screen it holds its place (nobody can see where it got to), so it isn't redrawn there,
+    // and whatever is showing when it comes back is exactly where it carries on from
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { mqOn = es[0].isIntersecting; }, { rootMargin: '-1px 0px' }).observe(document.querySelector('.marquee'));
     gsap.ticker.add(function (time, dt) {
       if (reduce) return;
-      mx -= (0.04 + Math.abs(boost) * 0.03) * dt;
-      var w = mq.scrollWidth / 2; if (-mx > w) mx += w;
+      if (mqOn) { mx -= (0.04 + Math.abs(boost) * 0.03) * dt; if (-mx > mqW) mx += mqW; }
       skew += (boost * 0.25 - skew) * 0.1; boost *= 0.92;
-      mq.style.transform = 'translate3d(' + mx.toFixed(1) + 'px,0,0) skewX(' + (-skew).toFixed(2) + 'deg)';
-      var w2 = mq2.scrollWidth / 3;
-      mx2 += (0.05 + Math.abs(boost) * 0.04) * dt; if (mx2 > 0) mx2 -= w2;
-      mq2.style.transform = mq2t.style.transform = 'translate3d(' + mx2.toFixed(1) + 'px,0,0) skewX(' + (skew * 1.4).toFixed(2) + 'deg)';
+      if (mqOn) { mx2 += (0.05 + Math.abs(boost) * 0.04) * dt; if (mx2 > 0) mx2 -= mq2W; }
+      // a lean too small to show is written without its sign, so once it has eased out nothing changes
+      var k1 = -skew, k2 = skew * 1.4;
+      var t = 'translate3d(' + mx.toFixed(1) + 'px,0,0) skewX(' + (Math.abs(k1) < .005 ? 0 : k1).toFixed(2) + 'deg)';
+      var t2 = 'translate3d(' + mx2.toFixed(1) + 'px,0,0) skewX(' + (Math.abs(k2) < .005 ? 0 : k2).toFixed(2) + 'deg)';
+      if (t !== mqT) mq.style.transform = mqT = t;
+      if (t2 !== mq2T) mq2.style.transform = mq2t.style.transform = mq2T = t2;
     });
 
     // about: words light up as you read down. Japanese has no spaces, so it's split into words by the browser's segmenter
@@ -1757,13 +1808,18 @@ Fixes proposed: 4
     var nowEl = document.getElementById('workNow'), prog = document.getElementById('workProgress');
     var prev = document.getElementById('prevCard'), next = document.getElementById('nextCard'), swipeHint = document.getElementById('swipeHint');
     var active = -1, lastLeft = track.scrollLeft, queued = false, hinted = false, seen = false;
+    // card positions in the track; the tilt never moves them, so they're only measured when the size changes
+    var cardL = [], cardW = [], maxLeft = 0;
+    function measure() { cardL = cards.map(function (c) { return c.offsetLeft; }); cardW = cards.map(function (c) { return c.offsetWidth; }); maxLeft = track.scrollWidth - track.clientWidth; }
+    measure();
+    if ('ResizeObserver' in window) new ResizeObserver(measure).observe(track);
     function stepSize() { return cards[0].offsetWidth + 14; }
     function update() {
       queued = false;
       var tr = track.getBoundingClientRect(), best = 0, bestD = 1e9, sl = track.scrollLeft;
       for (var i = 0; i < cards.length; i++) {
         // offsetLeft ignores the card's own tilt, so the maths doesn't feed back on itself
-        var c = cards[i], d = (c.offsetLeft - 20 - sl) / (c.offsetWidth + 14);
+        var c = cards[i], d = (cardL[i] - 20 - sl) / (cardW[i] + 14);
         var cd = Math.max(-1.2, Math.min(1.2, d)), ad = Math.min(Math.abs(d), 1);
         if (!reduce) {
           c.style.transform = 'perspective(900px) rotateY(' + (-cd * 12).toFixed(2) + 'deg) scale(' + (1 - ad * .07).toFixed(3) + ')';
@@ -1772,19 +1828,19 @@ Fixes proposed: 4
         }
         if (Math.abs(d) < bestD) { bestD = Math.abs(d); best = i; }
       }
-      var max = track.scrollWidth - track.clientWidth;
-      prog.style.transform = 'scaleX(' + (max > 0 ? track.scrollLeft / max : 0).toFixed(4) + ')';
-      prev.disabled = track.scrollLeft < 4; next.disabled = track.scrollLeft > max - 4;
+      var max = maxLeft;
+      prog.style.transform = 'scaleX(' + (max > 0 ? sl / max : 0).toFixed(4) + ')';
+      prev.disabled = sl < 4; next.disabled = sl > max - 4;
       if (best !== active) {
         active = best; nowEl.textContent = String(best + 1).padStart(2, '0');
         if (seen) { var card = cards[best]; card.__scramble && card.__scramble(); var term = card.querySelector('[data-type]'); if (term) typeTerm(term); vibrate(5); }
       }
-      var dx = track.scrollLeft - lastLeft; lastLeft = track.scrollLeft;
+      var dx = sl - lastLeft; lastLeft = sl;
       if (Math.abs(dx) > 1.5 && window.inkPush) window.inkPush(innerWidth * (.2 + Math.random() * .6), tr.top + tr.height * .4, -dx * 26, (Math.random() - .5) * 140);
-      if (!hinted && track.scrollLeft > 12) { hinted = true; swipeHint.classList.add('gone'); }
+      if (!hinted && sl > 12) { hinted = true; swipeHint.classList.add('gone'); }
     }
     track.addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
-    addEventListener('resize', function () { requestAnimationFrame(update); });
+    addEventListener('resize', function () { requestAnimationFrame(function () { measure(); update(); }); });
     prev.addEventListener('click', function () { track.scrollBy({ left: -stepSize(), behavior: reduce ? 'auto' : 'smooth' }); });
     next.addEventListener('click', function () { track.scrollBy({ left: stepSize(), behavior: reduce ? 'auto' : 'smooth' }); });
     // the front card's title decodes when the carousel first comes into view
@@ -1849,6 +1905,8 @@ Fixes proposed: 4
   var FS = {
     // the dye's alpha holds how much of it is still fresh (not yet shown); fresh ink is the ink scrolling stirs up
     splat: 'uniform sampler2D uTarget;uniform float aspect,radius,fresh;uniform vec3 color;uniform vec2 point;void main(){vec2 p=vUv-point;p.x*=aspect;vec3 s=exp(-dot(p,p)/radius)*color;vec4 b=texture(uTarget,vUv);o=vec4(b.xyz+s,b.a+fresh*(s.r+s.g+s.b));}',
+    // the same splat, blended onto the texture in place (and only drawn where it reaches)
+    splatAdd: 'uniform float aspect,radius,fresh;uniform vec3 color;uniform vec2 point;void main(){vec2 p=vUv-point;p.x*=aspect;vec3 s=exp(-dot(p,p)/radius)*color;o=vec4(s,fresh*(s.r+s.g+s.b));}',
     // fresh ink is revealed on an S-curve: a gentle first frame, then quicker, so it never appears in one step
     advect: 'uniform sampler2D uVelocity,uSource;uniform vec2 vtexel;uniform float dt,dissipation,reveal;void main(){vec2 c=vUv-dt*texture(uVelocity,vUv).xy*vtexel;vec4 s=texture(uSource,c);float m=max(s.r+s.g+s.b,1e-4),f=clamp(s.a/m,0.,1.),A=f/(1.15-f)*reveal;o=vec4(s.rgb,1.15*A/(1.+A)*m)/(1.+dissipation*dt);}',
     divergence: 'uniform sampler2D uVelocity;void main(){float L=texture(uVelocity,vL).x,R=texture(uVelocity,vR).x,T=texture(uVelocity,vT).y,B=texture(uVelocity,vB).y;vec2 C=texture(uVelocity,vUv).xy;if(vL.x<0.)L=-C.x;if(vR.x>1.)R=-C.x;if(vT.y>1.)T=-C.y;if(vB.y<0.)B=-C.y;o=vec4(.5*(R-L+T-B),0.,0.,1.);}',
@@ -1865,16 +1923,19 @@ Fixes proposed: 4
       // vis: the share of this ink that's showing. Ink stirred up by scrolling keeps its full shape and fades in
       'void main(){vec4 t0=texture(uTexture,vUv);vec3 c=max(t0.rgb,0.)*uStrength;float vis=1.-clamp(t0.a/max(t0.r+t0.g+t0.b,1e-4),0.,1.);' +
       'vec3 cl=tx(vUv-vec2(dtexel.x,0.)),cr=tx(vUv+vec2(dtexel.x,0.)),ct=tx(vUv+vec2(0.,dtexel.y)),cb=tx(vUv-vec2(0.,dtexel.y));' +
+      // only the theme that's showing is worked out (the result is exactly what mixing the two gave)
+      'if(uDark<.5){' +
       'vec2 gS=vec2(dot(cl-cr,vec3(1.)),dot(ct-cb,vec3(1.)))*uStrength;' +
       'float edge=clamp(length(gS)*3.5,0.,1.);' +
       'vec3 cp=c*vis*smoothstep(.015,.1,mx3(c));' +
-      'vec3 lightCol=uBg*exp(-cp*2.2*(1.+edge*.45));' +
+      'o=vec4(uBg*exp(-cp*2.2*(1.+edge*.45)),1.);' +
+      '}else{' +
       'vec2 gM=vec2(mx3(cl)-mx3(cr),mx3(ct)-mx3(cb))*uStrength;' +
       'vec3 n=normalize(vec3(gM*1.3,.5));vec3 L=normalize(vec3(-.4,.55,1.));' +
       'float sh=clamp(dot(n,L),0.,1.);float spec=pow(clamp(dot(reflect(-L,n),vec3(0.,0.,1.)),0.,1.),42.);' +
       'float a=mx3(c);' +
-      'vec3 darkCol=uBg+c*vis*(.65+.55*sh)+vec3(spec)*uGloss*.35*smoothstep(.02,.3,a*vis);' +
-      'o=vec4(mix(lightCol,darkCol,uDark),1.);}'
+      'o=vec4(uBg+c*vis*(.65+.55*sh)+vec3(spec)*uGloss*.35*smoothstep(.02,.3,a*vis),1.);' +
+      '}}'
   };
 
   function compile(type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
@@ -1921,8 +1982,11 @@ Fixes proposed: 4
     curlF = fbo(s[0], s[1], gl.R16F, gl.RED, gl.NEAREST);
     pres = dbl(s[0], s[1], gl.R16F, gl.RED, gl.NEAREST);
   }
+  // every pass overwrites its whole target, so the GPU is told it needn't load the old contents first
+  // (phone GPUs otherwise copy the whole texture into their tile memory before each pass)
+  var DISCARD = [gl.COLOR_ATTACHMENT0];
   function blit(target) {
-    if (target) { gl.viewport(0, 0, target.w, target.h); gl.bindFramebuffer(gl.FRAMEBUFFER, target.fb); }
+    if (target) { gl.viewport(0, 0, target.w, target.h); gl.bindFramebuffer(gl.FRAMEBUFFER, target.fb); gl.invalidateFramebuffer(gl.FRAMEBUFFER, DISCARD); }
     else { gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight); gl.bindFramebuffer(gl.FRAMEBUFFER, null); }
     gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
   }
@@ -1942,6 +2006,18 @@ Fixes proposed: 4
     canvas.width = bw; canvas.height = bh; return true;
   }
   try { resize(); initFBOs(); } catch (e) { console.warn('ink disabled:', e.message); root.classList.add('no-fluid'); return; }
+  var addSplats = (function () {
+    try {
+      var t = fbo(1, 1, gl.RGBA16F, gl.RGBA, gl.NEAREST), u = use(P.splatAdd), px = new Float32Array(4);
+      gl.uniform1f(u.aspect, 1); gl.uniform2f(u.point, .5, .5); gl.uniform1f(u.radius, 1); gl.uniform3f(u.color, .5, .25, 0); gl.uniform1f(u.fresh, 1);
+      gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+      gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0); gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+      gl.disable(gl.BLEND);
+      gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.FLOAT, px);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.deleteFramebuffer(t.fb); gl.deleteTexture(t.tex);
+      return gl.getError() === gl.NO_ERROR && Math.abs(px[0] - 1) < .02 && Math.abs(px[1] - .5) < .02 && Math.abs(px[3] - 1.5) < .03;
+    } catch (e) { gl.disable(gl.BLEND); return false; }
+  })();
 
   var theme = { dark: 0, bg: [.93, .94, .95] };
   function readTheme() {
@@ -1968,8 +2044,28 @@ Fixes proposed: 4
     return [c[0] * s, c[1] * s, c[2] * s];
   }
 
+  // A splat is added in place and only drawn where it reaches (out to a ten-thousandth of its peak), instead of
+  // copying the whole texture to add it, when the GPU can blend into half-float textures (addSplats, tested at startup).
+  function addInto(t, x, y, r, ar) {
+    var d = Math.sqrt(r * 9.21);
+    var x0 = Math.max(0, Math.floor((x - d / ar) * t.w)), x1 = Math.min(t.w, Math.ceil((x + d / ar) * t.w));
+    var y0 = Math.max(0, Math.floor((y - d) * t.h)), y1 = Math.min(t.h, Math.ceil((y + d) * t.h));
+    if (x1 <= x0 || y1 <= y0) return;
+    gl.viewport(0, 0, t.w, t.h); gl.bindFramebuffer(gl.FRAMEBUFFER, t.fb); gl.scissor(x0, y0, x1 - x0, y1 - y0);
+    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+  }
   function splat(x, y, dx, dy, color, radiusMul, fresh) {
     var ar = canvas.width / canvas.height;
+    if (addSplats) {
+      var ua = use(P.splatAdd), ra = C.RADIUS / 100 * (radiusMul || 1); if (ar > 1) ra *= ar;
+      var ga = fresh ? C.GAIN : 1;
+      gl.uniform1f(ua.aspect, ar); gl.uniform2f(ua.point, x, y); gl.uniform1f(ua.radius, ra);
+      gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.enable(gl.SCISSOR_TEST);
+      gl.uniform3f(ua.color, dx, dy, 0); gl.uniform1f(ua.fresh, 0); addInto(vel.read, x, y, ra, ar);
+      gl.uniform3f(ua.color, color[0] * ga, color[1] * ga, color[2] * ga); gl.uniform1f(ua.fresh, fresh ? 1 : 0); addInto(dye.read, x, y, ra, ar);
+      gl.disable(gl.SCISSOR_TEST); gl.disable(gl.BLEND);
+      return;
+    }
     var u = use(P.splat);
     gl.uniform1i(u.uTarget, vel.read.attach(0)); gl.uniform1f(u.aspect, ar);
     gl.uniform2f(u.point, x, y); gl.uniform3f(u.color, dx, dy, 0);
@@ -1993,7 +2089,7 @@ Fixes proposed: 4
   function seed() { if (theme.dark) randomSplats(6, 2.6); else randomSplats(4, 1.7); }
 
   // When the theme flips, the dye means something else (glow vs pigment), so start fresh.
-  function themeMaybeChanged() { var was = theme.dark; readTheme(); if (was !== theme.dark) { clearDye(); seed(); } }
+  function themeMaybeChanged() { var was = theme.dark; readTheme(); if (was !== theme.dark) { clearDye(); seed(); } drawNow = true; }
   new MutationObserver(themeMaybeChanged).observe(root, { attributes: true, attributeFilter: ['data-theme', 'data-mode'] });
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', themeMaybeChanged);
 
@@ -2050,12 +2146,39 @@ Fixes proposed: 4
     window.inkBurst(e.clientX, e.clientY, 5);
   });
 
-  var last = performance.now(), running = false, nextAuto = last + 2600, lastScroll = scrollY;
+  // Phones take the scroll position from scroll events, so the ink loop never forces the page to restyle mid-frame
+  var sPos = scrollY, vH = innerHeight;
+  if (mobile) { addEventListener('scroll', function () { sPos = scrollY; }, { passive: true }); addEventListener('resize', function () { vH = innerHeight; }); }
+  function scrollNow() { return mobile ? sPos : scrollY; }
+
+  // Frame pacing. On a screen faster than 100 Hz, if frames keep arriving late because the device can't keep up,
+  // the ink is drawn to the screen on every other frame (it still moves exactly as before; only every second
+  // picture of it is skipped). Drawing it is the costly part: each new picture also has to be re-blended under the
+  // inverting text and frosted glass. A device that keeps up never changes; full speed is tried again every so often.
+  // A new size or theme is always drawn straight away, so the ink never lags the page by a frame.
+  var pace = { half: false, odd: false, prev: 0, d: [], next: 0, until: 0, wait: 8000 }, drawNow = false;
+  function pacing(now) {
+    var d = now - pace.prev; pace.prev = now;
+    if (d > 0 && d < 100) { pace.d.push(d); if (pace.d.length > 60) pace.d.shift(); }
+    if (now < pace.next || pace.d.length < 60) return;
+    pace.next = now + 1000;
+    // Falling behind looks like late frames mixed in with on-time ones, again and again. A screen that switches
+    // to a lower refresh rate (phones do this by themselves) just settles into a new, steady rhythm instead.
+    var base = Infinity, alt = 0, i;
+    for (i = 0; i < pace.d.length; i++) if (pace.d[i] > 4) base = Math.min(base, pace.d[i]);
+    for (i = 0; i + 1 < pace.d.length; i++) if (pace.d[i] > base * 1.5 && pace.d[i + 1] < base * 1.25) alt++;
+    var late = base < 10 && alt >= 12;
+    if (!pace.half && late) { pace.half = true; pace.until = now + pace.wait; if (now < pace.trialEnd) pace.wait = Math.min(pace.wait * 2, 64000); }
+    else if (pace.half && now > pace.until) { pace.half = false; pace.trialEnd = now + 3000; pace.d.length = 0; }
+  }
+
+  var last = performance.now(), running = false, nextAuto = last + 2600, lastScroll = scrollNow(), started = last;
   function frame(now) {
     if (!running) return;
+    if (now - started > 4000) pacing(now);
     var dt = Math.min((now - last) / 1000, 0.016666 * 2); last = now;
-    if (sizeDirty) { sizeDirty = false; if (resize()) { initFBOs(); seed(); } }
-    var hero = Math.min(1, scrollY / innerHeight);
+    if (sizeDirty) { sizeDirty = false; if (resize()) { initFBOs(); seed(); drawNow = true; } }
+    var hero = Math.min(1, scrollNow() / (mobile ? vH : innerHeight));
     strength += ((1 - hero * 0.55) - strength) * 0.08;
     if (ptr.moved) {
       ptr.moved = false;
@@ -2066,14 +2189,17 @@ Fixes proposed: 4
     }
     if (now > nextAuto) { randomSplats(1, theme.dark ? 1.4 : 1.0); nextAuto = now + (2200 + Math.random() * 2600) / C.AUTO; }
     // scrolling stirs the ink: pushes along the screen, in the direction the page moved
-    var sy = scrollY, ds = sy - lastScroll; lastScroll = sy;
+    var sy = scrollNow(), ds = sy - lastScroll; lastScroll = sy;
     if (Math.abs(ds) > 3) {
       var push = Math.max(-1, Math.min(1, ds / 60)) * C.FORCE * (mobile ? 0.25 : 0.35);
       for (var k = 0; k < (mobile ? 1 : 2); k++) splat(Math.random(), .2 + Math.random() * .6, (Math.random() - .5) * 300, push, inkColor(0.35), 1.8, true);
     }
-    step(dt); render();
+    step(dt);
+    if (!pace.half || !(pace.odd = !pace.odd) || drawNow) { drawNow = false; render(); }
     requestAnimationFrame(frame);
   }
+  pace.inPlaceSplats = addSplats;
+  window.__inkPace = pace;   // for checking how the ink is pacing itself
   function start() { if (running || document.hidden) return; running = true; last = performance.now(); requestAnimationFrame(frame); }
   document.addEventListener('visibilitychange', function () { if (document.hidden) running = false; else start(); });
   var first = document.querySelector('[data-storm]'); window.inkStorm(first ? +first.value : .45);
