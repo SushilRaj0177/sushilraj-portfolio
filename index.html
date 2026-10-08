@@ -2130,7 +2130,7 @@ Fixes proposed: 4
   }
 
   // pointer and finger → ink
-  var ptr = { x: 0, y: 0, px: 0, py: 0, moved: false, init: false };
+  var ptr = { x: 0, y: 0, px: 0, py: 0, moved: false, init: false }, fingerDown = false;
   function onMove(x, y) {
     var nx = x / cssW, ny = 1 - y / cssH;
     if (!ptr.init) { ptr.px = nx; ptr.py = ny; ptr.init = true; }
@@ -2138,8 +2138,10 @@ Fixes proposed: 4
   }
   addEventListener('pointermove', function (e) { if (e.pointerType !== 'touch') onMove(e.clientX, e.clientY); }, { passive: true });
   if (touch) {
-    addEventListener('touchstart', function (e) { var t = e.touches[0]; if (!t) return; ptr.init = false; onMove(t.clientX, t.clientY); }, { passive: true });
+    addEventListener('touchstart', function (e) { var t = e.touches[0]; if (!t) return; ptr.init = false; fingerDown = true; onMove(t.clientX, t.clientY); }, { passive: true });
     addEventListener('touchmove', function (e) { var t = e.touches[0]; if (t) onMove(t.clientX, t.clientY); }, { passive: true });
+    var lift = function (e) { if (!e.touches.length) fingerDown = false; };
+    addEventListener('touchend', lift, { passive: true }); addEventListener('touchcancel', lift, { passive: true });
   }
   addEventListener('click', function (e) {
     if (e.target.closest('a,button,input,label,.card,.inkpanel,.sheet,.menu,.ink-fab,[data-copy]')) return;
@@ -2188,9 +2190,11 @@ Fixes proposed: 4
       ptr.px = ptr.x; ptr.py = ptr.y;
     }
     if (now > nextAuto) { randomSplats(1, theme.dark ? 1.4 : 1.0); nextAuto = now + (2200 + Math.random() * 2600) / C.AUTO; }
-    // scrolling stirs the ink: pushes along the screen, in the direction the page moved
+    // scrolling stirs the ink: pushes along the screen, in the direction the page moved. Not while a finger is on
+    // the screen: then the finger is what moves the ink (on a phone the same finger is also scrolling the page), and
+    // the two pulling at once fight each other. As soon as the page moves by itself (a flick, a link) it stirs again.
     var sy = scrollNow(), ds = sy - lastScroll; lastScroll = sy;
-    if (Math.abs(ds) > 3) {
+    if (Math.abs(ds) > 3 && !fingerDown) {
       var push = Math.max(-1, Math.min(1, ds / 60)) * C.FORCE * (mobile ? 0.25 : 0.35);
       for (var k = 0; k < (mobile ? 1 : 2); k++) splat(Math.random(), .2 + Math.random() * .6, (Math.random() - .5) * 300, push, inkColor(0.35), 1.8, true);
     }
