@@ -481,6 +481,8 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 :root[data-layout="mobile"] { --gutter: 20px; }
 :root[data-layout="mobile"] body { font-size: 16px; }
 :root[data-layout="mobile"] #ink { height: 100vh; height: 100lvh; }
+/* phones: no pull-to-refresh or stretch at the ends of the page, so playing with the ink at the top doesn't tug the page */
+:root[data-layout="mobile"], :root[data-layout="mobile"] body { overscroll-behavior-y: none; }
 :root[data-layout="mobile"] .grain { animation-duration: 1.4s; }
 
 /* bar: menu button instead of links */
@@ -2104,7 +2106,8 @@ Fixes proposed: 4
   };
   window.inkPush = function (x, y, vx, vy) { splat(x / cssW, 1 - y / cssH, vx, vy, inkColor(.35), 1.7, true); };
 
-  function step(dt) {
+  // the flow: a small grid, cheap to work out
+  function stepFlow(dt) {
     gl.disable(gl.BLEND);
     var u = use(P.curl); gl.uniform2f(u.texel, vel.tx, vel.ty); gl.uniform1i(u.uVelocity, vel.read.attach(0)); blit(curlF);
     u = use(P.vorticity); gl.uniform2f(u.texel, vel.tx, vel.ty); gl.uniform1i(u.uVelocity, vel.read.attach(0)); gl.uniform1i(u.uCurl, curlF.attach(1)); gl.uniform1f(u.curl, C.CURL); gl.uniform1f(u.dt, dt); blit(vel.write); vel.swap();
@@ -2115,10 +2118,14 @@ Fixes proposed: 4
     u = use(P.gradient); gl.uniform2f(u.texel, vel.tx, vel.ty); gl.uniform1i(u.uPressure, pres.read.attach(0)); gl.uniform1i(u.uVelocity, vel.read.attach(1)); blit(vel.write); vel.swap();
     u = use(P.advect); gl.uniform2f(u.texel, vel.tx, vel.ty); gl.uniform2f(u.vtexel, vel.tx, vel.ty);
     var v = vel.read.attach(0); gl.uniform1i(u.uVelocity, v); gl.uniform1i(u.uSource, v); gl.uniform1f(u.dt, dt); gl.uniform1f(u.dissipation, C.VELOCITY); gl.uniform1f(u.reveal, 1); blit(vel.write); vel.swap();
-    gl.uniform2f(u.texel, dye.tx, dye.ty);
+  }
+  // the colour, carried along the flow: as big as the screen, so one of the two costly parts (drawing is the other)
+  function moveDye(dt) {
+    var u = use(P.advect); gl.uniform2f(u.texel, dye.tx, dye.ty); gl.uniform2f(u.vtexel, vel.tx, vel.ty); gl.uniform1f(u.dt, dt);
     gl.uniform1i(u.uVelocity, vel.read.attach(0)); gl.uniform1i(u.uSource, dye.read.attach(1));
     gl.uniform1f(u.dissipation, C.DENSITY * (theme.dark ? 1 : 1.45)); gl.uniform1f(u.reveal, Math.exp(-1.15 * dt / C.REVEAL)); blit(dye.write); dye.swap();
   }
+  function step(dt) { stepFlow(dt); moveDye(dt); }
   var strength = 1;
   function render() {
     var u = use(P.display);
@@ -2153,12 +2160,14 @@ Fixes proposed: 4
   if (mobile) { addEventListener('scroll', function () { sPos = scrollY; }, { passive: true }); addEventListener('resize', function () { vH = innerHeight; }); }
   function scrollNow() { return mobile ? sPos : scrollY; }
 
-  // Frame pacing. On a screen faster than 100 Hz, if frames keep arriving late because the device can't keep up,
-  // the ink is drawn to the screen on every other frame (it still moves exactly as before; only every second
-  // picture of it is skipped). Drawing it is the costly part: each new picture also has to be re-blended under the
-  // inverting text and frosted glass. A device that keeps up never changes; full speed is tried again every so often.
-  // A new size or theme is always drawn straight away, so the ink never lags the page by a frame.
-  var pace = { half: false, odd: false, prev: 0, d: [], next: 0, until: 0, wait: 8000 }, drawNow = false;
+  // Frame pacing. On phones with screens faster than 100 Hz the ink is worked out on every frame, exactly as
+  // before, and drawn on every other one (60 pictures a second, each the same as before). Drawing is the costly
+  // part: it covers the whole screen, and every new picture has to be re-blended under the inverting text and the
+  // frosted button. Other screens faster than 100 Hz do the same only if frames keep arriving late because the
+  // device can't keep up; full speed is tried again every so often. A new size or theme is drawn straight away.
+  // (pace.mode can be set by the ?perf panel, for trying things out on a phone: 'every', 'skip', 'split', 'paused')
+  var pace = { half: false, odd: false, prev: 0, d: [], next: 0, until: 0, wait: 8000, fast: false, mode: 'auto', drawing: 'every' }, drawNow = false;
+  var quick = [], quickN = 0, dyeDt = 0;   // whether the screen is fast: 3 of the last 30 frames came under 10 ms apart
   function pacing(now) {
     var d = now - pace.prev; pace.prev = now;
     if (d > 0 && d < 100) { pace.d.push(d); if (pace.d.length > 60) pace.d.shift(); }
@@ -2177,8 +2186,12 @@ Fixes proposed: 4
   var last = performance.now(), running = false, nextAuto = last + 2600, lastScroll = scrollNow(), started = last;
   function frame(now) {
     if (!running) return;
+    if (pace.mode === 'paused') { last = now; requestAnimationFrame(frame); return; }
     if (now - started > 4000) pacing(now);
-    var dt = Math.min((now - last) / 1000, 0.016666 * 2); last = now;
+    var gap = now - last;
+    if (gap > 0 && gap < 100) { var q = gap > 4 && gap < 10 ? 1 : 0; quick.push(q); quickN += q; if (quick.length > 30) quickN -= quick.shift(); }
+    pace.fast = quickN >= 3;
+    var dt = Math.min(gap / 1000, 0.016666 * 2); last = now;
     if (sizeDirty) { sizeDirty = false; if (resize()) { initFBOs(); seed(); drawNow = true; } }
     var hero = Math.min(1, scrollNow() / (mobile ? vH : innerHeight));
     strength += ((1 - hero * 0.55) - strength) * 0.08;
@@ -2198,8 +2211,12 @@ Fixes proposed: 4
       var push = Math.max(-1, Math.min(1, ds / 60)) * C.FORCE * (mobile ? 0.25 : 0.35);
       for (var k = 0; k < (mobile ? 1 : 2); k++) splat(Math.random(), .2 + Math.random() * .6, (Math.random() - .5) * 300, push, inkColor(0.35), 1.8, true);
     }
-    step(dt);
-    if (!pace.half || !(pace.odd = !pace.odd) || drawNow) { drawNow = false; render(); }
+    stepFlow(dt); dyeDt += dt;
+    // 'skip' draws every other frame; 'split' (only tried from the ?perf panel) also moves the colour every other frame
+    var mode = pace.drawing = pace.mode !== 'auto' ? pace.mode : (touch && pace.fast) || pace.half ? 'skip' : 'every';
+    var skip = mode !== 'every' && (pace.odd = !pace.odd) && !drawNow;
+    if (!skip || mode !== 'split') { moveDye(dyeDt); dyeDt = 0; }
+    if (!skip) { drawNow = false; render(); }
     requestAnimationFrame(frame);
   }
   pace.inPlaceSplats = addSplats;
@@ -2210,6 +2227,54 @@ Fixes proposed: 4
   seed();
   if (reduce) { for (var i = 0; i < 40; i++) step(0.016); render(); }
   else start();
+})();
+
+/* ---------- ?perf: a small panel for checking how the page runs on a phone (only with ?perf in the address) ----------
+   Shows the GPU, the screen's refresh rate, frames per second and how many arrive late, with switches that turn the
+   costly parts off one at a time, so the one that matters can be found by feel. */
+(function () {
+  if (!/[?&]perf\b/.test(location.search)) return;
+  var root = document.documentElement, P = window.__inkPace || { mode: 'auto', drawing: '-' };
+  var css = document.createElement('style');
+  css.textContent = '.perf-noblur .ink-fab,.perf-noblur .sheet,.perf-noblur .menu,.perf-noblur .inkpanel{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}' +
+    '.perf-noblend *{mix-blend-mode:normal!important}' +
+    '#perf{position:fixed;left:8px;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:200;font:11px/1.4 ui-monospace,Menlo,Consolas,monospace;color:#111;background:#fff;border:1px solid #999;border-radius:8px;padding:8px 9px;max-width:calc(100vw - 16px);box-sizing:border-box}' +
+    '#perf b{font-weight:600}#perf div{white-space:pre-wrap;word-break:break-word}' +
+    '#perf button{font:inherit;margin:6px 5px 0 0;padding:5px 7px;border:1px solid #888;border-radius:5px;background:#f2f2f2;color:#111}';
+  document.head.appendChild(css);
+  var gpu = '?';
+  try { var c = document.createElement('canvas').getContext('webgl'), x = c && c.getExtension('WEBGL_debug_renderer_info'); if (x) gpu = c.getParameter(x.UNMASKED_RENDERER_WEBGL); var l = c && c.getExtension('WEBGL_lose_context'); if (l) l.loseContext(); } catch (e) {}
+  var box = document.createElement('div'); box.id = 'perf';
+  box.innerHTML = '<div id="perfText">measuring…</div><button data-k="ink"></button><button data-k="blur"></button><button data-k="blend"></button><button data-k="copy">copy</button>';
+  document.body.appendChild(box);
+  var modes = ['auto', 'every', 'skip', 'split', 'paused'];
+  function label() {
+    box.querySelector('[data-k=ink]').textContent = 'ink: ' + P.mode;
+    box.querySelector('[data-k=blur]').textContent = 'frosted: ' + (root.classList.contains('perf-noblur') ? 'off' : 'on');
+    box.querySelector('[data-k=blend]').textContent = 'invert: ' + (root.classList.contains('perf-noblend') ? 'off' : 'on');
+  }
+  label();
+  box.addEventListener('click', function (e) {
+    var k = e.target.dataset && e.target.dataset.k; if (!k) return;
+    if (k === 'ink') P.mode = modes[(modes.indexOf(P.mode) + 1) % modes.length];
+    if (k === 'blur') root.classList.toggle('perf-noblur');
+    if (k === 'blend') root.classList.toggle('perf-noblend');
+    if (k === 'copy' && navigator.clipboard) navigator.clipboard.writeText(text.textContent + '\n' + navigator.userAgent);
+    label();
+  });
+  var text = box.querySelector('#perfText'), gaps = [], last = 0, frames = 0, t0 = performance.now();
+  (function tick(now) {
+    if (last) { gaps.push(now - last); if (gaps.length > 240) gaps.shift(); }
+    last = now; frames++;
+    if (now - t0 >= 1000 && gaps.length > 20) {
+      var min = Infinity, worst = 0, late = 0, i;
+      for (i = 0; i < gaps.length; i++) { if (gaps[i] > 2) min = Math.min(min, gaps[i]); worst = Math.max(worst, gaps[i]); }
+      for (i = 0; i < gaps.length; i++) if (gaps[i] > min * 1.5) late++;
+      text.textContent = 'GPU  ' + gpu + '\nscreen ' + Math.round(1000 / min) + ' Hz   ' + Math.round(frames * 1000 / (now - t0)) + ' fps\nlate ' + Math.round(late * 100 / gaps.length) + '%   worst ' + Math.round(worst) + ' ms\nink drawn: ' + P.drawing + (P.inPlaceSplats === false ? ' (copy splats)' : '');
+      frames = 0; t0 = now;
+    }
+    requestAnimationFrame(tick);
+  })(performance.now());
 })();
 </script>
 </body>
