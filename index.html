@@ -1730,7 +1730,7 @@ Fixes proposed: 4
         if (seen) { var card = cards[best]; card.__scramble && card.__scramble(); var term = card.querySelector('[data-type]'); if (term) typeTerm(term); vibrate(5); }
       }
       var dx = track.scrollLeft - lastLeft; lastLeft = track.scrollLeft;
-      if (Math.abs(dx) > 1.5 && window.inkPush) { var tt = performance.now() / 1000; window.inkPush(innerWidth * (.5 + Math.sin(tt * 1.6) * .28), tr.top + tr.height * .4, -dx * 26, Math.sin(tt * 2.3) * 70); }
+      if (Math.abs(dx) > 1.5 && window.inkPush) window.inkPush(innerWidth * (.2 + Math.random() * .6), tr.top + tr.height * .4, -dx * 26, (Math.random() - .5) * 140);
       if (!hinted && track.scrollLeft > 12) { hinted = true; swipeHint.classList.add('gone'); }
     }
     track.addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
@@ -1915,18 +1915,13 @@ Fixes proposed: 4
     return [c[0] * s, c[1] * s, c[2] * s];
   }
 
-  // a push on the fluid alone, with no ink
-  function pushVel(x, y, dx, dy, radiusMul) {
+  function splat(x, y, dx, dy, color, radiusMul) {
     var ar = canvas.width / canvas.height;
     var u = use(P.splat);
     gl.uniform1i(u.uTarget, vel.read.attach(0)); gl.uniform1f(u.aspect, ar);
     gl.uniform2f(u.point, x, y); gl.uniform3f(u.color, dx, dy, 0);
     var r = C.RADIUS / 100 * (radiusMul || 1); if (ar > 1) r *= ar;
     gl.uniform1f(u.radius, r); blit(vel.write); vel.swap();
-  }
-  function splat(x, y, dx, dy, color, radiusMul) {
-    pushVel(x, y, dx, dy, radiusMul);
-    var u = P.splat.u;
     gl.uniform1i(u.uTarget, dye.read.attach(0)); gl.uniform3f(u.color, color[0], color[1], color[2]);
     blit(dye.write); dye.swap();
   }
@@ -1956,14 +1951,7 @@ Fixes proposed: 4
     var nx = x / cssW, ny = 1 - y / cssH;
     for (var i = 0; i < n; i++) { var a = (i / n) * Math.PI * 2 + Math.random() * .5, f = (1600 + Math.random() * 900) * (k ? k * .7 : 1); splat(nx, ny, Math.cos(a) * f, Math.sin(a) * f, inkColor(k || 1.8), 1.2 + (k ? .6 : 0)); }
   };
-  // the phone carousel pushes the ink as it swipes: one colour per swipe, a thin trail, no blobs
-  var pushCol = null, pushAt = 0;
-  window.inkPush = function (x, y, vx, vy) {
-    var now = performance.now();
-    if (!pushCol || now - pushAt > 350) pushCol = inkColor(1);
-    pushAt = now;
-    splat(x / cssW, 1 - y / cssH, vx, vy, [pushCol[0] * .06, pushCol[1] * .06, pushCol[2] * .06], 1.7);
-  };
+  window.inkPush = function (x, y, vx, vy) { splat(x / cssW, 1 - y / cssH, vx, vy, inkColor(.35), 1.7); };
 
   function step(dt) {
     gl.disable(gl.BLEND);
@@ -2007,33 +1995,6 @@ Fixes proposed: 4
     window.inkBurst(e.clientX, e.clientY, 5);
   });
 
-  // Scrolling stirs the ink up. Broad pushes carry the whole pool the way the page moved, and ink wells up at
-  // a few places at a time: each one swells in and fades out over about half a second with a single colour,
-  // then starts again somewhere else. Nothing appears in one frame, so nothing flickers. Speed is measured
-  // per second and smoothed, so it feels the same on any screen.
-  var stirV = 0, stirT = 0, wells = [];
-  function stirFromScroll(now, dt) {
-    var sy = scrollY, ds = sy - lastScroll; lastScroll = sy;
-    var real = stirT ? Math.max(.004, (now - stirT) / 1000) : 1 / 60; stirT = now;
-    stirV += (Math.max(-4000, Math.min(4000, ds / real)) - stirV) * Math.min(1, dt * 10);
-    var sp = Math.min(1, Math.abs(stirV) / 400);
-    if (sp < .03) return;
-    var t = now / 1000, dir = Math.max(-1, Math.min(1, stirV / 1400)), f = dt * 60, n = mobile ? 4 : 6;
-    for (var j = 0; j < 2; j++) pushVel(.27 + .46 * j + Math.sin(t * .3 + j * 3) * .08, .5, 0, dir * C.FORCE * .035 * f, 7);
-    for (var i = 0; i < n; i++) {
-      var w = wells[i];
-      if (!w || w.age >= w.life) {
-        // a new well, somewhere else; the first ones start at staggered times so they never all restart together
-        w = wells[i] = { age: 0, life: w ? .4 + Math.random() * .4 : .12 * (i + 1), x: .08 + Math.random() * .84, y: .2 + Math.random() * .6,
-          side: (Math.random() - .5) * 2, col: inkColor(1) };
-      }
-      w.age += dt;
-      var env = Math.sin(Math.PI * Math.min(1, w.age / w.life)), k = 11 * dt * sp * env;
-      w.x += w.side * dt * .02;
-      splat(w.x, w.y, w.side * 160 * env * f, dir * C.FORCE * .03 * env * f, [w.col[0] * k, w.col[1] * k, w.col[2] * k], 1.8);
-    }
-  }
-
   var last = performance.now(), running = false, nextAuto = last + 2600, lastScroll = scrollY;
   function frame(now) {
     if (!running) return;
@@ -2049,7 +2010,12 @@ Fixes proposed: 4
       ptr.px = ptr.x; ptr.py = ptr.y;
     }
     if (now > nextAuto) { randomSplats(1, theme.dark ? 1.4 : 1.0); nextAuto = now + (2200 + Math.random() * 2600) / C.AUTO; }
-    stirFromScroll(now, dt);
+    // scrolling stirs the ink: pushes along the screen, in the direction the page moved
+    var sy = scrollY, ds = sy - lastScroll; lastScroll = sy;
+    if (Math.abs(ds) > 3) {
+      var push = Math.max(-1, Math.min(1, ds / 60)) * C.FORCE * (mobile ? 0.25 : 0.35);
+      for (var k = 0; k < (mobile ? 1 : 2); k++) splat(Math.random(), .2 + Math.random() * .6, (Math.random() - .5) * 300, push, inkColor(0.35), 1.8);
+    }
     step(dt); render();
     requestAnimationFrame(frame);
   }
