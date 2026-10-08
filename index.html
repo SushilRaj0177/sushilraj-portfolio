@@ -84,6 +84,8 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; background: var(--bg); }
+/* no blue or grey flash over whatever a finger taps (Android Chrome and iOS Safari draw one by default) */
+html { -webkit-tap-highlight-color: transparent; }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 body {
@@ -361,6 +363,16 @@ h1 .ch { display: inline-block; will-change: transform; }
   :root:not([data-layout="mobile"]) .roots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+/* scrolling: the name sinks back a little as you leave the hero (the script sets --hero-y),
+   headings rise into place and the skill columns fade up, each once, the first time they're seen */
+#nameText, #nameTone { translate: 0 var(--hero-y, 0px); }
+:root:not([data-layout="mobile"]) .kana .k1, :root:not([data-layout="mobile"]) .kana .k2 { translate: 0 var(--hero-y, 0px); }
+:root[data-layout="mobile"] .kana { translate: 0 var(--hero-y, 0px); }
+.js .rise { clip-path: inset(100% -.3em -.3em -.3em); translate: 0 .4em; transition: clip-path 1.1s cubic-bezier(.77, 0, .18, 1), translate 1.1s var(--ease); }
+.js .rise.in { clip-path: inset(-.3em -.3em -.3em -.3em); translate: 0 0; }
+.js .fade-up { opacity: 0; translate: 0 18px; transition: opacity .9s var(--ease) var(--d, 0s), translate .9s var(--ease) var(--d, 0s); }
+.js .fade-up.in { opacity: 1; translate: 0 0; }
+
 /* contact */
 .contact { padding: clamp(120px, 16vw, 220px) var(--gutter) clamp(50px, 6vw, 80px); min-height: 90svh; display: flex; flex-direction: column; justify-content: space-between; gap: 60px; }
 .contact h2 { margin: 0; display: grid; font-size: clamp(64px, 14vw, 250px); font-weight: 600; letter-spacing: -.065em; line-height: .85; }
@@ -459,6 +471,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
   .js .hanko.stamped { animation: none; }
   .js .root .kj { clip-path: none; transition: none; }
   .js .root > div { opacity: 1; transform: none; transition: none; }
+  .js .rise, .js .fade-up { clip-path: none; translate: none; opacity: 1; transition: none; }
   .big .w { opacity: 1; }
 }
 
@@ -864,7 +877,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
   <section class="work" id="work" aria-label="Work" data-i18n-attr="aria-label:nav.work">
     <div class="m-work-head">
       <p class="eyebrow" data-i18n="work.count">Six projects</p>
-      <h2 data-i18n-html="work.title">Things I've <span class="it">built</span></h2>
+      <h2 class="rise" data-i18n-html="work.title">Things I've <span class="it">built</span></h2>
       <p class="sub" data-i18n="work.sub">Three are live and one is still in progress. Each has tests, and the code for five of them is on GitHub.</p>
       <p class="swipe-hint" id="swipeHint" aria-hidden="true"><span data-i18n="work.swipe">Swipe through them</span><i>→</i></p>
     </div>
@@ -877,7 +890,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
       </div>
       <div class="track" id="track">
         <div class="intro-card">
-          <div><p class="eyebrow" data-i18n="work.count">Six projects</p><h2 data-i18n-html="work.title">Things I've <span class="it">built</span></h2></div>
+          <div><p class="eyebrow" data-i18n="work.count">Six projects</p><h2 class="rise" data-i18n-html="work.title">Things I've <span class="it">built</span></h2></div>
           <p data-i18n="work.sub">Three are live and one is still in progress. Each has tests, and the code for five of them is on GitHub.</p>
         </div>
 
@@ -1029,15 +1042,15 @@ Fixes proposed: 4
     <p class="eyebrow" id="about-title" data-i18n="nav.about">About</p>
     <p class="big" id="big" data-i18n-html="about.big">I'm a computer science student at SRMIST in Chennai, graduating in 2029. I like building things from the database all the way to the screen, and testing them properly. A lot of my projects are about <span class="it">Japan</span>, because I'm preparing for a semester at Waseda University in Tokyo and learning the language.</p>
     <div class="facts-row">
-      <div><h4 data-i18n="facts.lang">Languages</h4><p class="chips"><span>TypeScript</span><span>JavaScript</span><span>Python</span><span>C/C++</span><span>Java</span><span>SQL</span></p></div>
-      <div><h4 data-i18n="facts.tools">Tools I use most</h4><p class="chips"><span>React</span><span>Next.js</span><span>Node.js</span><span>Express</span><span>FastAPI</span><span>PostgreSQL</span><span>Prisma</span><span>Supabase</span></p></div>
-      <div><h4 data-i18n="facts.test">Testing</h4><p class="chips"><span>Vitest</span><span>Playwright</span><span>pytest</span><span>GitHub Actions</span><span>Docker</span></p></div>
+      <div class="fade-up"><h4 data-i18n="facts.lang">Languages</h4><p class="chips"><span>TypeScript</span><span>JavaScript</span><span>Python</span><span>C/C++</span><span>Java</span><span>SQL</span></p></div>
+      <div class="fade-up"><h4 data-i18n="facts.tools">Tools I use most</h4><p class="chips"><span>React</span><span>Next.js</span><span>Node.js</span><span>Express</span><span>FastAPI</span><span>PostgreSQL</span><span>Prisma</span><span>Supabase</span></p></div>
+      <div class="fade-up"><h4 data-i18n="facts.test">Testing</h4><p class="chips"><span>Vitest</span><span>Playwright</span><span>pytest</span><span>GitHub Actions</span><span>Docker</span></p></div>
     </div>
   </section>
 
   <section class="japan" id="japan" aria-labelledby="japan-title">
     <p class="eyebrow" data-i18n="japan.eyebrow">Japan</p>
-    <h2 id="japan-title" data-i18n-html="japan.title">Where it <span class="it">comes from</span></h2>
+    <h2 id="japan-title" class="rise" data-i18n-html="japan.title">Where it <span class="it">comes from</span></h2>
     <div class="roots-group">
       <p class="roots-label" data-i18n="japan.then">It started with</p>
       <ul class="roots">
@@ -1440,6 +1453,21 @@ Fixes proposed: 4
     roots.forEach(function (r, i) { r.style.setProperty('--d', (i % 3) * .14 + 's'); io.observe(r); });
   })();
 
+  /* ---------- headings rise in, and the skill columns fade up one after another, once each ---------- */
+  (function () {
+    var els = [].slice.call(document.querySelectorAll('.rise, .fade-up'));
+    if (reduce || !('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); }); return; }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { io.unobserve(e.target); (e.target.__reveal || e.target).classList.add('in'); } });
+    }, { threshold: .35 });
+    els.forEach(function (e) {
+      if (e.classList.contains('fade-up')) e.style.setProperty('--d', [].indexOf.call(e.parentNode.children, e) * .12 + 's');
+      // a heading starts clipped away, which the observer would never see arrive, so watch the label above it
+      var watch = e.classList.contains('rise') && e.previousElementSibling ? e.previousElementSibling : e;
+      watch.__reveal = e; io.observe(watch);
+    });
+  })();
+
   /* ---------- hanko: stamps itself when the contact section arrives; press it to stamp again ---------- */
   var seal = document.getElementById('hanko');
   function stampSeal(splash) {
@@ -1652,6 +1680,18 @@ Fixes proposed: 4
       });
     }
 
+    // leaving the hero: the name sinks back a little slower than the page and the intro lifts away;
+    // scrolling back up brings both home
+    if (!reduce) {
+      gsap.fromTo('.hero', { '--hero-y': '0px' }, { '--hero-y': (mobile ? 40 : 90) + 'px', ease: 'none',
+        scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+      gsap.to('.hero-top', { y: mobile ? -24 : -56, opacity: 0, ease: 'none',
+        scrollTrigger: { trigger: '.hero', start: 'top top', end: '55% top', scrub: true } });
+      // the role and "Scroll" labels under the name have done their job; they fade before the name reaches them
+      gsap.to('.hero-foot .eyebrow', { opacity: 0, ease: 'none',
+        scrollTrigger: { trigger: '.hero', start: 'top top', end: '22% top', scrub: true } });
+    }
+
     // marquee: drifts on its own, speeds up and leans with scroll velocity
     var mq = document.getElementById('marquee'), mq2 = document.getElementById('marquee2'), mq2t = document.getElementById('marquee2t'), mx = 0, mx2 = -400, skew = 0, boost = 0;
     ScrollTrigger.create({ trigger: '.marquee', start: 'top bottom', end: 'bottom top', onUpdate: function (s) { boost = gsap.utils.clamp(-40, 40, s.getVelocity() / 60); } });
@@ -1716,11 +1756,11 @@ Fixes proposed: 4
     var cards = [].slice.call(track.querySelectorAll('.card'));
     var nowEl = document.getElementById('workNow'), prog = document.getElementById('workProgress');
     var prev = document.getElementById('prevCard'), next = document.getElementById('nextCard'), swipeHint = document.getElementById('swipeHint');
-    var active = -1, lastLeft = track.scrollLeft, queued = false, hinted = false, seen = false;
+    var active = -1, queued = false, hinted = false, seen = false;
     function stepSize() { return cards[0].offsetWidth + 14; }
     function update() {
       queued = false;
-      var tr = track.getBoundingClientRect(), best = 0, bestD = 1e9, sl = track.scrollLeft;
+      var best = 0, bestD = 1e9, sl = track.scrollLeft;
       for (var i = 0; i < cards.length; i++) {
         // offsetLeft ignores the card's own tilt, so the maths doesn't feed back on itself
         var c = cards[i], d = (c.offsetLeft - 20 - sl) / (c.offsetWidth + 14);
@@ -1739,8 +1779,6 @@ Fixes proposed: 4
         active = best; nowEl.textContent = String(best + 1).padStart(2, '0');
         if (seen) { var card = cards[best]; card.__scramble && card.__scramble(); var term = card.querySelector('[data-type]'); if (term) typeTerm(term); vibrate(5); }
       }
-      var dx = track.scrollLeft - lastLeft; lastLeft = track.scrollLeft;
-      if (Math.abs(dx) > 1.5 && window.inkPush) window.inkPush(innerWidth * (.2 + Math.random() * .6), tr.top + tr.height * .4, -dx * 26, (Math.random() - .5) * 140);
       if (!hinted && track.scrollLeft > 12) { hinted = true; swipeHint.classList.add('gone'); }
     }
     track.addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
@@ -1961,7 +1999,6 @@ Fixes proposed: 4
     var nx = x / cssW, ny = 1 - y / cssH;
     for (var i = 0; i < n; i++) { var a = (i / n) * Math.PI * 2 + Math.random() * .5, f = (1600 + Math.random() * 900) * (k ? k * .7 : 1); splat(nx, ny, Math.cos(a) * f, Math.sin(a) * f, inkColor(k || 1.8), 1.2 + (k ? .6 : 0)); }
   };
-  window.inkPush = function (x, y, vx, vy) { splat(x / cssW, 1 - y / cssH, vx, vy, inkColor(.35), 1.7); };
 
   function step(dt) {
     gl.disable(gl.BLEND);
@@ -2005,7 +2042,7 @@ Fixes proposed: 4
     window.inkBurst(e.clientX, e.clientY, 5);
   });
 
-  var last = performance.now(), running = false, nextAuto = last + 2600, lastScroll = scrollY;
+  var last = performance.now(), running = false, nextAuto = last + 2600;
   function frame(now) {
     if (!running) return;
     var dt = Math.min((now - last) / 1000, 0.016666 * 2); last = now;
@@ -2020,12 +2057,6 @@ Fixes proposed: 4
       ptr.px = ptr.x; ptr.py = ptr.y;
     }
     if (now > nextAuto) { randomSplats(1, theme.dark ? 1.4 : 1.0); nextAuto = now + (2200 + Math.random() * 2600) / C.AUTO; }
-    // scrolling stirs the ink: pushes along the screen, in the direction the page moved
-    var sy = scrollY, ds = sy - lastScroll; lastScroll = sy;
-    if (Math.abs(ds) > 3) {
-      var push = Math.max(-1, Math.min(1, ds / 60)) * C.FORCE * (mobile ? 0.25 : 0.35);
-      for (var k = 0; k < (mobile ? 1 : 2); k++) splat(Math.random(), .2 + Math.random() * .6, (Math.random() - .5) * 300, push, inkColor(0.35), 1.8);
-    }
     step(dt); render();
     requestAnimationFrame(frame);
   }
