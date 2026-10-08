@@ -700,11 +700,11 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
   var root = document.documentElement;
   root.classList.add('js');
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
-  // The visitor's own theme choice goes in data-mode. It outranks data-theme (which the host page
-  // may set) and the system setting, and it never writes to data-theme, so nothing fights over it.
-  var t = get('sr-theme');
-  if (t === 'light' || t === 'dark') root.dataset.mode = t;
-  if (get('sr-grain') === 'off') root.classList.add('grain-off');
+  // The theme goes in data-mode: light by default, dark only if the visitor chose it. It outranks
+  // data-theme (which the host page may set) and the system setting, and it never writes to data-theme.
+  root.dataset.mode = get('sr-theme') === 'dark' ? 'dark' : 'light';
+  // Film grain is off unless the visitor turned it on.
+  if (get('sr-grain') !== 'on') root.classList.add('grain-off');
   var p = get('sr-pal');
   root.dataset.palette = /^(sumi|indigo|ember|aurora)$/.test(p || '') ? p : 'indigo';
   // Language: the visitor's own choice, or Japanese when the browser's first language is Japanese.
