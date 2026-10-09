@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <!-- Mincho for the kanji that are set as display type. Only these characters are fetched, so add any new one here. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;800&text=気配符言葉迦具土墨藍緋極光スシルを磨る物語音楽神話景色暮らし&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;800&text=気配符言葉迦具土墨藍緋極光画素春夏秋冬・スシルを磨る物語音楽神話景色暮らし&display=swap">
 <!-- Unbounded (M PLUS 1 in Japanese) for the three key words in the intro. Only these characters are fetched. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@700&family=Unbounded:wght@500&text=SushilsoftwareJapanスシルソフトウェア日本&display=swap">
 <style>
@@ -83,6 +83,9 @@
 :root[data-palette="sumi"] { --swatch: radial-gradient(circle at 35% 30%, #6b6f76, #0c0d10 70%); }
 :root[data-palette="ember"] { --swatch: radial-gradient(circle at 35% 30%, #ff9a7a, #b4200e 70%); }
 :root[data-palette="aurora"] { --swatch: conic-gradient(from 30deg, #19c6b4, #6b4dff, #ff3d8b, #ffb03b, #19c6b4); }
+:root[data-palette="pixels"] { --swatch: conic-gradient(from -45deg, #5bb33f 0 25%, #ffd34d 0 50%, #4f8fe8 0 75%, #e8772e 0); }
+/* pixels: the ink is drawn in pixels, so the canvas is scaled up without smoothing to keep them crisp */
+:root[data-palette="pixels"] #ink { image-rendering: pixelated; }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; background: var(--bg); }
@@ -452,6 +455,11 @@ h1 .ch { display: inline-block; will-change: transform; }
 .inkpanel .lab { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; display: inline-flex; align-items: baseline; gap: 8px; }
 /* the ink's name in Japanese: the chosen one, or the one under the pointer */
 .inkpanel .lab .kj { font-family: var(--mincho); font-size: 15px; font-weight: 500; letter-spacing: .04em; color: var(--ink); min-width: 2.1em; }
+:root[data-season="spring"] { --season-kj: "・春"; } :root[data-season="summer"] { --season-kj: "・夏"; }
+:root[data-season="autumn"] { --season-kj: "・秋"; } :root[data-season="winter"] { --season-kj: "・冬"; }
+#palKj[data-pal="pixels"]::after { content: var(--season-kj, ""); }
+/* room for the longest label (画素・秋), so the swatches never shift under the pointer as the label changes */
+.inkpanel .lab .kj { min-width: 4.3em; }
 .swatches { display: flex; gap: 6px; }
 .sw { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--line-2); cursor: pointer; padding: 0; position: relative; transition: transform .4s var(--ease); flex: none; }
 .sw:hover { transform: scale(1.18); }
@@ -460,6 +468,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 .sw.indigo { background: radial-gradient(circle at 35% 30%, #9aa6ff, #1c2a9e 70%); }
 .sw.ember { background: radial-gradient(circle at 35% 30%, #ff9a7a, #b4200e 70%); }
 .sw.aurora { background: conic-gradient(from 30deg, #19c6b4, #6b4dff, #ff3d8b, #ffb03b, #19c6b4); }
+.sw.pixels { background: #86c5f8 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Crect width='10' height='2' fill='%234f8fe8'/%3E%3Crect y='2' width='10' height='4' fill='%2386c5f8'/%3E%3Crect x='6' y='1' width='1' height='3' fill='%23ffd34d'/%3E%3Crect x='5' y='2' width='3' height='1' fill='%23ffd34d'/%3E%3Crect x='6' y='2' width='1' height='1' fill='%23fff7d6'/%3E%3Crect y='5' width='4' height='1' fill='%236cc24a'/%3E%3Crect x='7' y='5' width='3' height='1' fill='%236cc24a'/%3E%3Crect y='6' width='10' height='2' fill='%235bb33f'/%3E%3Crect y='8' width='10' height='1' fill='%233f8f36'/%3E%3Crect y='9' width='10' height='1' fill='%238b5a2b'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
 .storm { display: flex; align-items: center; gap: 8px; }
 .storm input { width: 92px; accent-color: var(--ink); }
 .inkpanel .wipe { appearance: none; border: 1px solid var(--line-2); background: transparent; color: var(--ink); border-radius: 999px; padding: 5px 11px; font: inherit; font-size: 12px; cursor: pointer; }
@@ -654,11 +663,13 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 .sheet .handle { width: 42px; height: 5px; border-radius: 3px; background: var(--line-2); margin: 0 auto 14px; }
 .sheet-title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .sheet-title h3 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -.04em; }
-.pal-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 20px; }
+.pal-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-bottom: 20px; }
 .pal { appearance: none; border: 1px solid var(--line); background: transparent; border-radius: 18px; padding: 12px 4px 10px; display: grid; justify-items: center; gap: 8px; font: inherit; font-size: 12.5px; color: var(--ink); cursor: pointer; transition: border-color .3s, background-color .3s; }
 .pal .sw { width: 34px; height: 34px; pointer-events: none; }
 .pal .kj { font-family: var(--mincho); font-size: 19px; font-weight: 500; line-height: 1; margin-top: 2px; }
-.pal .nm { margin-top: -3px; color: var(--ink-2); }
+.pal .nm { margin-top: -3px; color: var(--ink-2); font-size: 11.5px; white-space: nowrap; }
+:root[data-lang="ja"] .pal .nm { font-size: 10.5px; letter-spacing: -.03em; }
+@media (max-width: 359px) { .pal { padding-inline: 1px; } .pal .nm { font-size: 10px; letter-spacing: -.02em; } :root[data-lang="ja"] .pal .nm { font-size: 8.5px; } }
 .pal[aria-pressed="true"] { border-color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
 .motion { margin-bottom: 20px; }
 .motion-labels { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 6px; }
@@ -748,7 +759,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
   // Film grain is off unless the visitor turned it on.
   if (get('sr-grain') !== 'on') root.classList.add('grain-off');
   var p = get('sr-pal');
-  root.dataset.palette = /^(sumi|indigo|ember|aurora)$/.test(p || '') ? p : 'indigo';
+  root.dataset.palette = /^(sumi|indigo|ember|aurora|pixels)$/.test(p || '') ? p : 'indigo';
   // Language: the visitor's own choice, or Japanese when the browser's first language is Japanese.
   var l = get('sr-lang');
   if (l !== 'en' && l !== 'ja') l = /^ja\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'ja' : 'en';
@@ -789,6 +800,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
     <button class="sw indigo" type="button" data-pal="indigo" aria-pressed="true" aria-label="Indigo" data-i18n-attr="aria-label:sw.indigo"></button>
     <button class="sw ember" type="button" data-pal="ember" aria-pressed="false" aria-label="Ember, red ink" data-i18n-attr="aria-label:sw.ember"></button>
     <button class="sw aurora" type="button" data-pal="aurora" aria-pressed="false" aria-label="Aurora, many colours" data-i18n-attr="aria-label:sw.aurora"></button>
+    <button class="sw pixels" type="button" data-pal="pixels" aria-pressed="false" aria-label="Pixels, pixel art in the colours of the season" data-i18n-attr="aria-label:sw.pixels"></button>
   </div>
   <label class="storm"><span data-i18n="calm">Calm</span><input type="range" min="0" max="1" step="0.01" value="0.3" data-storm aria-label="Calm to storm" data-i18n-attr="aria-label:storm.aria"><span data-i18n="storm">Storm</span></label>
   <button class="tog" type="button" role="switch" aria-checked="true" data-grain title="Film grain (G)" data-i18n-attr="title:grain.title"><span data-i18n="grain">Grain</span><span class="knob"></span></button>
@@ -807,6 +819,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
     <button class="pal" type="button" data-pal="indigo" aria-pressed="true"><span class="sw indigo"></span><span class="kj" lang="ja">藍</span><span class="nm" data-i18n="pal.indigo">Indigo</span></button>
     <button class="pal" type="button" data-pal="ember" aria-pressed="false"><span class="sw ember"></span><span class="kj" lang="ja">緋</span><span class="nm" data-i18n="pal.ember">Ember</span></button>
     <button class="pal" type="button" data-pal="aurora" aria-pressed="false"><span class="sw aurora"></span><span class="kj" lang="ja">極光</span><span class="nm" data-i18n="pal.aurora">Aurora</span></button>
+    <button class="pal" type="button" data-pal="pixels" aria-pressed="false"><span class="sw pixels"></span><span class="kj" lang="ja">画素</span><span class="nm" data-i18n="pal.pixels">Pixels</span></button>
   </div>
   <div class="motion">
     <div class="motion-labels"><span data-i18n="calm">Calm</span><span data-i18n="storm">Storm</span></div>
@@ -1186,8 +1199,8 @@ Fixes proposed: 4
     // bar, menu and ink controls
     'nav.aria': 'セクション', 'nav.work': '作品', 'nav.about': '自己紹介', 'nav.contact': '連絡先', 'menu.aria': 'メニュー',
     'ink': 'インク', 'panel.aria': 'インクの設定', 'fab.aria': 'インクの設定', 'sheet.sub': '色・動き・粒子',
-    'sw.sumi': '墨、黒', 'sw.indigo': '藍、青', 'sw.ember': '緋、赤', 'sw.aurora': '極光、多色',
-    'pal.sumi': 'すみ', 'pal.indigo': 'あい', 'pal.ember': 'ひ', 'pal.aurora': 'きょっこう',
+    'sw.sumi': '墨、黒', 'sw.indigo': '藍、青', 'sw.ember': '緋、赤', 'sw.aurora': '極光、多色', 'sw.pixels': '画素、季節の色のドット絵',
+    'pal.sumi': 'すみ', 'pal.indigo': 'あい', 'pal.ember': 'ひ', 'pal.aurora': 'きょっこう', 'pal.pixels': 'がそ',
     'calm': '凪', 'storm': '嵐', 'storm.aria': '凪から嵐まで', 'grain': '粒子', 'grain.title': 'フィルム粒子（G）',
     'clear': '消す', 'drop': '垂らす', 'tapcopy': 'タップしてコピー',
     'theme.toLight': 'ライトモードに切り替える', 'theme.toDark': 'ダークモードに切り替える', 'theme.light': 'ライトモード', 'theme.dark': 'ダークモード',
@@ -1383,9 +1396,9 @@ Fixes proposed: 4
   })();
 
   /* ---------- ink controls, shared by the computer panel and the phone sheet ---------- */
-  // each ink's Japanese name: 墨 sumi ink, 藍 indigo dye, 緋 fire red, 極光 the aurora
-  var PAL_JA = { sumi: '墨', indigo: '藍', ember: '緋', aurora: '極光' }, palKj = document.getElementById('palKj');
-  function showKj(name) { palKj.textContent = PAL_JA[name] || ''; }
+  // each ink's Japanese name: 墨 sumi ink, 藍 indigo dye, 緋 fire red, 極光 the aurora, 画素 pixels
+  var PAL_JA = { sumi: '墨', indigo: '藍', ember: '緋', aurora: '極光', pixels: '画素' }, palKj = document.getElementById('palKj');
+  function showKj(name) { palKj.textContent = PAL_JA[name] || ''; palKj.dataset.pal = name; }
   function setPalette(name) {
     root.dataset.palette = name; store('sr-pal', name);
     document.querySelectorAll('[data-pal]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.pal === name ? 'true' : 'false'); });
@@ -1955,12 +1968,22 @@ Fixes proposed: 4
     clear: 'uniform sampler2D uTexture;uniform float value;void main(){o=value*texture(uTexture,vUv);}',
     // Light theme: the dye is pigment on paper. It absorbs light (Beer-Lambert), so colours mix the way inks do
     // and edges darken a little, like watercolour. Dark theme: the dye glows like smoke, with a soft sheen.
-    display: 'uniform sampler2D uTexture;uniform vec3 uBg;uniform float uDark,uStrength,uGloss,uChroma;uniform vec2 dtexel;' +
+    display: 'uniform sampler2D uTexture;uniform vec3 uBg;uniform float uDark,uStrength,uGloss,uChroma,uPix,uTime;uniform vec2 dtexel,texel;' +
       'vec3 tx(vec2 p){return max(texture(uTexture,p).rgb,0.);}' +
       'float mx3(vec3 c){return max(c.r,max(c.g,c.b));}' +
+      // pixels: a hash per pixel cell, an ordered dither (the 4x4 Bayer pattern pixel art uses between two shades),
+      // and a twinkle: about one cell in a hundred is a sparkle that brightens and fades on its own beat, drawn as a
+      // little four-pointed plus, the way pixel art draws one
+      'float h21(vec2 p){vec3 q=fract(p.xyx*.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}' +
+      'float bay(vec2 a){a=floor(a);return fract(a.x*.5+a.y*a.y*.75);}' +
+      'float dith(vec2 a){return bay(a*.5)*.25+bay(a);}' +
+      'float tw(vec2 c){float h=h21(c);if(h<.988)return 0.;float b=max(0.,sin(uTime*(1.2+2.*h21(c+5.7))+6.283*h21(c+9.1)));return b*b*b;}' +
+      'float sparkle(vec2 c){return tw(c)+.5*(tw(c+vec2(1.,0.))+tw(c-vec2(1.,0.))+tw(c+vec2(0.,1.))+tw(c-vec2(0.,1.)));}' +
       // vis: the share of this ink that's showing. Ink stirred up by scrolling keeps its full shape and fades in
-      'void main(){vec4 t0=texture(uTexture,vUv);vec3 c=max(t0.rgb,0.)*uStrength;float vis=1.-clamp(t0.a/max(t0.r+t0.g+t0.b,1e-4),0.,1.);' +
-      'vec3 cl=tx(vUv-vec2(dtexel.x,0.)),cr=tx(vUv+vec2(dtexel.x,0.)),ct=tx(vUv+vec2(0.,dtexel.y)),cb=tx(vUv-vec2(0.,dtexel.y));' +
+      'void main(){vec2 uv=vUv,d=dtexel,cell=vec2(0.);' +
+      'if(uPix>0.){cell=floor(gl_FragCoord.xy/uPix);uv=(cell+.5)*uPix*texel;d=uPix*texel;}' +
+      'vec4 t0=texture(uTexture,uv);vec3 c=max(t0.rgb,0.)*uStrength;float vis=1.-clamp(t0.a/max(t0.r+t0.g+t0.b,1e-4),0.,1.);' +
+      'vec3 cl=tx(uv-vec2(d.x,0.)),cr=tx(uv+vec2(d.x,0.)),ct=tx(uv+vec2(0.,d.y)),cb=tx(uv-vec2(0.,d.y));' +
       // only the theme that's showing is worked out (the result is exactly what mixing the two gave)
       'if(uDark<.5){' +
       'vec2 gS=vec2(dot(cl-cr,vec3(1.)),dot(ct-cb,vec3(1.)))*uStrength;' +
@@ -1969,12 +1992,19 @@ Fixes proposed: 4
       // aurora: where its colours overlap, the light they all absorb (a grey) is mostly given back, so a mix
       // becomes another bright colour instead of mud. Zero for the other inks, which then draw exactly as before.
       'vec3 A=cp*2.2*(1.+edge*.45);A-=uChroma*min(A.r,min(A.g,A.b));' +
+      // pixels: the ink's strength in flat quarter steps (its colour kept), dithered only where two steps meet;
+      // the faintest haze is left out, so the paper around the ink stays clean
+      'float pm=0.;if(uPix>0.){float m=mx3(A),dq=dith(cell)-.5;pm=m<.14+dq*.05?0.:floor(m*4.+.5+dq*.6)/4.;A*=pm/max(m,1e-4);}' +
       'o=vec4(uBg*exp(-A),1.);' +
+      'if(uPix>0.)o.rgb=mix(o.rgb,vec3(1.,.96,.78),min(1.,sparkle(cell)*smoothstep(.2,.6,pm)));' +
       '}else{' +
       'vec2 gM=vec2(mx3(cl)-mx3(cr),mx3(ct)-mx3(cb))*uStrength;' +
       'vec3 n=normalize(vec3(gM*1.3,.5));vec3 L=normalize(vec3(-.4,.55,1.));' +
       'float sh=clamp(dot(n,L),0.,1.);float spec=pow(clamp(dot(reflect(-L,n),vec3(0.,0.,1.)),0.,1.),42.);' +
       'float a=mx3(c);' +
+      'if(uPix>0.){vec3 g=c*vis*(.65+.55*sh)+vec3(spec)*uGloss*.35*smoothstep(.02,.3,a*vis);' +
+      'g-=.4*min(g.r,min(g.g,g.b));float m=mx3(g),dq=dith(cell)-.5,q=m<.05+dq*.02?0.:floor(m*6.+.5+dq*.6)/6.;g*=q/max(m,1e-4);' +
+      'o=vec4(uBg+g+vec3(1.,.88,.55)*sparkle(cell)*smoothstep(.1,.3,q),1.);}else ' +
       'o=vec4(uBg+c*vis*(.65+.55*sh)+vec3(spec)*uGloss*.35*smoothstep(.02,.3,a*vis),1.);' +
       '}}'
   };
@@ -2076,9 +2106,34 @@ Fixes proposed: 4
     indigo: { mix: .3,  mixL: .72, dark: [[.09, .12, .34]], light: [[.34, .25, .04], [.30, .27, .10]] },
     ember:  { mix: .34, mixL: .7,  dark: [[.36, .09, .05], [.34, .16, .04]], light: [[.03, .26, .36], [.02, .15, .32]] },
     aurora: { mix: .9,  mixL: 1,   dark: [[.04, .30, .27], [.20, .10, .38], [.38, .07, .20], [.36, .22, .04], [.08, .16, .38]],
-                        light: [[.32, .05, .06], [.15, .25, .01], [.01, .26, .10], [.00, .06, .32], [.31, .20, .02]] }
+                        light: [[.32, .05, .06], [.15, .25, .01], [.01, .26, .10], [.00, .06, .32], [.31, .20, .02]] },
+    pixels: { mix: 1, mixL: 1, dark: [], light: [] }
   };
-  var pal = PALETTES[root.dataset.palette] || PALETTES.indigo, AURORA_CHROMA = .75;
+  var pal = PALETTES[root.dataset.palette] || PALETTES.indigo, AURORA_CHROMA = .75, PIXELS_CHROMA = .6;
+  // pixels (画素): pixel art in the colours of one season at a time. It starts in the season it is now and moves on
+  // every 28 seconds; only new drops take the new colours, so it turns slowly.
+  // Each season's colours sit close together, so where they run into each other they make another of the season's
+  // colours rather than mud; a colour that appears more than once is just picked more often (the odd one out is an
+  // accent). Spring: grass, sky and a little blossom. Summer: sunflower, leaf and sea. Autumn: pumpkin, amber, bark
+  // and maple (and grape at night). Winter: ice, deep blue, frost teal and lavender (and snow at night).
+  var G = { light: [.27, .08, .34], dark: [.08, .36, .06] }, SKY = { light: [.34, .12, .01], dark: [.06, .20, .36] }, PINK = { light: [.01, .34, .17], dark: [.36, .08, .22] };
+  var LEAF = { light: [.34, .11, .28], dark: [.04, .36, .12] }, SUN = { light: [.00, .04, .34], dark: [.36, .27, .00] }, SEA = { light: [.34, .16, .06], dark: [.02, .18, .36] };
+  var PUMP = { light: [.01, .18, .34], dark: [.36, .15, .02] }, AMB = { light: [.00, .09, .34], dark: [.36, .24, .02] }, BARK = { light: [.10, .20, .34], dark: [.30, .14, .05] },
+      MAPLE = { light: [.04, .30, .34], dark: [.36, .06, .04] }, GRAPE = { dark: [.20, .07, .36] };
+  var ICE = { light: [.34, .11, .02], dark: [.10, .26, .36] }, DEEP = { light: [.34, .23, .10], dark: [.06, .10, .36] }, TEAL = { light: [.34, .06, .08], dark: [.03, .34, .30] },
+      LAV = { light: [.26, .34, .07], dark: [.22, .16, .36] }, SNOW = { dark: [.24, .26, .32] };
+  function season(light, dark) { return { light: light.map(function (c) { return c.light; }), dark: dark.map(function (c) { return c.dark; }) }; }
+  var PIXELS = [
+    season([G, G, G, SKY, SKY, PINK], [G, G, G, SKY, SKY, PINK]),
+    season([SUN, SUN, SUN, LEAF, LEAF, SEA], [SUN, SUN, SUN, LEAF, LEAF, SEA]),
+    season([PUMP, PUMP, AMB, AMB, BARK, MAPLE], [PUMP, PUMP, AMB, AMB, BARK, MAPLE, GRAPE]),
+    season([ICE, ICE, DEEP, DEEP, TEAL, LAV], [ICE, ICE, DEEP, DEEP, TEAL, LAV, SNOW])
+  ], pxFrom = performance.now(), pxFirst = Math.floor((new Date().getMonth() + 10) % 12 / 3), pxNow = -1;
+  function pixelSeason() {
+    var k = (pxFirst + Math.floor((performance.now() - pxFrom) / 28000)) % 4;
+    if (k !== pxNow) { pxNow = k; PALETTES.pixels.light = PIXELS[k].light; PALETTES.pixels.dark = PIXELS[k].dark; root.dataset.season = ['spring', 'summer', 'autumn', 'winter'][k]; }
+  }
+  pixelSeason();
   function inkColor(strength) {
     var s = (strength || 1) * (theme.dark ? 1 : .85), key = theme.dark ? 'dark' : 'light';
     var set = pal[key], c = (set.length && Math.random() < (theme.dark ? pal.mix : pal.mixL)) ? set[(Math.random() * set.length) | 0] : NEUTRAL[key];
@@ -2172,7 +2227,11 @@ Fixes proposed: 4
     gl.uniform2f(u.dtexel, dye.tx, dye.ty);
     gl.uniform1i(u.uTexture, dye.read.attach(0)); gl.uniform3f(u.uBg, theme.bg[0], theme.bg[1], theme.bg[2]);
     gl.uniform1f(u.uDark, theme.dark); gl.uniform1f(u.uStrength, strength); gl.uniform1f(u.uGloss, 1.0);
-    gl.uniform1f(u.uChroma, pal === PALETTES.aurora ? AURORA_CHROMA : 0);
+    var pix = pal === PALETTES.pixels;
+    gl.uniform1f(u.uChroma, pal === PALETTES.aurora ? AURORA_CHROMA : pix ? PIXELS_CHROMA : 0);
+    // pixels: cells about 5 px across, and the time the sparkles twinkle to
+    gl.uniform1f(u.uPix, pix ? Math.max(2, Math.round(5 * canvas.width / cssW)) : 0);
+    gl.uniform1f(u.uTime, pix ? performance.now() / 1000 % 600 : 0);
     blit(null);
   }
 
@@ -2351,6 +2410,7 @@ Fixes proposed: 4
       } else pointerSplat();
       ptr.px = ptr.x; ptr.py = ptr.y;
     }
+    if (pal === PALETTES.pixels) pixelSeason();
     if (now > nextAuto) { randomSplats(1, theme.dark ? 1.4 : 1.0); nextAuto = now + (2200 + Math.random() * 2600) / C.AUTO; }
     // scrolling stirs the ink: pushes along the screen, in the direction the page moved (a finger that's scrolling
     // leaves no trail of its own, so the two never pull against each other)
