@@ -559,6 +559,12 @@ h1 .ch { display: inline-block; will-change: transform; }
 .furin.ring .furin-glass { animation: furin-glow .9s ease-out; }
 @keyframes furin-glow { 0% { stroke-opacity: 1; filter: drop-shadow(0 0 8px rgba(159, 178, 255, .9)); } 100% { stroke-opacity: .42; filter: none; } }
 .furin:focus-visible { outline: 1px solid var(--ink-2); outline-offset: 6px; border-radius: 6px; }
+/* the glass one: a 3D canvas centred on the string; only the bell and the strip take the click */
+.furin .furin-hit { display: none; }
+.furin.is3d { width: 360px; margin-left: -180px; height: 780px; aspect-ratio: auto; pointer-events: none; }
+.furin.is3d svg { display: none; }
+.furin.is3d .furin-gl { display: block; width: 360px; height: 780px; }
+.furin.is3d .furin-hit { display: block; position: absolute; left: 120px; top: 232px; width: 120px; height: 470px; pointer-events: auto; border-radius: 40px; }
 
 /* intro curtain */
 .intro { position: fixed; inset: 0; z-index: 200; background: var(--ink); color: var(--bg); display: flex; align-items: flex-end; justify-content: space-between; padding: var(--gutter); clip-path: inset(0 0 0 0); transition: clip-path 1.1s cubic-bezier(.77, 0, .18, 1); }
@@ -1374,6 +1380,7 @@ Fixes proposed: 4
           <circle class="furin-knob" cx="100" cy="330" r="4"/>
         </g>
       </svg>
+      <span class="furin-hit" aria-hidden="true"></span>
     </button>
     <div class="contact-foot"><span>© 2026 Sushil Raj<span id="deviceNote"></span></span><span><span data-i18n="city.chennai">Chennai</span> <b id="cChennai">--:--</b> · <span data-i18n="city.tokyo">Tokyo</span> <b id="cTokyo">--:--</b></span></div>
   </section>
@@ -1785,83 +1792,295 @@ Fixes proposed: 4
   (function () {
     var el = document.getElementById('furin');
     if (!el || getComputedStyle(el).display === 'none') return;
-    var bell = el.querySelector('.fb'), strip = el.querySelector('.furin-strip'), paper = el.querySelector('.furin-paper');
     var section = el.parentNode;
     // hang it on the bar's divider (between the links and the language button), so the string seems to come from it
     function place() {
       var lang = document.querySelector('.bar .lang-btn'), sr = section.getBoundingClientRect();
       if (!lang) return;
       var gap = parseFloat(getComputedStyle(lang.parentNode).columnGap) || 24;
-      var x = lang.getBoundingClientRect().left - gap / 2 - sr.left;
-      section.style.setProperty('--furin-x', x.toFixed(1) + 'px');
+      section.style.setProperty('--furin-x', (lang.getBoundingClientRect().left - gap / 2 - sr.left).toFixed(1) + 'px');
     }
     place(); addEventListener('resize', place); if (document.fonts) document.fonts.ready.then(place);
-    // Three linked swings, in radians: the bell on its long string (b), the clapper and strip inside it relative to
-    // the bell (r), and the paper relative to its string (p). Air is a smoothed wind (wind) the pointer stirs up and
-    // that dies away over a second or so, with turbulence on top that grows with it, so it gusts instead of pushing.
-    var b = 0, bv = 0, r = 0, rv = 0, p = 0, pv = 0, wind = 0, LIMIT = .5;
-    var sound = false, ac = null, lastRing = 0, on = false, raf = 0, last = 0, t0 = performance.now(), ph = [Math.random() * 9, Math.random() * 9, Math.random() * 9];
+
+    /* The motion, in radians. The bell swings on its long string across the screen (b) and in depth (bz); the
+       clapper and its thread swing inside it, relative to the bell (r, rz); the paper strip swings below the clapper
+       (p), turns on its thread (yaw), and flutters along its length (flut). The pointer stirs the air (wind), which
+       dies away over a second or so, with turbulence on top that grows with it, so it gusts instead of pushing. */
+    var S = { b: 0, bv: 0, bz: 0, bzv: 0, r: 0, rv: 0, rz: 0, rzv: 0, p: 0, pv: 0, yaw: 0, yawv: 0, flut: .5, t: 0 };
+    var wind = 0, LIMIT = .45, sound = false, ac = null, lastRing = 0, on = false, raf = 0, last = 0;
+    var ph = [Math.random() * 9, Math.random() * 9, Math.random() * 9, Math.random() * 9];
+    var draw = null;   // set by whichever renderer is in use (the 3D one, or the drawn fallback)
     function ring(strength) {
       var now = performance.now(); if (now - lastRing < 110) return; lastRing = now;
-      el.classList.remove('ring'); void el.getBoundingClientRect(); el.classList.add('ring');
+      el.classList.remove('ring'); void el.offsetWidth; el.classList.add('ring');
+      if (draw && draw.ring) draw.ring();
       if (!sound) return;
       try {
         ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-        var f = 2350 * (1 + (Math.random() - .5) * .03), at = ac.currentTime, vol = Math.max(.25, Math.min(1, strength)) * .1;
-        [[1, .5, 2.6], [2.32, .24, 1.6], [4.25, .12, .9], [6.63, .05, .5]].forEach(function (q) {
+        var f = 2650 * (1 + (Math.random() - .5) * .04), at = ac.currentTime, vol = Math.max(.25, Math.min(1, strength)) * .1;
+        [[1, .5, 2.8], [2.32, .22, 1.7], [4.25, .1, 1], [6.63, .05, .55], [1.003, .25, 3.2]].forEach(function (q) {
           var o = ac.createOscillator(), g = ac.createGain();
           o.type = 'sine'; o.frequency.value = f * q[0];
-          g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(vol * q[1], at + .004); g.gain.exponentialRampToValueAtTime(.0001, at + q[2]);
+          g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(vol * q[1], at + .003); g.gain.exponentialRampToValueAtTime(.0001, at + q[2]);
           o.connect(g); g.connect(ac.destination); o.start(at); o.stop(at + q[2] + .05);
         });
       } catch (e) {}
     }
-    function step(now) {
-      var dt = Math.min(.033, (now - last) / 1000 || .016); last = now;
-      var t = (now - t0) / 1000;
-      wind *= Math.exp(-dt / .9);                                  // the stirred air settles
-      var calm = .035 * Math.sin(t * .63 + ph[0]) + .02 * Math.sin(t * 1.7 + ph[1]);   // a faint breeze, always
-      var gust = Math.abs(wind) * (.55 * Math.sin(t * 7.3 + ph[0]) + .35 * Math.sin(t * 12.9 + ph[2]) + .25 * Math.sin(t * 19.1 + ph[1]));
+    function physics(dt) {
+      var t = S.t += dt;
+      wind *= Math.exp(-dt / .9);
+      var calm = .03 * Math.sin(t * .63 + ph[0]) + .018 * Math.sin(t * 1.7 + ph[1]);
+      var g = Math.abs(wind), gust = g * (.55 * Math.sin(t * 7.3 + ph[0]) + .35 * Math.sin(t * 12.9 + ph[2]) + .25 * Math.sin(t * 19.1 + ph[1]));
+      var depth = (.6 * Math.sin(t * 2.3 + ph[3]) + .4 * Math.sin(t * 5.1 + ph[2])) * (g * .9 + .02);
       var air = wind + calm + gust;
       // bell: heavy, on a long string, so it moves slowly
-      var ba = -6 * b - 1.1 * bv + air * 1.1;
-      bv += ba * dt; b += bv * dt;
-      // clapper and strip: lighter, swung by the air on the paper, and left behind when the bell moves
-      var ra = -10 * r - 1.3 * rv + air * 5.5 + gust * 3 - ba * .9;
-      rv += ra * dt; r += rv * dt;
-      if (Math.abs(r) > LIMIT) {                                    // the clapper meets the glass
-        var hit = Math.abs(rv); r = Math.sign(r) * LIMIT;
-        if (rv * r > 0) rv = -rv * .3;
-        if (hit > .45) ring(hit / 2.5);
+      var ba = -5 * S.b - 1 * S.bv + air * 1.1, bza = -5 * S.bz - 1 * S.bzv + depth * .8;
+      S.bv += ba * dt; S.b += S.bv * dt; S.bzv += bza * dt; S.bz += S.bzv * dt;
+      // clapper: swung by the air on the paper below it, and left behind when the bell moves
+      var ra = -11 * S.r - 1.3 * S.rv + air * 5.5 + gust * 3 - ba * .9, rza = -11 * S.rz - 1.3 * S.rzv + depth * 5 - bza * .9;
+      S.rv += ra * dt; S.r += S.rv * dt; S.rzv += rza * dt; S.rz += S.rzv * dt;
+      var m = Math.hypot(S.r, S.rz);
+      if (m > LIMIT) {                                    // the clapper meets the glass
+        var nx = S.r / m, nz = S.rz / m, vn = S.rv * nx + S.rzv * nz;
+        S.r = nx * LIMIT; S.rz = nz * LIMIT;
+        if (vn > 0) { S.rv -= 1.3 * vn * nx; S.rzv -= 1.3 * vn * nz; }
+        if (vn > .4) ring(vn / 2.5);
       }
-      // paper: very light, it flutters, and bends as it swings
-      var pa = -24 * p - 2.2 * pv + air * 9 + gust * 14 - ra * .7;
-      pv += pa * dt; p += pv * dt; p = Math.max(-.9, Math.min(.9, p));
-      bell.style.transform = 'rotate(' + (b * 57.3).toFixed(2) + 'deg)';
-      strip.style.transform = 'rotate(' + (r * 57.3).toFixed(2) + 'deg)';
-      paper.style.transform = 'rotate(' + (p * 57.3).toFixed(2) + 'deg) skewX(' + Math.max(-14, Math.min(14, -pv * 4)).toFixed(2) + 'deg)';
-      raf = on ? requestAnimationFrame(step) : 0;
+      // paper: very light; it swings, turns on its thread and flutters
+      var pa = -22 * S.p - 2.4 * S.pv + air * 5.5 + gust * 8 - ra * .5;
+      S.pv += pa * dt; S.p += S.pv * dt; S.p = Math.max(-.5, Math.min(.5, S.p));
+      var ya = -5 * S.yaw - 1.1 * S.yawv + (gust * 9 + depth * 6) * (1 + g);
+      S.yawv += ya * dt; S.yaw += S.yawv * dt; S.yaw = Math.max(-1.3, Math.min(1.3, S.yaw));
+      S.flut += ((.35 + Math.min(1.6, g * 2.2 + Math.abs(S.pv) * .5)) - S.flut) * Math.min(1, dt * 3);
     }
-    function start() { if (!raf && on && !reduce) { last = performance.now(); raf = requestAnimationFrame(step); } }
-    // the pointer stirs the air: faster and closer stirs more; direction follows the pointer
+    function frame(now) {
+      var dt = Math.min(.033, (now - last) / 1000 || .016); last = now;
+      physics(dt);
+      if (draw) draw.frame(S);
+      raf = on ? requestAnimationFrame(frame) : 0;
+    }
+    function start() { if (!raf && on && !reduce) { last = performance.now(); raf = requestAnimationFrame(frame); } }
     var px = null, pt = 0;
     addEventListener('pointermove', function (e) {
       if (e.pointerType === 'touch' || !on) { px = null; return; }
       var now = performance.now();
       if (px !== null && now > pt) {
-        var rc = el.getBoundingClientRect(), cx = rc.left + rc.width / 2, cy = rc.top + rc.height * .62;
-        var d = Math.hypot(e.clientX - cx, e.clientY - cy), reach = Math.max(0, 1 - d / 420);
-        var v = (e.clientX - px) / Math.max(8, now - pt);           // px per ms
-        wind += Math.max(-2.5, Math.min(2.5, v)) * reach * reach * .35;
-        wind = Math.max(-1.6, Math.min(1.6, wind));
+        var rc = el.getBoundingClientRect(), cx = rc.left + rc.width / 2, cy = rc.top + rc.height * .55;
+        var d = Math.hypot(e.clientX - cx, e.clientY - cy), reach = Math.max(0, 1 - d / 440);
+        var v = (e.clientX - px) / Math.max(8, now - pt);
+        wind = Math.max(-1.6, Math.min(1.6, wind + Math.max(-2.5, Math.min(2.5, v)) * reach * reach * .35));
       }
       px = e.clientX; pt = now;
     }, { passive: true });
     var sy = scrollY;
-    addEventListener('scroll', function () { var d = scrollY - sy; sy = scrollY; if (on) wind += Math.max(-.4, Math.min(.4, d * .004)) * (Math.random() < .5 ? -1 : 1); }, { passive: true });
-    el.addEventListener('click', function () { sound = true; rv += (Math.random() < .5 ? -1 : 1) * 3.4; bv += .35; ring(1); start(); });
+    addEventListener('scroll', function () { var d = scrollY - sy; sy = scrollY; if (on) wind += Math.max(-.15, Math.min(.15, d * .002)) * (Math.random() < .5 ? -1 : 1); }, { passive: true });
+    el.addEventListener('click', function () { sound = true; S.rv += (Math.random() < .5 ? -1 : 1) * 3.4; S.rzv += (Math.random() - .5) * 2; S.bv += .3; S.yawv += 2; ring(1); start(); });
     if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { on = es[0].isIntersecting; if (on) { place(); start(); } }).observe(section);
     else { on = true; start(); }
+
+    // the drawn version: used until (and unless) the glass one is ready
+    var svgBell = el.querySelector('.fb'), svgStrip = el.querySelector('.furin-strip'), svgPaper = el.querySelector('.furin-paper');
+    draw = { frame: function (s) {
+      svgBell.style.transform = 'rotate(' + (-s.b * 57.3).toFixed(2) + 'deg)';
+      svgStrip.style.transform = 'rotate(' + (-s.r * 57.3).toFixed(2) + 'deg)';
+      svgPaper.style.transform = 'rotate(' + (-s.p * 57.3).toFixed(2) + 'deg) skewX(' + Math.max(-14, Math.min(14, s.pv * 4)).toFixed(2) + 'deg)';
+    } };
+
+    /* ---- the glass one: a real 3D fūrin, lit by a soft studio light, drawn with WebGL ---- */
+    var W = 360, H = 780, R = 54, TC = 2.24;            // canvas size (CSS px), bell radius, where the glass is cut open
+    var Y_BELL = -300, Y_TOP = Y_BELL + R, Y_MOUTH = Y_BELL + R * Math.cos(TC), MOUTH_R = R * Math.sin(TC);
+    var Y_CLAP = Y_MOUTH - 10, Y_PAPER = Y_MOUTH - 96, PAPER_W = 62, PAPER_H = 268;
+    function buildGlass(THREE) {
+      var dark = root.dataset.mode === 'dark';
+      var canvas = document.createElement('canvas'); canvas.className = 'furin-gl'; canvas.setAttribute('aria-hidden', 'true');
+      var dpr = Math.min(2, devicePixelRatio || 1);
+      var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true, premultipliedAlpha: true });
+      renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); renderer.setClearColor(0x000000, 0);
+      var scene = new THREE.Scene(), cam = new THREE.OrthographicCamera(-W / 2, W / 2, 0, -H, -2000, 2000); cam.position.z = 800;
+
+      // studio surroundings for the glass to reflect: a bright sky, a darker floor, two soft boxes
+      function envCanvas() {
+        var c = document.createElement('canvas'); c.width = 512; c.height = 256; var x = c.getContext('2d');
+        var g = x.createLinearGradient(0, 0, 0, 256);
+        g.addColorStop(0, dark ? '#3e4757' : '#9fb3ca'); g.addColorStop(.45, dark ? '#8794a8' : '#e4eaf1');
+        g.addColorStop(.62, dark ? '#4a515e' : '#8f96a0'); g.addColorStop(1, dark ? '#16191f' : '#454a52');
+        x.fillStyle = g; x.fillRect(0, 0, 512, 256);
+        x.filter = 'blur(6px)'; x.fillStyle = '#fff';
+        x.fillRect(150, 40, 70, 60); x.fillRect(390, 30, 18, 110); x.globalAlpha = .7; x.fillRect(40, 70, 40, 30);
+        return c;
+      }
+      var envTex = new THREE.CanvasTexture(envCanvas()); envTex.mapping = THREE.EquirectangularReflectionMapping; envTex.colorSpace = THREE.SRGBColorSpace;
+      var pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromEquirectangular(envTex).texture;
+      scene.add(new THREE.AmbientLight(0xffffff, dark ? .55 : .8));
+      var key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(-.6, 1, .9); scene.add(key);
+      var rim = new THREE.DirectionalLight(0xcfe0ff, .6); rim.position.set(.8, .3, -.6); scene.add(rim);
+
+      // glass: reflections that grow toward the edges (Fresnel), two sharp highlights, a faint blue body
+      var glassMat = function (side) {
+        return new THREE.ShaderMaterial({
+          side: side, transparent: true, depthWrite: false,
+          blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
+          uniforms: { env: { value: envTex }, glow: { value: 0 }, body: { value: dark ? .05 : .04 } },
+          vertexShader: 'varying vec3 vN; void main(){ vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
+          fragmentShader: [
+            'uniform sampler2D env; uniform float glow; uniform float body; varying vec3 vN;',
+            'void main(){',
+            '  vec3 N = normalize(vN); if (!gl_FrontFacing) N = -N;',
+            '  float ndv = clamp(N.z, 0., 1.);',
+            '  float F = .04 + .96 * pow(1. - ndv, 4.);',
+            '  vec3 Rf = reflect(vec3(0., 0., -1.), N);',
+            '  vec2 uv = vec2(atan(Rf.z, Rf.x) / 6.2832 + .5, 1. - acos(clamp(Rf.y, -1., 1.)) / 3.1416);',
+            '  vec3 e = texture2D(env, uv).rgb;',
+            '  float s1 = pow(max(dot(Rf, normalize(vec3(-.55, .75, .6))), 0.), 260.) * 2.2;',
+            '  float s2 = pow(max(dot(Rf, normalize(vec3(.7, .25, .5))), 0.), 70.) * .35;',
+            '  float k = gl_FrontFacing ? 1. : .55;',
+            '  vec3 col = (e * (F * 1.1 + .018) + s1 + s2 + vec3(.55, .7, 1.) * glow * (.25 + F)) * k + vec3(.62, .78, 1.) * body;',
+            '  float a = clamp((F * .9 + .03 + s1 + s2) * k + body, 0., .97);',
+            '  gl_FragColor = vec4(col, a);',
+            '}'].join('\n')
+        });
+      };
+      var pivot = new THREE.Group(); scene.add(pivot);
+      var bell = new THREE.Group(); pivot.add(bell);
+      // the bell: a glass globe cut open at the bottom
+      var prof = []; for (var i = 0; i <= 40; i++) { var th = TC * i / 40; prof.push(new THREE.Vector2(Math.max(.01, R * Math.sin(th)), R * Math.cos(th))); }
+      var shell = new THREE.LatheGeometry(prof, 96);
+      var gBack = new THREE.Mesh(shell, glassMat(THREE.BackSide)), gFront = new THREE.Mesh(shell, glassMat(THREE.FrontSide));
+      gBack.position.y = gFront.position.y = Y_BELL; gBack.renderOrder = 1; gFront.renderOrder = 5;
+      // the painting on the inside of the glass: brush dabs, a sky-blue band, and a white band at the rim
+      function paintCanvas() {
+        var c = document.createElement('canvas'); c.width = 1024; c.height = 512; var x = c.getContext('2d');
+        var seed = 11; function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+        function wrap(u, fn) { fn(u); if (u < 80) fn(u + 1024); if (u > 944) fn(u - 1024); }
+        function dab(u, v, rx, ry, rot, col, a) {
+          wrap(u, function (uu) {
+            x.save(); x.translate(uu, v); x.rotate(rot); x.scale(1, ry / rx); x.globalAlpha = a;
+            var gr = x.createRadialGradient(-rx * .3, -rx * .3, rx * .05, 0, 0, rx);
+            gr.addColorStop(0, col); gr.addColorStop(.8, col); gr.addColorStop(1, 'rgba(0,0,0,0)');
+            x.fillStyle = gr; x.beginPath(); x.arc(0, 0, rx, 0, 6.283); x.fill(); x.restore();
+          });
+        }
+        // leaves first, long brush strokes in two greens
+        x.lineCap = 'round';
+        for (var j = 0; j < 18; j++) {
+          var u0 = rnd() * 1024, v0 = 190 + rnd() * 150, len = 38 + rnd() * 44, ang = -.4 - rnd() * 1.6, col = rnd() < .55 ? '#139a7e' : '#1d6f52';
+          wrap(u0, function (uu) {
+            x.save(); x.translate(uu, v0); x.rotate(ang); x.globalAlpha = .88; x.fillStyle = col;
+            x.beginPath(); x.moveTo(0, 0); x.quadraticCurveTo(len * .5, -len * .28, len, 0); x.quadraticCurveTo(len * .5, len * .22, 0, 0); x.fill(); x.restore();
+          });
+        }
+        // flowers: five petals round a yellow heart, in vermilion, orange, pink and blue
+        var fl = ['#e5462f', '#ef7d22', '#e8577f', '#3f63d6', '#e5462f', '#f29a2e'];
+        for (var k = 0; k < 13; k++) {
+          var cu = (k / 13) * 1024 + (rnd() - .5) * 60, cv = 185 + rnd() * 150, pr = 15 + rnd() * 12, col = fl[(rnd() * fl.length) | 0], sp = rnd() * 6;
+          for (var q = 0; q < 5; q++) { var a = sp + q / 5 * 6.283; dab(cu + Math.cos(a) * pr * .95, cv + Math.sin(a) * pr * .7, pr * .62, pr * .5, a, col, .92); }
+          dab(cu, cv, pr * .32, pr * .3, 0, '#f6c93b', .95);
+        }
+        // a few loose dots of colour, as on the photo
+        for (var d = 0; d < 26; d++) dab(rnd() * 1024, 170 + rnd() * 190, 3 + rnd() * 4, 3 + rnd() * 3, 0, fl[(rnd() * fl.length) | 0], .85);
+        x.globalAlpha = 1;
+        var bg = x.createLinearGradient(0, 400, 0, 470); bg.addColorStop(0, 'rgba(90,174,232,0)'); bg.addColorStop(.25, '#5aaee8'); bg.addColorStop(.75, '#3d8fd6'); bg.addColorStop(1, 'rgba(61,143,214,.9)');
+        x.fillStyle = bg; x.fillRect(0, 400, 1024, 70);
+        x.fillStyle = 'rgba(248,250,252,.95)'; x.fillRect(0, 470, 1024, 42);
+        return c;
+      }
+      var paintTex = new THREE.CanvasTexture(paintCanvas()); paintTex.colorSpace = THREE.SRGBColorSpace; paintTex.anisotropy = 4;
+      var paintGeo = new THREE.SphereGeometry(R - 1.6, 96, 48, 0, Math.PI * 2, 0, TC - .02);
+      var paintMat = function (side, o) { return new THREE.MeshStandardMaterial({ map: paintTex, transparent: true, alphaTest: .03, side: side, roughness: .35, metalness: 0, opacity: o, depthWrite: false }); };
+      var pBack = new THREE.Mesh(paintGeo, paintMat(THREE.BackSide, .8)), pFront = new THREE.Mesh(paintGeo, paintMat(THREE.FrontSide, .95));
+      pBack.position.y = pFront.position.y = Y_BELL; pBack.renderOrder = 2; pFront.renderOrder = 3;
+      // the rim: thick glass, ground frosty
+      var lip = new THREE.Mesh(new THREE.TorusGeometry(MOUTH_R - .6, 2.6, 16, 96), new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: .6, transparent: true, opacity: .62, clearcoat: .6, clearcoatRoughness: .35, depthWrite: false }));
+      lip.rotation.x = Math.PI / 2; lip.position.y = Y_MOUTH; lip.renderOrder = 6;
+      bell.add(gBack, pBack, pFront, gFront, lip);
+      // strings: a white one from above to a little paper flower and the bell, an orange thread through it
+      var white = new THREE.MeshStandardMaterial({ color: 0xf3f3f1, roughness: .8 }), orange = new THREE.MeshStandardMaterial({ color: 0xe8742a, roughness: .7 });
+      function thread(mat, y0, y1, rad) { var m = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, y0 - y1, 6), mat); m.position.y = (y0 + y1) / 2; return m; }
+      pivot.add(thread(white, 2000, Y_TOP + 70, .9));
+      var flower = new THREE.Group(); flower.position.y = Y_TOP + 70;
+      for (var f = 0; f < 5; f++) { var petal = new THREE.Mesh(new THREE.CircleGeometry(4.2, 16), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .9, side: THREE.DoubleSide })); var a = f / 5 * Math.PI * 2; petal.position.set(Math.cos(a) * 4.5, Math.sin(a) * 4.5, 0); flower.add(petal); }
+      flower.rotation.set(.5, .3, 0); bell.add(flower);
+      bell.add(thread(orange, Y_TOP + 70, Y_TOP + 6, 1));
+      var knot = new THREE.Mesh(new THREE.SphereGeometry(3.4, 12, 10), orange); knot.position.y = Y_TOP + 4; bell.add(knot);
+      // the clapper and everything below it swings from the top of the bell, inside it
+      var strip = new THREE.Group(); strip.position.y = Y_TOP; bell.add(strip);
+      strip.add(thread(orange, 0, Y_CLAP - Y_TOP + 13, .8));
+      var clap = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.6, 26, 20), glassMat(THREE.FrontSide)); clap.position.y = Y_CLAP - Y_TOP; clap.renderOrder = 4; strip.add(clap);
+      var clapTint = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 25, 16), new THREE.MeshStandardMaterial({ color: 0xe8742a, roughness: .5, transparent: true, opacity: .55 })); clapTint.position.y = Y_CLAP - Y_TOP; strip.add(clapTint);
+      strip.add(thread(orange, Y_CLAP - Y_TOP - 13, Y_PAPER - Y_TOP, .8));
+      // the paper strip (tanzaku): pale blue with waves, 風鈴 in vermilion, a small seal
+      function paperCanvas() {
+        var c = document.createElement('canvas'); c.width = 256; c.height = 1106; var x = c.getContext('2d');
+        x.fillStyle = '#dde8f0'; x.fillRect(0, 0, 256, 1106);
+        x.strokeStyle = 'rgba(255,255,255,.75)'; x.lineWidth = 2.2;
+        for (var row = 0; row < 40; row++) for (var col = -1; col < 6; col++) {
+          var cx = col * 56 + (row % 2) * 28, cy = row * 30;
+          for (var rr = 26; rr > 4; rr -= 7) { x.beginPath(); x.arc(cx, cy, rr, Math.PI, 0); x.stroke(); }
+        }
+        x.fillStyle = 'rgba(110,150,185,.18)'; x.fillRect(0, 0, 256, 1106);
+        x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 6; x.strokeRect(10, 10, 236, 1086);
+        x.fillStyle = '#d4462c'; x.textAlign = 'center'; x.textBaseline = 'middle';
+        x.font = '800 118px "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif';
+        x.fillText('風', 128, 210); x.fillText('鈴', 128, 360);
+        x.font = '800 54px "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif';
+        ['ス', 'シ', 'ル'].forEach(function (ch, i) { x.fillText(ch, 128, 560 + i * 66); });
+        x.fillStyle = '#d4462c'; x.fillRect(104, 900, 48, 48); x.fillStyle = '#dde8f0'; x.font = '800 32px "Shippori Mincho B1", serif'; x.fillText('風', 128, 925);
+        return c;
+      }
+      var paperTex = new THREE.CanvasTexture(paperCanvas()); paperTex.colorSpace = THREE.SRGBColorSpace; paperTex.anisotropy = 4;
+      var paperGeo = new THREE.PlaneGeometry(PAPER_W, PAPER_H, 6, 36); paperGeo.translate(0, -PAPER_H / 2, 0);
+      var base = paperGeo.attributes.position.array.slice();
+      var paper = new THREE.Mesh(paperGeo, new THREE.MeshStandardMaterial({ map: paperTex, side: THREE.DoubleSide, roughness: .85, metalness: 0 }));
+      var paperPivot = new THREE.Group(); paperPivot.position.y = Y_PAPER - Y_TOP; paperPivot.add(paper); strip.add(paperPivot);
+      var hole = new THREE.Mesh(new THREE.TorusGeometry(2.2, .7, 6, 16), orange); hole.position.set(0, -6, .6); paperPivot.add(hole);
+      var glows = [gFront.material, gBack.material, clap.material], glowT = 0;
+      function setTheme() {
+        var d = root.dataset.mode === 'dark';
+        if (d === dark) return; dark = d;
+        envTex.image = envCanvas(); envTex.needsUpdate = true; scene.environment = pm.fromEquirectangular(envTex).texture;
+      }
+      return {
+        canvas: canvas,
+        ring: function () { glowT = 1; },
+        frame: function (s) {
+          setTheme();
+          // (a positive turn about z swings something hanging down to the right)
+          pivot.rotation.z = s.b; pivot.rotation.x = s.bz;
+          strip.rotation.z = s.r; strip.rotation.x = s.rz;
+          paperPivot.rotation.z = s.p + s.r * .2; paperPivot.rotation.y = s.yaw;
+          // the paper bends and ripples along its length, more the harder the wind
+          var pos = paperGeo.attributes.position, arr = pos.array, A = s.flut * 4.2, tt = s.t;
+          for (var i = 0; i < arr.length; i += 3) {
+            var x0 = base[i], y0 = base[i + 1], u = -y0 / PAPER_H;
+            arr[i] = x0 + Math.sin(u * 4 - tt * 5.3) * A * .25 * u;
+            arr[i + 2] = (Math.sin(u * 7 - tt * 9.1) * A + Math.sin(u * 13 - tt * 15.7) * A * .35) * Math.pow(u, 1.4) + x0 / PAPER_W * Math.sin(tt * 6.2) * A * .6 * u + s.pv * 10 * u * u;
+          }
+          pos.needsUpdate = true; paperGeo.computeVertexNormals();
+          glowT = Math.max(0, glowT - .045); glows.forEach(function (m) { m.uniforms.glow.value = glowT; });
+          renderer.render(scene, cam);
+        }
+      };
+    }
+    // three.js is fetched while the browser is idle after the page has loaded, and the scene is built in idle time
+    // well before the contact section arrives, so neither lands on the moment someone scrolls to it
+    var mod = null, built = false, near = false;
+    var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 200); };
+    function build() {
+      if (built || !mod || !near) return; built = true;
+      idle(function () {
+        try { var g = buildGlass(mod); el.insertBefore(g.canvas, el.firstChild); el.classList.add('is3d'); draw = g; g.frame(S); } catch (e) {}
+      }, { timeout: 1500 });
+    }
+    function fetchThree() {
+      var probe = document.createElement('canvas');
+      if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) return;
+      Promise.all([import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js'),
+                   document.fonts ? document.fonts.load('800 60px "Shippori Mincho B1"', '風鈴スシル') : 0]).then(function (r) { mod = r[0]; build(); }).catch(function () {});
+    }
+    function later() { setTimeout(function () { idle(fetchThree, { timeout: 4000 }); }, 1500); }
+    if (document.readyState === 'complete') later(); else addEventListener('load', later);
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { if (es[0].isIntersecting) { near = true; build(); } }, { rootMargin: '1600px 0px' }).observe(section);
+    else { near = true; build(); }
   })();
 
   /* ---------- clocks + which version this is ---------- */
