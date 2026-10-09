@@ -120,13 +120,13 @@ section { scroll-margin-top: 64px; }
 #ink { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 0; display: block; pointer-events: none; }
 .no-fluid #ink { display: none; }
 
-/* cursor (computers): a fine crosshair, like a printer's registration mark, that sits exactly on the pointer.
-   Over anything clickable its arms open out; where there's an action to name (visit, code, copy, stamp)
-   a small tag rides beside it. Pressing pinches the arms in. */
+/* cursor (computers): a solid pointer, a filled arrowhead with a contrasting outline and a soft shadow, so it
+   stands out on paper, on dark and in the thickest ink alike (no blending, which made thin marks vanish in the ink).
+   It sits exactly on the pointer, grows a little over anything clickable, dips when pressed, and where there's an
+   action to name (visit, code, copy, stamp) a small tag rides beside it. */
 .has-cursor, .has-cursor * { cursor: none !important; }
-.cursor { position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; mix-blend-mode: difference; display: none; transition: opacity .25s; }
+.cursor { position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; display: none; transition: opacity .25s; }
 .has-cursor .cursor { display: block; }
-
 /* computer scrollbar: the browser's own is hidden and a thin rail is drawn instead, on the right edge. It sits
    faint while the page is still, shows while scrolling, and widens under the pointer; the thumb can be dragged
    and the rail clicked to jump */
@@ -142,26 +142,23 @@ section { scroll-margin-top: 64px; }
 .rail:hover .thumb, .rail.drag .thumb { width: 5px; right: 4px; opacity: .9; }
 .cursor.away { opacity: 0; }
 .cursor .cross { position: absolute; left: 0; top: 0; width: 0; height: 0; }
-.cursor .arms { position: absolute; left: 0; top: 0; width: 0; height: 0; transition: transform .45s var(--ease); }
-.cursor .arms i { position: absolute; background: #fff; border-radius: 1px; transition: all .35s var(--ease); }
-.cursor .arms i:nth-child(1), .cursor .arms i:nth-child(2) { width: 7px; height: 1.5px; top: -.75px; }
-.cursor .arms i:nth-child(3), .cursor .arms i:nth-child(4) { width: 1.5px; height: 7px; left: -.75px; }
-.cursor .arms i:nth-child(1) { right: 3px; } .cursor .arms i:nth-child(2) { left: 3px; }
-.cursor .arms i:nth-child(3) { bottom: 3px; } .cursor .arms i:nth-child(4) { top: 3px; }
-.cursor .pip { position: absolute; left: -1px; top: -1px; width: 2px; height: 2px; background: #fff; transition: transform .35s var(--ease); }
-.cursor.hot .arms i:nth-child(1) { right: 9px; width: 6px; } .cursor.hot .arms i:nth-child(2) { left: 9px; width: 6px; }
-.cursor.hot .arms i:nth-child(3) { bottom: 9px; height: 6px; } .cursor.hot .arms i:nth-child(4) { top: 9px; height: 6px; }
-.cursor.hot .pip { transform: scale(1.5); }
-.cursor.down .arms i:nth-child(1) { right: 1.5px; } .cursor.down .arms i:nth-child(2) { left: 1.5px; }
-.cursor.down .arms i:nth-child(3) { bottom: 1.5px; } .cursor.down .arms i:nth-child(4) { top: 1.5px; }
-.cursor.hot.down .arms i:nth-child(1) { right: 5px; } .cursor.hot.down .arms i:nth-child(2) { left: 5px; }
-.cursor.hot.down .arms i:nth-child(3) { bottom: 5px; } .cursor.hot.down .arms i:nth-child(4) { top: 5px; }
+.cursor .arrow {
+  position: absolute; left: -3px; top: -2px; width: 24px; height: 24px; overflow: visible; transform-origin: 3px 2px;
+  filter: drop-shadow(0 1.5px 2.5px rgba(0, 0, 0, .35)); transition: transform .35s var(--ease);
+}
+.cursor .arrow path { fill: #0b0c0e; stroke: #fff; stroke-width: 1.6px; stroke-linejoin: round; transition: fill .3s; }
+:root[data-mode="dark"] .cursor .arrow path { fill: #fff; stroke: #0b0c0e; }
+.cursor.hot .arrow { transform: scale(1.14); }
+.cursor.down .arrow { transform: scale(.86); }
+.cursor.hot.down .arrow { transform: scale(.98); }
 .cursor .tag { position: absolute; left: 0; top: 0; white-space: nowrap; }
 .cursor .tag span {
-  display: block; margin: 14px 0 0 16px; padding: 4px 7px 4px 8px; border-radius: 3px; background: #fff; color: #000;
+  display: block; margin: 22px 0 0 14px; padding: 5px 8px 5px 9px; border-radius: 4px; background: #0b0c0e; color: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .7), 0 4px 12px -2px rgba(0, 0, 0, .35);
   font-family: var(--mono); font-size: 10.5px; line-height: 1.2; letter-spacing: .08em; text-transform: uppercase;
-  opacity: 0; transform: translateX(-4px); transition: opacity .2s, transform .35s var(--ease);
+  opacity: 0; transform: translateY(-4px); transition: opacity .2s, transform .35s var(--ease);
 }
+:root[data-mode="dark"] .cursor .tag span { background: #fff; color: #0b0c0e; box-shadow: 0 0 0 1px rgba(0, 0, 0, .6), 0 4px 12px -2px rgba(0, 0, 0, .5); }
 .cursor.big .tag span { opacity: 1; transform: none; }
 
 /* bar */
@@ -984,7 +981,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="rail" id="rail" aria-hidden="true"><div class="thumb"></div></div>
-<div class="cursor away" id="cursor" aria-hidden="true"><div class="cross"><div class="arms"><i></i><i></i><i></i><i></i></div><div class="pip"></div></div><div class="tag"><span id="cursorLabel">Open</span></div></div>
+<div class="cursor away" id="cursor" aria-hidden="true"><div class="cross"><svg class="arrow" viewBox="0 0 24 24"><path d="M3 2 L20.5 9.6 L12.4 12.1 L9.4 20.3 Z"/></svg></div><div class="tag"><span id="cursorLabel">Open</span></div></div>
 
 <header class="bar">
   <a class="brand" href="#top">Sushil Raj</a>
