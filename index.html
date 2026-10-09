@@ -183,7 +183,7 @@ section { scroll-margin-top: 64px; }
 .hero-intro { max-width: 25em; font-size: clamp(17px, 1.4vw, 20px); line-height: 1.5; color: var(--ink); margin: 0; }
 /* the three key words in the intro, in a modern face */
 .hero-intro .key { font-family: "Unbounded", var(--sans); font-weight: 500; font-size: .9em; letter-spacing: -.01em; }
-.hero-intro, .now, .hint, .root h3, .root p { text-shadow: 0 0 1px var(--halo), 0 0 12px var(--halo), 0 0 26px var(--halo); }
+.hero-intro, .now, .hint, .root h3, .root p, .about-more p { text-shadow: 0 0 1px var(--halo), 0 0 12px var(--halo), 0 0 26px var(--halo); }
 .now { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink-2); margin-top: 18px; }
 .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); position: relative; flex: none; }
 .pulse::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid var(--accent); animation: pulse 2.4s var(--ease) infinite; }
@@ -344,11 +344,15 @@ h1 .ch { display: inline-block; will-change: transform; }
 .big { font-size: clamp(30px, 4.3vw, 68px); font-weight: 500; letter-spacing: -.04em; line-height: 1.08; margin: 0; max-width: 21em; text-wrap: pretty; }
 .big .w { opacity: .14; }
 .big .it { letter-spacing: -.01em; }
+/* the rest of the story in reading size, under the opening line, lined up with the second of the three columns below */
+.about-more { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 48px; margin-top: clamp(48px, 6vw, 96px); }
+.about-more p { grid-column: 2 / span 2; max-width: 34em; margin: 0; font-size: clamp(17px, 1.3vw, 20px); line-height: 1.6; }
+.about-more p + p { margin-top: 1.1em; }
 .facts-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 48px; margin-top: clamp(60px, 8vw, 110px); border-top: 1px solid var(--line-2); padding-top: 28px; }
 .facts-row h4 { font-family: var(--mono); font-size: 12px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 12px; }
 .facts-row p { margin: 0; font-size: 15.5px; line-height: 1.65; }
 .chips span + span::before { content: ", "; }
-@media (max-width: 800px) { .facts-row { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 800px) { .facts-row, .about-more { grid-template-columns: minmax(0, 1fr); } .about-more p { grid-column: 1; } }
 
 /* japan: where the interest comes from. Each kanji is brushed in from the top, the way it would be written */
 .japan { padding: clamp(80px, 10vw, 160px) var(--gutter) clamp(40px, 6vw, 100px); max-width: 1500px; margin: 0 auto; }
@@ -580,6 +584,8 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 /* about: skills as chips */
 :root[data-layout="mobile"] .about { padding: 110px 20px 50px; }
 :root[data-layout="mobile"] .big { font-size: clamp(27px, 8.2vw, 40px); line-height: 1.12; }
+:root[data-layout="mobile"] .about-more { grid-template-columns: minmax(0, 1fr); margin-top: 36px; }
+:root[data-layout="mobile"] .about-more p { grid-column: 1; font-size: 16.5px; }
 :root[data-layout="mobile"] .facts-row { grid-template-columns: minmax(0, 1fr); gap: 26px; margin-top: 56px; }
 :root[data-layout="mobile"] .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 :root[data-layout="mobile"] .chips span { padding: 7px 13px; border: 1px solid var(--line-2); border-radius: 999px; font-size: 13.5px; line-height: 1.2; background: color-mix(in srgb, var(--card) 60%, transparent); }
@@ -701,6 +707,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 :root[data-lang="ja"] .japan > h2 .it { letter-spacing: -.06em; }
 :root[data-lang="ja"] .root h3 { font-size: 13px; font-weight: 500; letter-spacing: .24em; color: var(--ink-3); margin: 6px 0 10px; }
 :root[data-lang="ja"] .root p { line-height: 1.8; }
+:root[data-lang="ja"] .about-more p { line-height: 1.9; }
 :root[data-lang="ja"] .japan-next { font-size: clamp(22px, 2.4vw, 38px); line-height: 1.5; letter-spacing: 0; }
 :root[data-lang="ja"] .japan-next .it { line-height: 1; }
 :root[data-lang="ja"] .intro-card h2 { font-size: clamp(44px, 4.8vw, 84px); line-height: 1.08; }
@@ -1057,7 +1064,12 @@ Fixes proposed: 4
 
   <section class="about" id="about" aria-labelledby="about-title">
     <p class="eyebrow" id="about-title" data-i18n="nav.about">About</p>
-    <p class="big" id="big" data-i18n-html="about.big">I'm a computer science student at SRMIST in Chennai, graduating in 2029. I like building things from the database all the way to the screen, and testing them properly. A lot of my projects are about <span class="it">Japan</span>, because I'm preparing for a semester at Waseda University in Tokyo and learning the language.</p>
+    <p class="big" id="big" data-i18n-html="about.big">I’m a CS undergraduate at SRMIST in Chennai, specialising in Software Engineering. I’m interested in what goes into building good software — the architecture, the decisions behind it, and the details that make it reliable.</p>
+    <div class="about-more">
+      <p class="fade-up" data-i18n="about.p2">So far, I’ve worked on web applications, real-time systems, and tools designed to solve practical problems. I enjoy working across the stack, trying out unfamiliar technologies, and figuring out how things work beyond just getting them to run.</p>
+      <p class="fade-up" data-i18n="about.p3">Outside of software, I’m learning Japanese through the JLPT track and currently preparing for N3, while working towards an opportunity to study at Waseda University in Tokyo. Japan and Japanese aesthetics are also a big influence on my projects, shaping the ideas I explore and the way I approach design.</p>
+      <p class="fade-up" data-i18n="about.p4">I’m focused on building better software, strengthening my engineering skills, and taking on projects that push me to learn something new.</p>
+    </div>
     <div class="facts-row">
       <div class="fade-up"><h4 data-i18n="facts.lang">Languages</h4><p class="chips"><span>TypeScript</span><span>JavaScript</span><span>Python</span><span>C/C++</span><span>Java</span><span>SQL</span></p></div>
       <div class="fade-up"><h4 data-i18n="facts.tools">Tools I use most</h4><p class="chips"><span>React</span><span>Next.js</span><span>Node.js</span><span>Express</span><span>FastAPI</span><span>PostgreSQL</span><span>Prisma</span><span>Supabase</span></p></div>
@@ -1223,7 +1235,10 @@ Fixes proposed: 4
     'c6.l2': '修正案は実際の差分（diff）で提示',
     'c6.l3': 'テスト<b>277</b>件',
     // about
-    'about.big': 'チェンナイのSRMISTでコンピューターサイエンスを学んでいて、2029年に卒業予定です。データベースから画面まで一貫して作り、きちんとテストするのが好きです。東京の早稲田大学への1学期間の留学に向けて日本語を勉強しているので、<span class="it">日本</span>に関するプロジェクトが多くなりました。',
+    'about.big': 'チェンナイのSRMISTでコンピューターサイエンスを学ぶ学部生で、専攻はソフトウェア工学です。良いソフトウェアをつくるのに何が要るのか――アーキテクチャ、その裏にある判断、そして信頼性を支える細かな部分に興味があります。',
+    'about.p2': 'これまでに、Webアプリケーション、リアルタイムシステム、そして実際の課題を解決するためのツールに取り組んできました。フロントエンドからバックエンドまで通して作ること、慣れない技術を試すこと、そしてただ動かすだけでなく、仕組みまで理解することが好きです。',
+    'about.p3': 'ソフトウェア以外では、JLPTに沿って日本語を勉強していて、今はN3に向けて準備中です。あわせて、東京の早稲田大学で学ぶ機会を目指しています。日本や日本の美意識は私のプロジェクトにも大きく影響していて、取り組むアイデアやデザインへの向き合い方を形づくっています。',
+    'about.p4': '今は、より良いソフトウェアをつくること、エンジニアとしての力を磨くこと、そして新しい学びにつながるプロジェクトに挑戦することに集中しています。',
     'facts.lang': 'プログラミング言語', 'facts.tools': 'よく使うツール', 'facts.test': 'テスト',
     // japan
     'nav.japan': '日本', 'japan.eyebrow': '日本', 'japan.title': '惹かれる<span class="it">理由</span>',
