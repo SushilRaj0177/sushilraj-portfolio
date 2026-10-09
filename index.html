@@ -2196,7 +2196,9 @@ Fixes proposed: 4
     var ring = document.createElement('span'); ring.className = 'paint-ring'; ring.setAttribute('aria-hidden', 'true');
     ring.style.left = hand.x + 'px'; ring.style.top = hand.y + 'px';
     document.body.appendChild(ring); ring.addEventListener('animationend', function () { ring.remove(); });
-    if (navigator.vibrate) try { navigator.vibrate(12); } catch (e) {}
+    // (browsers only let a page vibrate once it has been tapped; asking before that just logs an error)
+    var act = navigator.userActivation;
+    if (navigator.vibrate && (!act || act.hasBeenActive)) try { navigator.vibrate(12); } catch (e) {}
   }
   if (touch) {
     addEventListener('touchstart', function (e) {
