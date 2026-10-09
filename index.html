@@ -83,7 +83,7 @@
 :root[data-palette="sumi"] { --swatch: radial-gradient(circle at 35% 30%, #6b6f76, #0c0d10 70%); }
 :root[data-palette="ember"] { --swatch: radial-gradient(circle at 35% 30%, #ff9a7a, #b4200e 70%); }
 :root[data-palette="aurora"] { --swatch: conic-gradient(from 30deg, #19c6b4, #6b4dff, #ff3d8b, #ffb03b, #19c6b4); }
-:root[data-palette="pixels"] { --swatch: conic-gradient(from -45deg, #5bb33f 0 25%, #ffd34d 0 50%, #4f8fe8 0 75%, #e8772e 0); }
+:root[data-palette="pixels"] { --swatch: conic-gradient(from -45deg, #2f5fc4 0 25%, #86c5f8 0 50%, #4f8fe8 0 75%, #c4e4ff 0); }
 /* pixels: the ink is drawn in pixels, so the canvas is scaled up without smoothing to keep them crisp */
 :root[data-palette="pixels"] #ink { image-rendering: pixelated; }
 
@@ -146,6 +146,30 @@ section { scroll-margin-top: 64px; }
 .links a { font-size: 14px; text-decoration: none; opacity: .8; transition: opacity .2s; }
 .links a:hover { opacity: 1; }
 @media (max-width: 640px) { .links a.opt { display: none; } }
+
+/* computer bar, finish: the bar tightens once the page is scrolled; links get an underline that draws in from the
+   left on hover, and the section in view keeps its link lit with a short line under it; a hairline sets the links
+   apart from the language and theme buttons, which are slightly smaller with a softer edge */
+:root:not([data-layout="mobile"]) .bar { transition: padding .5s var(--ease); }
+:root:not([data-layout="mobile"]).bar-tight .bar { padding-top: calc(env(safe-area-inset-top, 0px) + 12px); padding-bottom: 12px; }
+:root:not([data-layout="mobile"]) .links a { position: relative; padding: 6px 0; opacity: .72; }
+:root:not([data-layout="mobile"]) .links a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 1px; height: 1px; background: currentColor;
+  transform: scaleX(0); transform-origin: right center; transition: transform .45s var(--ease);
+}
+:root:not([data-layout="mobile"]) .links a:hover::after, :root:not([data-layout="mobile"]) .links a[aria-current]::after { transform: scaleX(1); transform-origin: left center; }
+:root:not([data-layout="mobile"]) .links a:hover, :root:not([data-layout="mobile"]) .links a[aria-current] { opacity: 1; }
+:root:not([data-layout="mobile"]) .links a:focus-visible { outline: 1px solid currentColor; outline-offset: 4px; border-radius: 2px; }
+:root:not([data-layout="mobile"]) .links .lang-btn { position: relative; }
+:root:not([data-layout="mobile"]) .links .theme-btn { margin-left: calc(clamp(14px, 2.4vw, 32px) * -.6); }
+:root:not([data-layout="mobile"]) .links .lang-btn::before {
+  content: ""; position: absolute; left: calc(clamp(14px, 2.4vw, 32px) * -.5 - .5px); top: 50%; width: 1px; height: 16px; margin-top: -8px;
+  background: rgba(255, 255, 255, .32); pointer-events: none;
+}
+:root:not([data-layout="mobile"]) .lang-btn { height: 34px; padding: 0 12px; border-color: rgba(255, 255, 255, .3); }
+:root:not([data-layout="mobile"]) .theme-btn { width: 34px; height: 34px; border-color: rgba(255, 255, 255, .3); }
+:root:not([data-layout="mobile"]) .theme-btn svg { width: 18px; height: 18px; }
+@media (hover: hover) { :root:not([data-layout="mobile"]) .lang-btn:hover, :root:not([data-layout="mobile"]) .theme-btn:hover { border-color: rgba(255, 255, 255, .85); } }
 
 /* sun ↔ moon */
 .theme-btn {
@@ -455,11 +479,8 @@ h1 .ch { display: inline-block; will-change: transform; }
 .inkpanel .lab { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; display: inline-flex; align-items: baseline; gap: 8px; }
 /* the ink's name in Japanese: the chosen one, or the one under the pointer */
 .inkpanel .lab .kj { font-family: var(--mincho); font-size: 15px; font-weight: 500; letter-spacing: .04em; color: var(--ink); min-width: 2.1em; }
-:root[data-season="spring"] { --season-kj: "・春"; } :root[data-season="summer"] { --season-kj: "・夏"; }
-:root[data-season="autumn"] { --season-kj: "・秋"; } :root[data-season="winter"] { --season-kj: "・冬"; }
-#palKj[data-pal="pixels"]::after { content: var(--season-kj, ""); }
-/* room for the longest label (画素・秋), so the swatches never shift under the pointer as the label changes */
-.inkpanel .lab .kj { min-width: 4.3em; }
+/* room for the longest label (極光, 画素), so the swatches never shift under the pointer as the label changes */
+.inkpanel .lab .kj { min-width: 2.2em; }
 .swatches { display: flex; gap: 6px; }
 .sw { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--line-2); cursor: pointer; padding: 0; position: relative; transition: transform .4s var(--ease); flex: none; }
 .sw:hover { transform: scale(1.18); }
@@ -468,11 +489,54 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 .sw.indigo { background: radial-gradient(circle at 35% 30%, #9aa6ff, #1c2a9e 70%); }
 .sw.ember { background: radial-gradient(circle at 35% 30%, #ff9a7a, #b4200e 70%); }
 .sw.aurora { background: conic-gradient(from 30deg, #19c6b4, #6b4dff, #ff3d8b, #ffb03b, #19c6b4); }
-.sw.pixels { background: #86c5f8 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Crect width='10' height='2' fill='%234f8fe8'/%3E%3Crect y='2' width='10' height='4' fill='%2386c5f8'/%3E%3Crect x='6' y='1' width='1' height='3' fill='%23ffd34d'/%3E%3Crect x='5' y='2' width='3' height='1' fill='%23ffd34d'/%3E%3Crect x='6' y='2' width='1' height='1' fill='%23fff7d6'/%3E%3Crect y='5' width='4' height='1' fill='%236cc24a'/%3E%3Crect x='7' y='5' width='3' height='1' fill='%236cc24a'/%3E%3Crect y='6' width='10' height='2' fill='%235bb33f'/%3E%3Crect y='8' width='10' height='1' fill='%233f8f36'/%3E%3Crect y='9' width='10' height='1' fill='%238b5a2b'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+.sw.pixels { background: #4f8fe8 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Crect width='10' height='3' fill='%232f5fc4'/%3E%3Crect y='3' width='10' height='3' fill='%234f8fe8'/%3E%3Crect y='6' width='10' height='2' fill='%2386c5f8'/%3E%3Crect y='8' width='10' height='2' fill='%23c4e4ff'/%3E%3Crect x='2' y='1' width='1' height='1' fill='%23e8f4ff'/%3E%3Crect x='7' y='4' width='1' height='1' fill='%23c4e4ff'/%3E%3Crect x='4' y='6' width='2' height='1' fill='%234f8fe8'/%3E%3Crect x='1' y='8' width='2' height='1' fill='%2386c5f8'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
 .storm { display: flex; align-items: center; gap: 8px; }
 .storm input { width: 92px; accent-color: var(--ink); }
 .inkpanel .wipe { appearance: none; border: 1px solid var(--line-2); background: transparent; color: var(--ink); border-radius: 999px; padding: 5px 11px; font: inherit; font-size: 12px; cursor: pointer; }
 .inkpanel .wipe:hover { background: var(--ink); color: var(--bg); }
+@media (min-width: 761px) {
+  /* computer ink panel, finish: a softer edge with a lit top, hairlines between the groups, a slim slider that
+     fills up to its value, and the grain switch and Clear as quiet filled buttons instead of outlined ones.
+     The panel keeps its size: the gaps take the room the shorter label gives back. */
+  :root:not([data-layout="mobile"]) .inkpanel {
+    gap: 25px; padding: 8px 11px 8px 21px;
+    background: color-mix(in srgb, var(--card) 76%, transparent); border-color: var(--line);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 9%, transparent), 0 1px 2px rgba(0, 0, 0, .08), 0 14px 34px -16px rgba(0, 0, 0, .45);
+  }
+  :root:not([data-layout="mobile"]) .inkpanel > .swatches, :root:not([data-layout="mobile"]) .inkpanel > .storm, :root:not([data-layout="mobile"]) .inkpanel > .tog { position: relative; }
+  :root:not([data-layout="mobile"]) .inkpanel > .swatches::before, :root:not([data-layout="mobile"]) .inkpanel > .storm::before, :root:not([data-layout="mobile"]) .inkpanel > .tog::before {
+    content: ""; position: absolute; left: -13px; top: 50%; width: 1px; height: 16px; margin-top: -8px; background: var(--line-2); opacity: .7; pointer-events: none;
+  }
+  :root:not([data-layout="mobile"]) .inkpanel .sw { border-color: transparent; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 14%, transparent), 0 1px 3px rgba(0, 0, 0, .25); }
+  :root:not([data-layout="mobile"]) .inkpanel button.sw[aria-pressed="true"]::after { inset: -4px; border-width: 1.5px; }
+  :root:not([data-layout="mobile"]) .inkpanel .storm span { color: var(--ink-2); }
+  :root:not([data-layout="mobile"]) .inkpanel .storm input {
+    -webkit-appearance: none; appearance: none; height: 16px; margin: 0; background: transparent; cursor: pointer;
+  }
+  :root:not([data-layout="mobile"]) .inkpanel .storm input::-webkit-slider-runnable-track {
+    height: 3px; border-radius: 3px;
+    background: linear-gradient(to right, var(--ink) 0 calc(var(--v, .3) * 100%), color-mix(in srgb, var(--ink) 16%, transparent) 0);
+  }
+  :root:not([data-layout="mobile"]) .inkpanel .storm input::-moz-range-track { height: 3px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 16%, transparent); }
+  :root:not([data-layout="mobile"]) .inkpanel .storm input::-moz-range-progress { height: 3px; border-radius: 3px; background: var(--ink); }
+  :root:not([data-layout="mobile"]) .inkpanel .storm input::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 13px; height: 13px; margin-top: -5px; border-radius: 50%; border: 0;
+    background: var(--ink); box-shadow: 0 0 0 3px var(--card), 0 1px 4px 3px rgba(0, 0, 0, .18); transition: transform .3s var(--ease);
+  }
+  :root:not([data-layout="mobile"]) .inkpanel .storm input::-moz-range-thumb {
+    width: 13px; height: 13px; border-radius: 50%; border: 0; background: var(--ink); box-shadow: 0 0 0 3px var(--card), 0 1px 4px 3px rgba(0, 0, 0, .18);
+  }
+  :root:not([data-layout="mobile"]) .inkpanel .storm input:hover::-webkit-slider-thumb, :root:not([data-layout="mobile"]) .inkpanel .storm input:active::-webkit-slider-thumb { transform: scale(1.15); }
+  :root:not([data-layout="mobile"]) .inkpanel .storm input:focus-visible { outline: none; }
+  :root:not([data-layout="mobile"]) .inkpanel .storm input:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--card), 0 0 0 5px var(--ink-2); }
+  :root:not([data-layout="mobile"]) .inkpanel .tog, :root:not([data-layout="mobile"]) .inkpanel .wipe {
+    border: 0; padding-top: 6px; padding-bottom: 6px; background: color-mix(in srgb, var(--ink) 6%, transparent);
+    transition: background-color .25s, color .25s;
+  }
+  :root:not([data-layout="mobile"]) .inkpanel .tog { padding-left: 12px; padding-right: 7px; }
+  :root:not([data-layout="mobile"]) .inkpanel .wipe { padding-left: 13px; padding-right: 13px; margin-left: -16px; }
+  :root:not([data-layout="mobile"]) .inkpanel .tog:hover, :root:not([data-layout="mobile"]) .inkpanel .wipe:hover { background: color-mix(in srgb, var(--ink) 12%, transparent); color: var(--ink); }
+}
 @media (max-width: 760px) {
   :root:not([data-layout="mobile"]) .inkpanel { left: 12px; right: 12px; justify-content: space-between; gap: 8px; padding-left: 12px; }
   :root:not([data-layout="mobile"]) .storm span, :root:not([data-layout="mobile"]) .inkpanel .lab { display: none; }
@@ -800,7 +864,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
     <button class="sw indigo" type="button" data-pal="indigo" aria-pressed="true" aria-label="Indigo" data-i18n-attr="aria-label:sw.indigo"></button>
     <button class="sw ember" type="button" data-pal="ember" aria-pressed="false" aria-label="Ember, red ink" data-i18n-attr="aria-label:sw.ember"></button>
     <button class="sw aurora" type="button" data-pal="aurora" aria-pressed="false" aria-label="Aurora, many colours" data-i18n-attr="aria-label:sw.aurora"></button>
-    <button class="sw pixels" type="button" data-pal="pixels" aria-pressed="false" aria-label="Pixels, pixel art in the colours of the season" data-i18n-attr="aria-label:sw.pixels"></button>
+    <button class="sw pixels" type="button" data-pal="pixels" aria-pressed="false" aria-label="Pixels, pixel art in shades of blue" data-i18n-attr="aria-label:sw.pixels"></button>
   </div>
   <label class="storm"><span data-i18n="calm">Calm</span><input type="range" min="0" max="1" step="0.01" value="0.3" data-storm aria-label="Calm to storm" data-i18n-attr="aria-label:storm.aria"><span data-i18n="storm">Storm</span></label>
   <button class="tog" type="button" role="switch" aria-checked="true" data-grain title="Film grain (G)" data-i18n-attr="title:grain.title"><span data-i18n="grain">Grain</span><span class="knob"></span></button>
@@ -1199,7 +1263,7 @@ Fixes proposed: 4
     // bar, menu and ink controls
     'nav.aria': 'セクション', 'nav.work': '作品', 'nav.about': '自己紹介', 'nav.contact': '連絡先', 'menu.aria': 'メニュー',
     'ink': 'インク', 'panel.aria': 'インクの設定', 'fab.aria': 'インクの設定', 'sheet.sub': '色・動き・粒子',
-    'sw.sumi': '墨、黒', 'sw.indigo': '藍、青', 'sw.ember': '緋、赤', 'sw.aurora': '極光、多色', 'sw.pixels': '画素、季節の色のドット絵',
+    'sw.sumi': '墨、黒', 'sw.indigo': '藍、青', 'sw.ember': '緋、赤', 'sw.aurora': '極光、多色', 'sw.pixels': '画素、青のドット絵',
     'pal.sumi': 'すみ', 'pal.indigo': 'あい', 'pal.ember': 'ひ', 'pal.aurora': 'きょっこう', 'pal.pixels': 'がそ',
     'calm': '凪', 'storm': '嵐', 'storm.aria': '凪から嵐まで', 'grain': '粒子', 'grain.title': 'フィルム粒子（G）',
     'clear': '消す', 'drop': '垂らす', 'tapcopy': 'タップしてコピー',
@@ -1416,10 +1480,28 @@ Fixes proposed: 4
     b.addEventListener('pointerleave', function () { showKj(root.dataset.palette); });
     b.addEventListener('blur', function () { showKj(root.dataset.palette); });
   });
+  // computer bar: tighter once scrolled, and the link of the section in view marked as the current one
+  if (root.dataset.layout !== 'mobile') (function () {
+    var links = [].slice.call(document.querySelectorAll('.bar .links a[href^="#"]')), secs = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+    var queued = false, cur = null;
+    function update() {
+      queued = false; root.classList.toggle('bar-tight', scrollY > 40);
+      var mid = innerHeight * .4, on = null;
+      secs.forEach(function (s, i) { if (s) { var r = s.getBoundingClientRect(); if (r.top <= mid && r.bottom > mid) on = links[i]; } });
+      if (on !== cur) { if (cur) cur.removeAttribute('aria-current'); if (on) on.setAttribute('aria-current', 'location'); cur = on; }
+    }
+    addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+    addEventListener('resize', update); update();
+  })();
   var storms = [].slice.call(document.querySelectorAll('[data-storm]'));
+  // computers start calmer than phones: 20% instead of 30%. --v lets the panel's slider fill up to its value.
+  if (root.dataset.device !== 'mobile') storms.forEach(function (s) { s.value = .2; });
+  function stormFill() { storms.forEach(function (o) { o.style.setProperty('--v', o.value); }); }
+  stormFill();
   storms.forEach(function (s) {
     s.addEventListener('input', function () {
       storms.forEach(function (o) { if (o !== s) o.value = s.value; });
+      stormFill();
       if (window.inkStorm) window.inkStorm(+s.value);
     });
   });
@@ -2110,30 +2192,13 @@ Fixes proposed: 4
     pixels: { mix: 1, mixL: 1, dark: [], light: [] }
   };
   var pal = PALETTES[root.dataset.palette] || PALETTES.indigo, AURORA_CHROMA = .75, PIXELS_CHROMA = .6;
-  // pixels (画素): pixel art in the colours of one season at a time. It starts in the season it is now and moves on
-  // every 28 seconds; only new drops take the new colours, so it turns slowly.
-  // Each season's colours sit close together, so where they run into each other they make another of the season's
-  // colours rather than mud; a colour that appears more than once is just picked more often (the odd one out is an
-  // accent). Spring: grass, sky and a little blossom. Summer: sunflower, leaf and sea. Autumn: pumpkin, amber, bark
-  // and maple (and grape at night). Winter: ice, deep blue, frost teal and lavender (and snow at night).
-  var G = { light: [.27, .08, .34], dark: [.08, .36, .06] }, SKY = { light: [.34, .12, .01], dark: [.06, .20, .36] }, PINK = { light: [.01, .34, .17], dark: [.36, .08, .22] };
-  var LEAF = { light: [.34, .11, .28], dark: [.04, .36, .12] }, SUN = { light: [.00, .04, .34], dark: [.36, .27, .00] }, SEA = { light: [.34, .16, .06], dark: [.02, .18, .36] };
-  var PUMP = { light: [.01, .18, .34], dark: [.36, .15, .02] }, AMB = { light: [.00, .09, .34], dark: [.36, .24, .02] }, BARK = { light: [.10, .20, .34], dark: [.30, .14, .05] },
-      MAPLE = { light: [.04, .30, .34], dark: [.36, .06, .04] }, GRAPE = { dark: [.20, .07, .36] };
+  // pixels (画素): pixel art in shades of blue: ice, deep blue, frost teal and lavender (and snow at night). The
+  // colours sit close together, so where they run into each other they make another blue rather than mud; a colour
+  // that appears more than once is just picked more often (the odd one out is an accent).
   var ICE = { light: [.34, .11, .02], dark: [.10, .26, .36] }, DEEP = { light: [.34, .23, .10], dark: [.06, .10, .36] }, TEAL = { light: [.34, .06, .08], dark: [.03, .34, .30] },
       LAV = { light: [.26, .34, .07], dark: [.22, .16, .36] }, SNOW = { dark: [.24, .26, .32] };
-  function season(light, dark) { return { light: light.map(function (c) { return c.light; }), dark: dark.map(function (c) { return c.dark; }) }; }
-  var PIXELS = [
-    season([G, G, G, SKY, SKY, PINK], [G, G, G, SKY, SKY, PINK]),
-    season([SUN, SUN, SUN, LEAF, LEAF, SEA], [SUN, SUN, SUN, LEAF, LEAF, SEA]),
-    season([PUMP, PUMP, AMB, AMB, BARK, MAPLE], [PUMP, PUMP, AMB, AMB, BARK, MAPLE, GRAPE]),
-    season([ICE, ICE, DEEP, DEEP, TEAL, LAV], [ICE, ICE, DEEP, DEEP, TEAL, LAV, SNOW])
-  ], pxFrom = performance.now(), pxFirst = Math.floor((new Date().getMonth() + 10) % 12 / 3), pxNow = -1;
-  function pixelSeason() {
-    var k = (pxFirst + Math.floor((performance.now() - pxFrom) / 28000)) % 4;
-    if (k !== pxNow) { pxNow = k; PALETTES.pixels.light = PIXELS[k].light; PALETTES.pixels.dark = PIXELS[k].dark; root.dataset.season = ['spring', 'summer', 'autumn', 'winter'][k]; }
-  }
-  pixelSeason();
+  PALETTES.pixels.light = [ICE, ICE, DEEP, DEEP, TEAL, LAV].map(function (c) { return c.light; });
+  PALETTES.pixels.dark = [ICE, ICE, DEEP, DEEP, TEAL, LAV, SNOW].map(function (c) { return c.dark; });
   function inkColor(strength) {
     var s = (strength || 1) * (theme.dark ? 1 : .85), key = theme.dark ? 'dark' : 'light';
     var set = pal[key], c = (set.length && Math.random() < (theme.dark ? pal.mix : pal.mixL)) ? set[(Math.random() * set.length) | 0] : NEUTRAL[key];
@@ -2410,7 +2475,6 @@ Fixes proposed: 4
       } else pointerSplat();
       ptr.px = ptr.x; ptr.py = ptr.y;
     }
-    if (pal === PALETTES.pixels) pixelSeason();
     if (now > nextAuto) { randomSplats(1, theme.dark ? 1.4 : 1.0); nextAuto = now + (2200 + Math.random() * 2600) / C.AUTO; }
     // scrolling stirs the ink: pushes along the screen, in the direction the page moved (a finger that's scrolling
     // leaves no trail of its own, so the two never pull against each other)
