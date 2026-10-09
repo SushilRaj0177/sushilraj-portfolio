@@ -447,6 +447,28 @@ h1 .ch { display: inline-block; will-change: transform; }
 .japan > h2 { font-size: clamp(44px, 5.2vw, 88px); font-weight: 600; letter-spacing: -.055em; line-height: .95; margin: 16px 0 0; }
 .roots-group { display: grid; grid-template-columns: minmax(130px, 1fr) minmax(0, 4fr); gap: 24px 48px; margin-top: clamp(48px, 6vw, 88px); border-top: 1px solid var(--line-2); padding-top: 28px; }
 .roots-label { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); margin: 0; }
+/* section tags: a boxed number, the name, a short rule and the name in the other language (Japanese on the English
+   page, English on the Japanese one). They type themselves in, left to right, the first time they're seen. */
+.eyebrow.sec { display: flex; align-items: center; gap: 12px; width: fit-content; max-width: 100%; color: var(--ink); font-size: 11.5px; letter-spacing: .16em; }
+.eyebrow.sec::before {
+  content: attr(data-n); flex: none; padding: 3px 6px 2px; border: 1px solid var(--line-2); border-radius: 3px;
+  font-size: 10px; letter-spacing: .06em; line-height: 1.2; color: var(--ink-2); background: color-mix(in srgb, var(--card) 50%, transparent);
+}
+.eyebrow.sec::after {
+  content: attr(data-kj); flex: none; padding-left: 46px; font-family: var(--mincho); font-size: 15px; font-weight: 500; letter-spacing: .14em;
+  text-transform: none; color: var(--ink-2); background: linear-gradient(var(--seal), var(--seal)) 0 52% / 34px 1px no-repeat;
+}
+:root[data-lang="ja"] .eyebrow.sec::after { content: attr(data-en); font-family: var(--mono); font-size: 11px; font-weight: 400; letter-spacing: .16em; text-transform: uppercase; }
+/* the reveal is a mask, not a clip: the heading below waits for this label to be seen, and a clip would hide it from that */
+.js .eyebrow.sec {
+  -webkit-mask: linear-gradient(90deg, #000 50%, transparent 50%) 100% 0 / 200% 100% no-repeat; mask: linear-gradient(90deg, #000 50%, transparent 50%) 100% 0 / 200% 100% no-repeat;
+  transition: -webkit-mask-position 1s steps(16, end), mask-position 1s steps(16, end);
+}
+.js .eyebrow.sec.tag-in { -webkit-mask-position: 0 0; mask-position: 0 0; }
+/* the smaller labels inside a section get a vermilion diamond, the colour of the seal */
+.roots-label, .contact .mail-label { display: flex; align-items: center; gap: 10px; color: var(--ink); letter-spacing: .14em; }
+.roots-label::before, .contact .mail-label::before { content: ""; flex: none; width: 5px; height: 5px; background: var(--seal); transform: rotate(45deg); }
+@media (prefers-reduced-motion: reduce) { .js .eyebrow.sec { -webkit-mask: none; mask: none; transition: none; } }
 .roots { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 36px; }
 .root { display: flex; gap: 18px; align-items: flex-start; min-width: 0; }
 .root .kj { writing-mode: vertical-rl; font-family: var(--mincho); font-weight: 500; font-size: clamp(44px, 4.4vw, 76px); line-height: 1; letter-spacing: .06em; color: var(--ink); flex: none; }
@@ -1045,7 +1067,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 
   <section class="work" id="work" aria-label="Work" data-i18n-attr="aria-label:nav.work">
     <div class="m-work-head">
-      <p class="eyebrow" data-i18n="work.count">Six projects</p>
+      <p class="eyebrow sec" data-n="01" data-kj="作品" data-en="Work" data-i18n="work.count">Six projects</p>
       <h2 class="rise" data-i18n-html="work.title">Things I've <span class="it">built</span></h2>
       <p class="sub" data-i18n="work.sub">Three are live and one is still in progress. Each has tests, and the code for five of them is on GitHub.</p>
       <p class="swipe-hint" id="swipeHint" aria-hidden="true"><span data-i18n="work.swipe">Swipe through them</span><i>→</i></p>
@@ -1059,7 +1081,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
       </div>
       <div class="track" id="track">
         <div class="intro-card">
-          <div><p class="eyebrow" data-i18n="work.count">Six projects</p><h2 class="rise" data-i18n-html="work.title">Things I've <span class="it">built</span></h2></div>
+          <div><p class="eyebrow sec" data-n="01" data-kj="作品" data-en="Work" data-i18n="work.count">Six projects</p><h2 class="rise" data-i18n-html="work.title">Things I've <span class="it">built</span></h2></div>
           <p data-i18n="work.sub">Three are live and one is still in progress. Each has tests, and the code for five of them is on GitHub.</p>
         </div>
 
@@ -1208,7 +1230,7 @@ Fixes proposed: 4
   </section>
 
   <section class="about" id="about" aria-labelledby="about-title">
-    <p class="eyebrow" id="about-title" data-i18n="nav.about">About</p>
+    <p class="eyebrow sec" data-n="02" data-kj="自己紹介" data-en="About" id="about-title" data-i18n="nav.about">About</p>
     <p class="big" id="big" data-i18n-html="about.big">I’m a CS undergraduate at SRMIST in Chennai, specialising in Software Engineering. I’m interested in what goes into building good software — the architecture, the decisions behind it, and the details that make it reliable.</p>
     <div class="about-more">
       <p class="fade-up" data-i18n="about.p2">So far, I’ve worked on web applications, real-time systems, and tools designed to solve practical problems. I enjoy working across the stack, trying out unfamiliar technologies, and figuring out how things work beyond just getting them to run.</p>
@@ -1223,7 +1245,7 @@ Fixes proposed: 4
   </section>
 
   <section class="japan" id="japan" aria-labelledby="japan-title">
-    <p class="eyebrow" data-i18n="japan.eyebrow">Japan</p>
+    <p class="eyebrow sec" data-n="03" data-kj="日本" data-en="Japan" data-i18n="japan.eyebrow">Japan</p>
     <h2 id="japan-title" class="rise" data-i18n-html="japan.title">Where it <span class="it">comes from</span></h2>
     <div class="roots-group">
       <p class="roots-label" data-i18n="japan.then">It started with</p>
@@ -1246,7 +1268,7 @@ Fixes proposed: 4
 
   <section class="contact" id="contact" aria-labelledby="contact-title">
     <div>
-      <p class="eyebrow" data-i18n="nav.contact">Contact</p>
+      <p class="eyebrow sec" data-n="04" data-kj="連絡" data-en="Contact" data-i18n="nav.contact">Contact</p>
       <div class="say-row">
         <h2 id="contact-title" aria-label="Say hello" data-i18n-attr="aria-label:say.aria"><span class="tx" aria-hidden="true" data-i18n-html="say"><span class="wave">Say</span> <span class="it wave">hello</span></span><span class="tone" aria-hidden="true" data-i18n-html="say"><span class="wave">Say</span> <span class="it wave">hello</span></span></h2>
         <button class="hanko" id="hanko" type="button" data-cursor="Stamp" aria-label="Name seal reading スシル, Sushil in katakana" data-i18n-attr="aria-label:seal.aria,data-cursor:cur.stamp">
@@ -1848,6 +1870,14 @@ Fixes proposed: 4
     card.__scramble = function () { if (busy || reduce) return; busy = true; scramble(span, text, 650); setTimeout(function () { busy = false; }, 700); };
     if (fine) card.addEventListener('mouseenter', card.__scramble);
   });
+
+  /* section tags type themselves in the first time they're seen */
+  (function () {
+    var tags = [].slice.call(document.querySelectorAll('.eyebrow.sec'));
+    if (reduce || !('IntersectionObserver' in window)) { tags.forEach(function (t) { t.classList.add('tag-in'); }); return; }
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('tag-in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -8% 0px' });
+    tags.forEach(function (t) { io.observe(t); });
+  })();
 
   /* ---------- scrollbar (computers): a thin rail in place of the browser's ---------- */
   if (!mobile) (function () {
