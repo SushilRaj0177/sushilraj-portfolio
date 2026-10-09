@@ -788,7 +788,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
     <button class="sw ember" type="button" data-pal="ember" aria-pressed="false" aria-label="Ember, red ink" data-i18n-attr="aria-label:sw.ember"></button>
     <button class="sw aurora" type="button" data-pal="aurora" aria-pressed="false" aria-label="Aurora, many colours" data-i18n-attr="aria-label:sw.aurora"></button>
   </div>
-  <label class="storm"><span data-i18n="calm">Calm</span><input type="range" min="0" max="1" step="0.01" value="0.45" data-storm aria-label="Calm to storm" data-i18n-attr="aria-label:storm.aria"><span data-i18n="storm">Storm</span></label>
+  <label class="storm"><span data-i18n="calm">Calm</span><input type="range" min="0" max="1" step="0.01" value="0.3" data-storm aria-label="Calm to storm" data-i18n-attr="aria-label:storm.aria"><span data-i18n="storm">Storm</span></label>
   <button class="tog" type="button" role="switch" aria-checked="true" data-grain title="Film grain (G)" data-i18n-attr="title:grain.title"><span data-i18n="grain">Grain</span><span class="knob"></span></button>
   <button class="wipe" type="button" data-clear data-i18n="clear">Clear</button>
 </div>
@@ -808,7 +808,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
   </div>
   <div class="motion">
     <div class="motion-labels"><span data-i18n="calm">Calm</span><span data-i18n="storm">Storm</span></div>
-    <input type="range" min="0" max="1" step="0.01" value="0.45" data-storm aria-label="Calm to storm" data-i18n-attr="aria-label:storm.aria">
+    <input type="range" min="0" max="1" step="0.01" value="0.3" data-storm aria-label="Calm to storm" data-i18n-attr="aria-label:storm.aria">
   </div>
   <div class="sheet-actions">
     <button class="tog" type="button" role="switch" aria-checked="true" data-grain><span data-i18n="grain">Grain</span><span class="knob"></span></button>
@@ -2364,7 +2364,7 @@ Fixes proposed: 4
   window.__inkPace = pace;   // for checking how the ink is pacing itself
   function start() { if (running || document.hidden) return; running = true; last = lastFrame = performance.now(); requestAnimationFrame(frame); }
   document.addEventListener('visibilitychange', function () { if (document.hidden) running = false; else start(); });
-  var first = document.querySelector('[data-storm]'); window.inkStorm(first ? +first.value : .45);
+  var first = document.querySelector('[data-storm]'); window.inkStorm(first ? +first.value : .3);
   seed();
   if (reduce) { for (var i = 0; i < 40; i++) step(0.016); render(); }
   else start();
