@@ -184,6 +184,11 @@ section { scroll-margin-top: 64px; }
 .now { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink-2); margin-top: 18px; }
 .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); position: relative; flex: none; }
 .pulse::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid var(--accent); animation: pulse 2.4s var(--ease) infinite; }
+/* touch: pressing and holding on the ink to paint shows a ring where the finger rests; the words at the top
+   aren't picked up as a text selection by the hold */
+@media (pointer: coarse) { .hero { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; } }
+.paint-ring { position: fixed; left: 0; top: 0; z-index: 70; width: 72px; height: 72px; margin: -36px 0 0 -36px; border: 1.5px solid var(--ink); border-radius: 50%; pointer-events: none; opacity: 0; animation: paintRing .55s var(--ease) forwards; }
+@keyframes paintRing { from { transform: scale(.35); opacity: .85; } to { transform: scale(1.25); opacity: 0; } }
 @keyframes pulse { from { transform: scale(.6); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
 .hint { font-family: var(--mono); font-size: 12px; color: var(--ink-2); text-align: right; line-height: 1.7; margin: 0; }
 h1 {
@@ -1147,8 +1152,8 @@ Fixes proposed: 4
     'note.mobile': 'Mobile version', 'note.toFull': 'View the full site',
     'note.full': 'Full site', 'note.toMobile': 'Back to the mobile version',
     'hint.desk': 'Move your cursor through the ink<br>Click to drop more · scroll to stir<br>Try the controls bottom left',
-    'hint.touch': 'Drag through the ink to stir it<br>Tap to drop more',
-    'hint.mobile': 'Touch anywhere to stir the ink<br>Tap to drop more<br>Ink settings in the corner ↘'
+    'hint.touch': 'Press and hold, then drag to stir the ink<br>Tap to drop more',
+    'hint.mobile': 'Press and hold, then drag to stir the ink<br>Tap to drop more<br>Ink settings in the corner ↘'
   };
   var JA = {
     // bar, menu and ink controls
@@ -1166,8 +1171,8 @@ Fixes proposed: 4
     'hero.now': 'ODPT Challenge 2026に向けて、MetroFlowを開発中',
     'hero.role': 'フルスタック開発者 · チェンナイ', 'hero.scroll': 'スクロール ↓',
     'hint.desk': 'カーソルでインクをかき混ぜられます<br>クリックで足す · スクロールで動かす<br>左下で色や動きを変えられます',
-    'hint.touch': 'なぞるとインクが動きます<br>タップで足せます',
-    'hint.mobile': '画面をなぞるとインクが動きます<br>タップでインクを足せます<br>右下でインクを設定 ↘',
+    'hint.touch': '長押ししてからなぞるとインクが動きます<br>タップで足せます',
+    'hint.mobile': '長押ししてからなぞるとインクが動きます<br>タップでインクを足せます<br>右下でインクを設定 ↘',
     // work
     'work.count': '6つのプロジェクト', 'work.title': '<span class="it">作った</span>もの',
     'work.sub': '3つは公開中で、1つは開発中です。どれもテストを書いていて、そのうち5つはGitHubでコードを公開しています。',
@@ -2141,21 +2146,87 @@ Fixes proposed: 4
   }
 
   // pointer and finger → ink
-  var ptr = { x: 0, y: 0, px: 0, py: 0, t: 0, moved: false, init: false }, fingerDown = false;
+  var ptr = { x: 0, y: 0, px: 0, py: 0, t: 0, moved: false, init: false };
   function onMove(x, y) {
     var nx = x / cssW, ny = 1 - y / cssH;
     if (!ptr.init) { ptr.px = nx; ptr.py = ny; ptr.init = true; }
     ptr.x = nx; ptr.y = ny; ptr.moved = true;
   }
   addEventListener('pointermove', function (e) { if (e.pointerType !== 'touch') onMove(e.clientX, e.clientY); }, { passive: true });
+
+  // A finger does two jobs, scrolling the page and stirring the ink, and doing both at once tangled the trail up
+  // with the scroll. So a drag that scrolls (the page or the work carousel) leaves no trail; the scroll stirs the
+  // ink by itself, as it does on a computer. On the ink at the top, the finger's first move decides: one that can't
+  // be a scroll (sideways, or down while the page is at the very top) paints, and so does pressing and holding.
+  // Painting holds the page still, so the stroke is never cut off by the page starting to move, whirls and all.
+  // Further down, a drag that scrolls nothing stirs the ink as soon as that's clear. A tap still drops more ink.
+  var hand = { mode: '', x: 0, y: 0, sy: 0, far: 0, timer: 0, quiet: 0, hero: false };   // mode: wait, draw, paint or scroll
+  var heroEl = document.querySelector('.hero');
+  function beginPaint() {
+    hand.mode = 'paint';
+    // a drop where the finger rests, a ring around it and a tick, so it's clear the ink is listening
+    var ar = canvas.width / canvas.height;
+    splat(ptr.x, ptr.y, 0, 0, inkColor(.7 * (theme.dark ? 1 : .8)), mobile ? (ar < 1 ? ar : 1) * 1.4 : 1);
+    var ring = document.createElement('span'); ring.className = 'paint-ring'; ring.setAttribute('aria-hidden', 'true');
+    ring.style.left = hand.x + 'px'; ring.style.top = hand.y + 'px';
+    document.body.appendChild(ring); ring.addEventListener('animationend', function () { ring.remove(); });
+    if (navigator.vibrate) try { navigator.vibrate(12); } catch (e) {}
+  }
   if (touch) {
-    addEventListener('touchstart', function (e) { var t = e.touches[0]; if (!t) return; ptr.init = false; ptr.t = performance.now(); fingerDown = true; onMove(t.clientX, t.clientY); }, { passive: true });
-    addEventListener('touchmove', function (e) { var t = e.touches[0]; if (t) onMove(t.clientX, t.clientY); }, { passive: true });
-    var lift = function (e) { if (!e.touches.length) fingerDown = false; };
+    addEventListener('touchstart', function (e) {
+      var t = e.touches[0]; if (!t) return;
+      clearTimeout(hand.timer);
+      if (e.touches.length > 1) { hand.mode = 'scroll'; return; }   // two fingers: zooming
+      ptr.init = false; ptr.t = performance.now(); onMove(t.clientX, t.clientY);
+      hand.mode = 'wait'; hand.x = t.clientX; hand.y = t.clientY; hand.sy = scrollY; hand.far = 0;
+      hand.hero = !!heroEl && heroEl.contains(e.target) && !e.target.closest('a,button');
+      // phones start scrolling after about 8 px, so a hold only counts while the finger stays within 6 px
+      if (hand.hero) hand.timer = setTimeout(function () { if (hand.mode === 'wait') beginPaint(); }, 220);
+    }, { passive: true });
+    addEventListener('touchmove', function (e) {
+      var t = e.touches[0]; if (!t) return;
+      onMove(t.clientX, t.clientY);
+      if (hand.mode !== 'wait') return;
+      var d = Math.hypot(t.clientX - hand.x, t.clientY - hand.y);
+      if (d > 6) clearTimeout(hand.timer);
+      if (d > 16 && !hand.far) hand.far = performance.now();
+    }, { passive: true });
+    // painting holds the page still (only the top of the page listens like this, so scrolling elsewhere never waits on it)
+    if (heroEl) heroEl.addEventListener('touchmove', function (e) {
+      var t = e.touches[0];
+      // the first move past 6 px, before the phone would start scrolling, decides. A paint stroke starts from where
+      // the finger came down.
+      if (hand.mode === 'wait' && hand.hero && t && e.touches.length === 1) {
+        var dx = t.clientX - hand.x, dy = t.clientY - hand.y;
+        if (dx * dx + dy * dy > 36) {
+          hand.hero = false; clearTimeout(hand.timer);
+          if (Math.abs(dx) > Math.abs(dy) * 1.2 || (dy > 0 && scrollNow() < 1)) { hand.mode = 'paint'; ptr.px = hand.x / cssW; ptr.py = 1 - hand.y / cssH; }
+        }
+      }
+      if (hand.mode === 'paint' && e.cancelable) e.preventDefault();
+    }, { passive: false });
+    addEventListener('contextmenu', function (e) { if (hand.mode === 'paint') e.preventDefault(); });
+    // anything scrolling under the finger (the page, the carousel) makes it a scroll; for the page, only once it has
+    // really moved (a late scroll event, say from a flick the touch just stopped, doesn't count), and while drawing,
+    // only once it has moved more than a sideways stroke drifting a little up or down would move it
+    addEventListener('scroll', function (e) {
+      var page = e.target === document || e.target === window;
+      if (!hand.mode || (page && Math.abs(scrollY - hand.sy) < (hand.mode === 'draw' ? 24 : 3))) return;
+      clearTimeout(hand.timer); hand.mode = 'scroll';
+    }, { passive: true, capture: true });
+    var lift = function (e) {
+      if (e.touches.length) return;
+      clearTimeout(hand.timer);
+      if (hand.mode === 'paint') hand.quiet = performance.now() + 450;   // the click that ends a paint isn't a tap
+      // a move that hasn't been drawn yet still belongs to this touch: drawn if it was drawing, dropped if not
+      if (ptr.moved && (hand.mode === 'draw' || hand.mode === 'paint')) hand.mode = 'last';
+      else { ptr.moved = false; hand.mode = ''; }
+    };
     addEventListener('touchend', lift, { passive: true }); addEventListener('touchcancel', lift, { passive: true });
   }
   addEventListener('click', function (e) {
     if (e.target.closest('a,button,input,label,.card,.inkpanel,.sheet,.menu,.ink-fab,[data-copy]')) return;
+    if (performance.now() < hand.quiet) return;
     window.inkBurst(e.clientX, e.clientY, 5);
   });
 
@@ -2164,12 +2235,14 @@ Fixes proposed: 4
   if (mobile) { addEventListener('scroll', function () { sPos = scrollY; }, { passive: true }); addEventListener('resize', function () { vH = innerHeight; }); }
   function scrollNow() { return mobile ? sPos : scrollY; }
 
-  // Frame pacing. On phones with screens faster than 100 Hz the ink is worked out on every frame, exactly as
-  // before, and drawn on every other one (60 pictures a second, each the same as before). Drawing is the costly
-  // part: it covers the whole screen, and every new picture has to be re-blended under the inverting text and the
-  // frosted button. Other screens faster than 100 Hz do the same only if frames keep arriving late because the
-  // device can't keep up; full speed is tried again every so often. A new size or theme is drawn straight away.
-  // (pace.mode can be set by the ?perf panel, for trying things out on a phone: 'every', 'skip', 'split', 'paused')
+  // Frame pacing. On phones with screens faster than 100 Hz every other frame is left out altogether, so the ink is
+  // worked out and drawn 60 times a second, the same as on any other phone. Each step blurs the ink a little, so
+  // worked out 120 times a second it came out softer and paler, and phones switch between 60 and 120 by themselves.
+  // It's half the work, too. Drawing is the costliest part: it covers the whole screen, and every new picture has
+  // to be re-blended under the inverting text and the frosted button. Other screens faster than 100 Hz draw every
+  // other frame only if frames keep arriving late because the device can't keep up; full speed is tried again every
+  // so often. A new size or theme is drawn straight away.
+  // (pace.mode can be set by the ?perf panel, for trying things out on a phone: 'every', 'sixty', 'skip', 'split', 'paused')
   var pace = { half: false, odd: false, prev: 0, d: [], next: 0, until: 0, wait: 8000, fast: false, mode: 'auto', drawing: 'every' }, drawNow = false;
   var quick = [], quickN = 0, dyeDt = 0;   // whether the screen is fast: 3 of the last 30 frames came under 10 ms apart
   function pacing(now) {
@@ -2192,57 +2265,76 @@ Fixes proposed: 4
   // frame rate. (Measured against the width and the height separately, a portrait phone pushed sideways twice as
   // hard as up and down, and its drops were so big, with twice the ink at 120 Hz, that circles filled in instead
   // of winding into a whirl.)
-  function fingerSplat(now) {
-    var mx = (ptr.x - ptr.px) * cssW, my = (ptr.y - ptr.py) * cssH;   // pixels moved since the last drop
-    var f = Math.min(Math.max((now - ptr.t) / 1000, 1 / 240), 2 / 60) * 60; ptr.t = now;   // frames' worth, at 60 a second
-    var sp = Math.min(1, Math.hypot(mx, my) / f * C.FORCE / Math.sqrt(cssW * cssH) / 300);   // how hard, as on a computer
+  // how rich a finger's trail is, the same at any refresh rate (glowing ink on a dark page washes out to white
+  // sooner, so it gets less)
+  var TRAIL = { light: 2, dark: 1 };
+  function fingerSplat(now, gap) {
+    var mx = (ptr.x - ptr.px) * cssW, my = (ptr.y - ptr.py) * cssH, dist = Math.hypot(mx, my);   // pixels moved since the last drop
+    // frames' worth of time the move took, at 60 a second: a frame that came late (the phone was busy) carried a
+    // longer move and gets that much more ink, so the trail stays even; a finger starting again after a rest
+    // counts from this frame only
+    var f = Math.min(Math.max(Math.min(now - ptr.t, gap) / 1000, 1 / 240), 4 / 60) * 60; ptr.t = now;
+    var sp = dist / f * C.FORCE / Math.sqrt(cssW * cssH) / 300;   // how hard, as on a computer
     if (sp <= 0.02) return;
-    var g = C.FORCE * .006 * vel.w / cssW, ar = canvas.width / canvas.height;
-    splat(ptr.x, ptr.y, mx * g, my * g, inkColor((0.25 + sp * 0.9) * (theme.dark ? 1 : .8) * f), ar < 1 ? ar : 1);
+    var ar = canvas.width / canvas.height, rm = ar < 1 ? ar : 1, g = C.FORCE * .006 * vel.w / cssW;
+    // a long move is laid down as several drops along the way, so a quick stroke stays one smooth ribbon
+    var r = Math.sqrt(C.RADIUS / 100 * rm * (ar > 1 ? ar : 1)) * cssH, n = Math.min(12, Math.ceil(dist / (r * .5)) || 1);
+    // (a computer stops adding ink past a certain speed; a finger keeps adding it a while longer, so a quick flick
+    // across a small screen isn't left pale)
+    var col = inkColor((0.25 + Math.min(sp, 3) * 0.9) * (theme.dark ? 1 : .8) * f * TRAIL[theme.dark ? 'dark' : 'light'] / n);
+    for (var i = 1; i <= n; i++) splat(ptr.px + (ptr.x - ptr.px) * i / n, ptr.py + (ptr.y - ptr.py) * i / n, mx * g / n, my * g / n, col, rm);
+  }
+  function pointerSplat() {
+    var dx = (ptr.x - ptr.px) * C.FORCE, dy = (ptr.y - ptr.py) * C.FORCE;
+    var sp = Math.min(1, Math.hypot(dx, dy) / 300);
+    if (sp > 0.02) splat(ptr.x, ptr.y, dx, dy, inkColor((0.25 + sp * 0.9) * (theme.dark ? 1 : .8)), 1);
   }
 
-  var last = performance.now(), running = false, nextAuto = last + 2600, lastScroll = scrollNow(), started = last;
+  var last = performance.now(), lastFrame = last, running = false, nextAuto = last + 2600, lastScroll = scrollNow(), started = last;
   function frame(now) {
     if (!running) return;
-    if (pace.mode === 'paused') { last = now; requestAnimationFrame(frame); return; }
+    if (pace.mode === 'paused') { last = lastFrame = now; requestAnimationFrame(frame); return; }
     if (now - started > 4000) pacing(now);
-    var gap = now - last;
-    if (gap > 0 && gap < 100) { var q = gap > 4 && gap < 10 ? 1 : 0; quick.push(q); quickN += q; if (quick.length > 30) quickN -= quick.shift(); }
+    var fg = now - lastFrame; lastFrame = now;
+    if (fg > 0 && fg < 100) { var q = fg > 4 && fg < 10 ? 1 : 0; quick.push(q); quickN += q; if (quick.length > 30) quickN -= quick.shift(); }
     pace.fast = quickN >= 3;
+    // 'sixty' leaves out every other frame; 'skip' draws every other frame; 'split' (only tried from the ?perf
+    // panel) also moves the colour every other frame
+    var mode = pace.drawing = pace.mode !== 'auto' ? pace.mode : touch && pace.fast ? 'sixty' : pace.half ? 'skip' : 'every';
+    if (mode === 'sixty' && (pace.odd = !pace.odd) && !drawNow && !sizeDirty) { requestAnimationFrame(frame); return; }
+    var gap = now - last;
     var dt = Math.min(gap / 1000, 0.016666 * 2); last = now;
     if (sizeDirty) { sizeDirty = false; if (resize()) { initFBOs(); seed(); drawNow = true; } }
     var hero = Math.min(1, scrollNow() / (mobile ? vH : innerHeight));
     strength += ((1 - hero * 0.55) - strength) * 0.08;
     if (ptr.moved) {
       ptr.moved = false;
-      if (mobile) fingerSplat(now);
-      else {
-        var dx = (ptr.x - ptr.px) * C.FORCE, dy = (ptr.y - ptr.py) * C.FORCE;
-        var sp = Math.min(1, Math.hypot(dx, dy) / 300);
-        if (sp > 0.02) splat(ptr.x, ptr.y, dx, dy, inkColor((0.25 + sp * 0.9) * (theme.dark ? 1 : .8)), 1);
-      }
+      if (hand.mode) {
+        // a finger: once it has moved a little and nothing has scrolled for a few frames, it's drawing
+        if (hand.mode === 'wait' && hand.far && now - hand.far > 60) { hand.mode = 'draw'; ptr.px = hand.x / cssW; ptr.py = 1 - hand.y / cssH; }
+        if (hand.mode === 'draw' || hand.mode === 'paint' || hand.mode === 'last') { if (mobile) fingerSplat(now, gap); else pointerSplat(); }
+        else ptr.t = now;
+        if (hand.mode === 'last') hand.mode = '';
+      } else pointerSplat();
       ptr.px = ptr.x; ptr.py = ptr.y;
     }
     if (now > nextAuto) { randomSplats(1, theme.dark ? 1.4 : 1.0); nextAuto = now + (2200 + Math.random() * 2600) / C.AUTO; }
-    // scrolling stirs the ink: pushes along the screen, in the direction the page moved. Not while a finger is on
-    // the screen: then the finger is what moves the ink (on a phone the same finger is also scrolling the page), and
-    // the two pulling at once fight each other. As soon as the page moves by itself (a flick, a link) it stirs again.
+    // scrolling stirs the ink: pushes along the screen, in the direction the page moved (a finger that's scrolling
+    // leaves no trail of its own, so the two never pull against each other)
     var sy = scrollNow(), ds = sy - lastScroll; lastScroll = sy;
-    if (Math.abs(ds) > 3 && !fingerDown) {
+    if (Math.abs(ds) > 3 && hand.mode !== 'paint') {
       var push = Math.max(-1, Math.min(1, ds / 60)) * C.FORCE * (mobile ? 0.25 : 0.35);
       for (var k = 0; k < (mobile ? 1 : 2); k++) splat(Math.random(), .2 + Math.random() * .6, (Math.random() - .5) * 300, push, inkColor(0.35), 1.8, true);
     }
     stepFlow(dt); dyeDt += dt;
-    // 'skip' draws every other frame; 'split' (only tried from the ?perf panel) also moves the colour every other frame
-    var mode = pace.drawing = pace.mode !== 'auto' ? pace.mode : (touch && pace.fast) || pace.half ? 'skip' : 'every';
-    var skip = mode !== 'every' && (pace.odd = !pace.odd) && !drawNow;
+    var skip = (mode === 'skip' || mode === 'split') && (pace.odd = !pace.odd) && !drawNow;
     if (!skip || mode !== 'split') { moveDye(dyeDt); dyeDt = 0; }
     if (!skip) { drawNow = false; render(); }
     requestAnimationFrame(frame);
   }
   pace.inPlaceSplats = addSplats;
   window.__inkPace = pace;   // for checking how the ink is pacing itself
-  function start() { if (running || document.hidden) return; running = true; last = performance.now(); requestAnimationFrame(frame); }
+  function start() { if (running || document.hidden) return; running = true; last = lastFrame = performance.now(); requestAnimationFrame(frame); }
   document.addEventListener('visibilitychange', function () { if (document.hidden) running = false; else start(); });
   var first = document.querySelector('[data-storm]'); window.inkStorm(first ? +first.value : .45);
   seed();
@@ -2268,7 +2360,7 @@ Fixes proposed: 4
   var box = document.createElement('div'); box.id = 'perf';
   box.innerHTML = '<div id="perfText">measuring…</div><button data-k="ink"></button><button data-k="blur"></button><button data-k="blend"></button><button data-k="copy">copy</button>';
   document.body.appendChild(box);
-  var modes = ['auto', 'every', 'skip', 'split', 'paused'];
+  var modes = ['auto', 'every', 'sixty', 'skip', 'split', 'paused'];
   function label() {
     box.querySelector('[data-k=ink]').textContent = 'ink: ' + P.mode;
     box.querySelector('[data-k=blur]').textContent = 'frosted: ' + (root.classList.contains('perf-noblur') ? 'off' : 'on');
