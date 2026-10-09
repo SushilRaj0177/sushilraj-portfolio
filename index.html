@@ -364,6 +364,7 @@ h1 .ch { display: inline-block; will-change: transform; }
 .root .kj { writing-mode: vertical-rl; font-family: var(--mincho); font-weight: 500; font-size: clamp(44px, 4.4vw, 76px); line-height: 1; letter-spacing: .06em; color: var(--ink); flex: none; }
 .root h3 { font-size: 20px; font-weight: 600; letter-spacing: -.02em; margin: 4px 0 8px; }
 .root p { margin: 0; color: var(--ink-2); font-size: 15.5px; line-height: 1.6; max-width: 22em; }
+.root .sub { margin: -2px 0 10px; color: var(--ink-3); font-size: 13.5px; line-height: 1.45; }
 .japan-next { margin: clamp(56px, 7vw, 100px) 0 0; font-size: clamp(24px, 2.8vw, 44px); font-weight: 500; letter-spacing: -.035em; line-height: 1.2; max-width: 22em; text-wrap: pretty; }
 .japan-next .it { letter-spacing: -.01em; }
 .js .root .kj { clip-path: inset(0 0 100% 0); transition: clip-path 1.2s cubic-bezier(.77, 0, .18, 1) var(--d, 0s); }
@@ -599,6 +600,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 :root[data-layout="mobile"] .root .kj { font-size: 46px; }
 :root[data-layout="mobile"] .root h3 { font-size: 18px; margin-top: 2px; }
 :root[data-layout="mobile"] .root p { font-size: 15px; }
+:root[data-layout="mobile"] .root .sub { font-size: 13px; }
 :root[data-layout="mobile"] .japan-next { font-size: clamp(22px, 6.6vw, 30px); margin-top: 52px; }
 
 /* contact */
@@ -707,6 +709,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 :root[data-lang="ja"] .japan > h2 .it { letter-spacing: -.06em; }
 :root[data-lang="ja"] .root h3 { font-size: 13px; font-weight: 500; letter-spacing: .24em; color: var(--ink-3); margin: 6px 0 10px; }
 :root[data-lang="ja"] .root p { line-height: 1.8; }
+:root[data-lang="ja"] .root .sub { margin-top: -4px; line-height: 1.5; color: var(--ink-2); }
 :root[data-lang="ja"] .about-more p { line-height: 1.9; }
 :root[data-lang="ja"] .japan-next { font-size: clamp(22px, 2.4vw, 38px); line-height: 1.5; letter-spacing: 0; }
 :root[data-lang="ja"] .japan-next .it { line-height: 1; }
@@ -1083,17 +1086,17 @@ Fixes proposed: 4
     <div class="roots-group">
       <p class="roots-label" data-i18n="japan.then">It started with</p>
       <ul class="roots">
-        <li class="root"><span class="kj" lang="ja" aria-hidden="true">物語</span><div><h3 data-i18n="japan.r1">Stories</h3><p data-i18n="japan.r1p">Anime, manga and films. The first stories I knew from Japan.</p></div></li>
-        <li class="root"><span class="kj" lang="ja" aria-hidden="true">音楽</span><div><h3 data-i18n="japan.r2">Music</h3><p data-i18n="japan.r2p">Music, there from the beginning too.</p></div></li>
-        <li class="root"><span class="kj" lang="ja" aria-hidden="true">神話</span><div><h3 data-i18n="japan.r3">Myth</h3><p data-i18n="japan.r3p">The older stories: mythology, Shinto and folklore. My project KAGUTSUCHI is named after the kami of fire.</p></div></li>
+        <li class="root"><span class="kj" lang="ja" aria-hidden="true">物語</span><div><h3 data-i18n="japan.r1">Stories</h3><p class="sub" data-i18n="japan.r1s">Anime, manga, and films</p><p data-i18n="japan.r1p">I’m drawn to Japanese storytelling, from the worlds and characters in anime and manga to the films that tell quieter, more grounded stories.</p></div></li>
+        <li class="root"><span class="kj" lang="ja" aria-hidden="true">音楽</span><div><h3 data-i18n="japan.r2">Music</h3><p class="sub" data-i18n="japan.r2s">Japanese music</p><p data-i18n="japan.r2p">Japanese music has been a constant part of my interest in the culture, from the songs I discover through anime to artists and genres I find on my own.</p></div></li>
+        <li class="root"><span class="kj" lang="ja" aria-hidden="true">神話</span><div><h3 data-i18n="japan.r3">Myth</h3><p class="sub" data-i18n="japan.r3s">Shinto, folklore, and mythology</p><p data-i18n="japan.r3p">I’m interested in Japanese mythology, the kami of Shinto, and the folklore behind them. Kagutsuchi, the kami of fire, even inspired the name of one of my software projects.</p></div></li>
       </ul>
     </div>
     <div class="roots-group">
       <p class="roots-label" data-i18n="japan.now">What keeps me here</p>
       <ul class="roots">
-        <li class="root"><span class="kj" lang="ja" aria-hidden="true">言葉</span><div><h3 data-i18n="japan.r4">Language</h3><p data-i18n="japan.r4p">Learning the language itself, now on the JLPT track.</p></div></li>
-        <li class="root"><span class="kj" lang="ja" aria-hidden="true">景色</span><div><h3 data-i18n="japan.r5">Places</h3><p data-i18n="japan.r5p">Modern cityscapes and natural landscapes, both.</p></div></li>
-        <li class="root"><span class="kj" lang="ja" aria-hidden="true">暮らし</span><div><h3 data-i18n="japan.r6">Way of life</h3><p data-i18n="japan.r6p">The way of life, and the ideas underneath it.</p></div></li>
+        <li class="root"><span class="kj" lang="ja" aria-hidden="true">言葉</span><div><h3 data-i18n="japan.r4">Language</h3><p class="sub" data-i18n="japan.r4s">Learning Japanese</p><p data-i18n="japan.r4p">I’m studying Japanese through the JLPT track and currently preparing for N3, working on grammar, vocabulary, kanji, and the ability to understand the language beyond translations.</p></div></li>
+        <li class="root"><span class="kj" lang="ja" aria-hidden="true">景色</span><div><h3 data-i18n="japan.r5">Places</h3><p class="sub" data-i18n="japan.r5s">Architecture and landscapes</p><p data-i18n="japan.r5p">I’m drawn to the contrast between Tokyo’s dense streets and city lights, traditional architecture, and quieter landscapes. These visual influences often find their way into my projects and design choices.</p></div></li>
+        <li class="root"><span class="kj" lang="ja" aria-hidden="true">暮らし</span><div><h3 data-i18n="japan.r6">Way of life</h3><p class="sub" data-i18n="japan.r6s">Everyday culture and traditions</p><p data-i18n="japan.r6p">Beyond the media, I’m curious about everyday life in Japan — its customs, social norms, seasonal traditions, and the small details that make a place feel different from home.</p></div></li>
       </ul>
     </div>
     <p class="japan-next" data-i18n-html="japan.next">I haven’t been yet. I’m working towards an opportunity to study at Waseda, which would be my <span class="it">first time</span> there.</p>
@@ -1243,12 +1246,12 @@ Fixes proposed: 4
     // japan
     'nav.japan': '日本', 'japan.eyebrow': '日本', 'japan.title': '惹かれる<span class="it">理由</span>',
     'japan.then': 'きっかけ', 'japan.now': 'そして今',
-    'japan.r1': 'ものがたり', 'japan.r1p': 'アニメ、漫画、映画。日本について最初に知った物語です。',
-    'japan.r2': 'おんがく', 'japan.r2p': '音楽も、はじめからそばにありました。',
-    'japan.r3': 'しんわ', 'japan.r3p': 'もっと古い物語、神話や神道、民話。プロジェクトのKAGUTSUCHIは、火の神・迦具土から名前をとりました。',
-    'japan.r4': 'ことば', 'japan.r4p': '日本語そのものを、今はJLPTに向けて勉強しています。',
-    'japan.r5': 'けしき', 'japan.r5p': '現代的な街並みと、自然の風景。その両方です。',
-    'japan.r6': 'くらし', 'japan.r6p': '日々の暮らしと、その根にある考え方。',
+    'japan.r1': 'ものがたり', 'japan.r1s': 'アニメ、漫画、映画', 'japan.r1p': '日本の物語に惹かれています。アニメや漫画の世界やキャラクターから、より静かで地に足のついた物語を描く映画まで。',
+    'japan.r2': 'おんがく', 'japan.r2s': '日本の音楽', 'japan.r2p': '日本の音楽は、日本の文化への興味のなかで、いつもそばにありました。アニメで出会う曲から、自分で見つけたアーティストやジャンルまで。',
+    'japan.r3': 'しんわ', 'japan.r3s': '神道、民話、神話', 'japan.r3p': '日本の神話や神道の神々、そしてその背景にある民話に興味があります。火の神・迦具土は、私のソフトウェアプロジェクトのひとつの名前の由来にもなりました。',
+    'japan.r4': 'ことば', 'japan.r4s': '日本語を学ぶ', 'japan.r4p': 'JLPTに沿って日本語を勉強していて、今はN3に向けて準備中です。文法や語彙、漢字に取り組みながら、翻訳を通さずに日本語を理解できる力をつけようとしています。',
+    'japan.r5': 'けしき', 'japan.r5s': '建築と風景', 'japan.r5p': '東京の密集した通りや街の灯り、伝統的な建築、そして静かな風景。その対比に惹かれます。こうした景色から受けた影響は、プロジェクトやデザインの選び方によく表れています。',
+    'japan.r6': 'くらし', 'japan.r6s': '日々の文化と伝統', 'japan.r6p': 'メディアの外側にある、日本の日常にも興味があります。習慣や社会のルール、季節の行事、そして故郷とは違う場所だと感じさせる、小さなディテール。',
     'japan.next': 'まだ日本に行ったことはありません。早稲田大学で学ぶ機会を目指していて、実現すれば、それが<span class="it">はじめての日本</span>になります。',
     // contact
     'say': '<span class="wave">お気軽に</span><span class="it wave">ご連絡を</span>', 'say.aria': 'お気軽にご連絡を',
