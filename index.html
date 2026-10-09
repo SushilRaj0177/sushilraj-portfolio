@@ -20,6 +20,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <!-- Mincho for the kanji that are set as display type. Only these characters are fetched, so add any new one here. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;800&text=気配符言葉迦具土墨藍緋極光スシルを磨る物語音楽神話景色暮らし&display=swap">
+<!-- Unbounded (M PLUS 1 in Japanese) for the three key words in the intro. Only these characters are fetched. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@700&family=Unbounded:wght@500&text=SushilsoftwareJapanスシルソフトウェア日本&display=swap">
 <style>
 :root {
   /* Layout: the whole page floats on a pool of ink (a live fluid simulation) that follows the cursor or finger.
@@ -179,7 +181,8 @@ section { scroll-margin-top: 64px; }
 }
 .hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
 .hero-intro { max-width: 25em; font-size: clamp(17px, 1.4vw, 20px); line-height: 1.5; color: var(--ink); margin: 0; }
-.hero-intro .it { font-size: 1.15em; }
+/* the three key words in the intro, in a modern face */
+.hero-intro .key { font-family: "Unbounded", var(--sans); font-weight: 500; font-size: .9em; letter-spacing: -.01em; }
 .hero-intro, .now, .hint, .root h3, .root p { text-shadow: 0 0 1px var(--halo), 0 0 12px var(--halo), 0 0 26px var(--halo); }
 .now { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink-2); margin-top: 18px; }
 .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); position: relative; flex: none; }
@@ -688,7 +691,6 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 :root[data-lang="ja"] body { line-break: strict; word-break: auto-phrase; }
 :root[data-lang="ja"] .it { font-family: var(--mincho); font-style: normal; font-weight: 500; letter-spacing: .02em; }
 /* a Mincho word in running text keeps to the line height around it */
-:root[data-lang="ja"] .hero-intro .it { font-size: 1.05em; line-height: 1; }
 :root[data-lang="ja"] .big .it { line-height: 1; }
 /* the web fonts have no proportional kana, so big headings are tracked by hand; the Mincho kana sit loosest */
 :root[data-lang="ja"] :is(.intro-card h2, .m-work-head h2, .contact h2, .menu nav a .t, .sheet-title h3) { letter-spacing: -.02em; }
@@ -704,11 +706,17 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 :root[data-lang="ja"] .intro-card h2 { font-size: clamp(44px, 4.8vw, 84px); line-height: 1.08; }
 :root[data-lang="ja"] .big { font-size: clamp(26px, 3.4vw, 54px); line-height: 1.45; }
 :root[data-lang="ja"] .hero-intro { line-height: 1.85; }
+:root[data-lang="ja"] .hero-intro .key { font-family: "M PLUS 1", var(--jp); font-weight: 700; font-size: 1.02em; letter-spacing: 0; line-height: 1; }
 :root[data-lang="ja"] :is(.card .desc, .m-work-head .sub, .intro-card p, .contact .lead) { line-height: 1.8; }
 :root[data-lang="ja"] .card li { line-height: 1.6; }
 :root[data-lang="ja"] .contact h2 { font-size: clamp(52px, 9.2vw, 176px); line-height: 1.02; }
 :root[data-lang="ja"] .chips span + span::before { content: "、"; }
 :root[data-layout="mobile"][data-lang="ja"] .hero-intro { font-size: 16px; line-height: 1.8; }
+/* the smallest phones: a size down, so the intro and the name still fit on the first screen */
+@media (max-width: 359px) {
+  :root[data-layout="mobile"] .hero-intro { font-size: 15.5px; line-height: 1.45; }
+  :root[data-layout="mobile"][data-lang="ja"] .hero-intro { font-size: 14.5px; line-height: 1.72; }
+}
 :root[data-layout="mobile"][data-lang="ja"] .m-work-head h2 { font-size: clamp(40px, 12vw, 64px); line-height: 1.1; }
 :root[data-layout="mobile"][data-lang="ja"] .big { font-size: clamp(21px, 6.2vw, 30px); line-height: 1.6; }
 :root[data-layout="mobile"][data-lang="ja"] .contact h2 { font-size: 17vw; line-height: 1.04; }
@@ -851,7 +859,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
   <section class="hero" aria-labelledby="name">
     <div class="hero-top">
       <div>
-        <p class="hero-intro" data-i18n-html="hero.intro">Hi, I'm Sushil. I study computer science in Chennai and build web apps and tools, quite a few of them about <span class="it">Japan</span>.</p>
+        <p class="hero-intro" data-i18n-html="hero.intro">I’m <span class="key">Sushil</span>, a computer science student drawn to the craft of building <span class="key">software</span>. I like turning complex ideas into tools people can actually use, often with a little inspiration from <span class="key">Japan</span>.</p>
         <div class="now"><span class="pulse" aria-hidden="true"></span><span data-i18n="hero.now">Working on MetroFlow for the ODPT Challenge 2026</span></div>
       </div>
       <p class="hint" aria-hidden="true" id="hint">Move your cursor through the ink<br>Click to drop more · scroll to stir<br>Try the controls bottom left</p>
@@ -1167,7 +1175,7 @@ Fixes proposed: 4
     'grain.on': 'フィルム粒子 オン', 'grain.off': 'フィルム粒子 オフ',
     'toast.copied': 'メールアドレスをコピーしました', 'toast.selected': 'アドレスを選択しました', 'toast.noswitch': 'ここでは切り替えられません',
     // hero
-    'hero.intro': 'こんにちは、スシルです。インドのチェンナイでコンピューターサイエンスを学びながら、Webアプリやツールを作っています。<span class="it">日本</span>に関するものも少なくありません。',
+    'hero.intro': '<span class="key">スシル</span>です。<span class="key">ソフトウェア</span>の「ものづくり」に惹かれる、コンピューターサイエンスの学生です。複雑なアイデアを、実際に使えるツールにするのが好きです。そのヒントは、よく<span class="key">日本</span>からもらっています。',
     'hero.now': 'ODPT Challenge 2026に向けて、MetroFlowを開発中',
     'hero.role': 'フルスタック開発者 · チェンナイ', 'hero.scroll': 'スクロール ↓',
     'hint.desk': 'カーソルでインクをかき混ぜられます<br>クリックで足す · スクロールで動かす<br>左下で色や動きを変えられます',
