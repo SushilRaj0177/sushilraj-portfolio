@@ -2137,7 +2137,7 @@ Fixes proposed: 4
   }
 
   // pointer and finger → ink
-  var ptr = { x: 0, y: 0, px: 0, py: 0, moved: false, init: false }, fingerDown = false;
+  var ptr = { x: 0, y: 0, px: 0, py: 0, t: 0, moved: false, init: false }, fingerDown = false;
   function onMove(x, y) {
     var nx = x / cssW, ny = 1 - y / cssH;
     if (!ptr.init) { ptr.px = nx; ptr.py = ny; ptr.init = true; }
@@ -2145,7 +2145,7 @@ Fixes proposed: 4
   }
   addEventListener('pointermove', function (e) { if (e.pointerType !== 'touch') onMove(e.clientX, e.clientY); }, { passive: true });
   if (touch) {
-    addEventListener('touchstart', function (e) { var t = e.touches[0]; if (!t) return; ptr.init = false; fingerDown = true; onMove(t.clientX, t.clientY); }, { passive: true });
+    addEventListener('touchstart', function (e) { var t = e.touches[0]; if (!t) return; ptr.init = false; ptr.t = performance.now(); fingerDown = true; onMove(t.clientX, t.clientY); }, { passive: true });
     addEventListener('touchmove', function (e) { var t = e.touches[0]; if (t) onMove(t.clientX, t.clientY); }, { passive: true });
     var lift = function (e) { if (!e.touches.length) fingerDown = false; };
     addEventListener('touchend', lift, { passive: true }); addEventListener('touchcancel', lift, { passive: true });
@@ -2183,6 +2183,20 @@ Fixes proposed: 4
     else if (pace.half && now > pace.until) { pace.half = false; pace.trialEnd = now + 3000; pace.d.length = 0; }
   }
 
+  // A finger on a phone works like the mouse on a computer, scaled down to the smaller screen: drops sized to the
+  // screen the same way, the same push for each pixel moved in any direction, and the same ink per second at any
+  // frame rate. (Measured against the width and the height separately, a portrait phone pushed sideways twice as
+  // hard as up and down, and its drops were so big, with twice the ink at 120 Hz, that circles filled in instead
+  // of winding into a whirl.)
+  function fingerSplat(now) {
+    var mx = (ptr.x - ptr.px) * cssW, my = (ptr.y - ptr.py) * cssH;   // pixels moved since the last drop
+    var f = Math.min(Math.max((now - ptr.t) / 1000, 1 / 240), 2 / 60) * 60; ptr.t = now;   // frames' worth, at 60 a second
+    var sp = Math.min(1, Math.hypot(mx, my) / f * C.FORCE / Math.sqrt(cssW * cssH) / 300);   // how hard, as on a computer
+    if (sp <= 0.02) return;
+    var g = C.FORCE * .006 * vel.w / cssW, ar = canvas.width / canvas.height;
+    splat(ptr.x, ptr.y, mx * g, my * g, inkColor((0.25 + sp * 0.9) * (theme.dark ? 1 : .8) * f), ar < 1 ? ar : 1);
+  }
+
   var last = performance.now(), running = false, nextAuto = last + 2600, lastScroll = scrollNow(), started = last;
   function frame(now) {
     if (!running) return;
@@ -2197,9 +2211,12 @@ Fixes proposed: 4
     strength += ((1 - hero * 0.55) - strength) * 0.08;
     if (ptr.moved) {
       ptr.moved = false;
-      var dx = (ptr.x - ptr.px) * C.FORCE, dy = (ptr.y - ptr.py) * C.FORCE;
-      var sp = Math.min(1, Math.hypot(dx, dy) / 300);
-      if (sp > 0.02) splat(ptr.x, ptr.y, dx, dy, inkColor((0.25 + sp * 0.9) * (theme.dark ? 1 : .8)), 1);
+      if (mobile) fingerSplat(now);
+      else {
+        var dx = (ptr.x - ptr.px) * C.FORCE, dy = (ptr.y - ptr.py) * C.FORCE;
+        var sp = Math.min(1, Math.hypot(dx, dy) / 300);
+        if (sp > 0.02) splat(ptr.x, ptr.y, dx, dy, inkColor((0.25 + sp * 0.9) * (theme.dark ? 1 : .8)), 1);
+      }
       ptr.px = ptr.x; ptr.py = ptr.y;
     }
     if (now > nextAuto) { randomSplats(1, theme.dark ? 1.4 : 1.0); nextAuto = now + (2200 + Math.random() * 2600) / C.AUTO; }
