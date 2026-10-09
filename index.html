@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <!-- Mincho for the kanji that are set as display type. Only these characters are fetched, so add any new one here. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;800&text=気配符言葉迦具土墨藍緋極光画素春夏秋冬・スシルを磨る物語音楽神話景色暮らし&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;800&text=気配符言葉迦具土墨藍緋極光画素春夏秋冬・スシルを磨る物語音楽神話景色暮らし作品自己紹介日本連絡風鈴&display=swap">
 <!-- Unbounded (M PLUS 1 in Japanese) for the three key words in the intro. Only these characters are fetched. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@700&family=Unbounded:wght@500&text=SushilsoftwareJapanスシルソフトウェア日本&display=swap">
 <style>
@@ -527,6 +527,38 @@ h1 .ch { display: inline-block; will-change: transform; }
 .contact .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
 .contact-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 30px; font-size: 13.5px; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: 20px; }
 .contact-foot b { font-weight: 400; color: inherit; font-variant-numeric: tabular-nums; }
+/* contact, computers: a wind chime (風鈴, fūrin) hangs from above the top of the screen, its string running down
+   from the bar's divider. The pointer stirs the air around it: the bell sways slowly, the clapper swings against the
+   glass, and the paper strip flutters. Clicking rings it, and from then on it rings with a sound too (never before). */
+.furin { display: none; }
+@media (min-width: 1100px) {
+  :root:not([data-layout="mobile"]) .contact { position: relative; }
+  :root:not([data-layout="mobile"]) .furin {
+    display: block; position: absolute; top: 0; left: var(--furin-x, 86%); width: clamp(150px, 10.5vw, 200px); margin-left: calc(clamp(150px, 10.5vw, 200px) / -2); aspect-ratio: 200 / 700;
+    padding: 0; border: 0; background: none; color: var(--ink); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+}
+.furin svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.furin .fb { transform-origin: 100px 0; transform-box: view-box; }
+.furin .furin-strip { transform-origin: 100px 340px; transform-box: view-box; }
+.furin .furin-paper { transform-origin: 100px 498px; transform-box: view-box; }
+.furin-string { stroke: var(--ink-2); stroke-width: .7; }
+.furin-glass { fill: url(#furinGlass); stroke: var(--ink); stroke-opacity: .42; stroke-width: 1; }
+.furin-paint path { fill: none; stroke: var(--seal); stroke-linecap: round; opacity: .85; }
+.furin-paint circle { fill: #3b4bd8; opacity: .75; }
+.furin-shine { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; opacity: .8; }
+.furin-shine.soft { stroke-width: 2; opacity: .45; }
+.furin-rim { fill: none; stroke: var(--ink); stroke-opacity: .45; stroke-width: 1; }
+.furin-knob { fill: var(--ink-2); }
+.furin-clapper { fill: #cfe0ff; fill-opacity: .6; stroke: var(--ink); stroke-opacity: .4; stroke-width: .8; }
+.furin-paper .tanzaku { fill: #f3eee2; stroke: rgba(0, 0, 0, .14); stroke-width: .6; }
+:root[data-mode="dark"] .furin-paper .tanzaku { fill: #e8e1d1; }
+.furin-paper .fold { stroke: rgba(0, 0, 0, .12); stroke-width: .6; }
+.furin-paper text { font-family: var(--mincho); font-weight: 800; font-size: 25px; fill: #1d1d1f; text-anchor: middle; }
+.furin-mark { fill: var(--seal); }
+.furin.ring .furin-glass { animation: furin-glow .9s ease-out; }
+@keyframes furin-glow { 0% { stroke-opacity: 1; filter: drop-shadow(0 0 8px rgba(159, 178, 255, .9)); } 100% { stroke-opacity: .42; filter: none; } }
+.furin:focus-visible { outline: 1px solid var(--ink-2); outline-offset: 6px; border-radius: 6px; }
 
 /* intro curtain */
 .intro { position: fixed; inset: 0; z-index: 200; background: var(--ink); color: var(--bg); display: flex; align-items: flex-end; justify-content: space-between; padding: var(--gutter); clip-path: inset(0 0 0 0); transition: clip-path 1.1s cubic-bezier(.77, 0, .18, 1); }
@@ -1310,6 +1342,39 @@ Fixes proposed: 4
       </div>
       <p class="based" data-i18n="based">Chennai, India · Building from here.</p>
     </div>
+    <button class="furin" id="furin" type="button" aria-label="Wind chime: click to ring it" data-cursor="Ring" data-i18n-attr="aria-label:furin.aria,data-cursor:cur.ring">
+      <svg viewBox="0 0 200 700" aria-hidden="true">
+        <defs>
+          <radialGradient id="furinGlass" cx=".34" cy=".26" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".65"/><stop offset=".38" stop-color="#e6edff" stop-opacity=".22"/><stop offset="1" stop-color="#8ea3ff" stop-opacity=".2"/></radialGradient>
+          <linearGradient id="furinPaper" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".07"/><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient>
+          <clipPath id="furinBell"><path d="M54 420 C54 362 74 330 100 330 C126 330 146 362 146 420 Z"/></clipPath>
+        </defs>
+        <g class="fb">
+          <line class="furin-string" x1="100" y1="-4000" x2="100" y2="330"/>
+          <g class="furin-strip">
+            <line class="furin-string" x1="100" y1="340" x2="100" y2="500"/>
+            <rect class="furin-clapper" x="92" y="394" width="16" height="15" rx="3.5"/>
+            <g class="furin-paper">
+              <rect class="tanzaku" x="80" y="498" width="40" height="170" rx="1.5"/>
+              <rect x="80" y="498" width="40" height="170" rx="1.5" fill="url(#furinPaper)"/>
+              <line class="fold" x1="80" y1="509" x2="120" y2="509"/>
+              <text x="100" y="552">風</text><text x="100" y="588">鈴</text>
+              <rect class="furin-mark" x="95.5" y="636" width="9" height="9" rx="1.2"/>
+            </g>
+          </g>
+          <path class="furin-glass" d="M54 420 C54 362 74 330 100 330 C126 330 146 362 146 420 Z"/>
+          <g clip-path="url(#furinBell)" class="furin-paint">
+            <path d="M48 398 C62 384 76 404 92 390 S120 383 130 394 S146 402 152 392" stroke-width="6.5"/>
+            <path d="M50 412 C68 402 82 418 100 406 S126 401 150 411" stroke-width="3.6" opacity=".7"/>
+            <circle cx="77" cy="360" r="3.2"/><circle cx="121" cy="368" r="2.7"/><circle cx="106" cy="350" r="2.2"/><circle cx="88" cy="374" r="1.6"/>
+          </g>
+          <path class="furin-shine" d="M66 405 C63 372 74 348 90 339"/>
+          <path class="furin-shine soft" d="M134 398 C135 384 132 372 127 364"/>
+          <ellipse class="furin-rim" cx="100" cy="420" rx="46" ry="4.4"/>
+          <circle class="furin-knob" cx="100" cy="330" r="4"/>
+        </g>
+      </svg>
+    </button>
     <div class="contact-foot"><span>© 2026 Sushil Raj<span id="deviceNote"></span></span><span><span data-i18n="city.chennai">Chennai</span> <b id="cChennai">--:--</b> · <span data-i18n="city.tokyo">Tokyo</span> <b id="cTokyo">--:--</b></span></div>
   </section>
 </main>
@@ -1424,7 +1489,7 @@ Fixes proposed: 4
     'lead': '一緒に作りたいプロジェクトがある方も、ソフトウェアの話をしたい方も、ただつながりたい方も、メールはいつでも歓迎です。',
     'mail.label': 'メール', 'based': 'インド・チェンナイ · ここからつくっています。',
     'copy': 'コピー', 'seal.aria': '「スシル」と彫られた判子', 'seal.toast': ' · 名前の判子です',
-    'city.chennai': 'チェンナイ', 'city.tokyo': '東京',
+    'furin.aria': '風鈴：クリックで鳴らす', 'cur.ring': '鳴らす', 'city.chennai': 'チェンナイ', 'city.tokyo': '東京',
     'note.mobile': 'スマホ版', 'note.toFull': 'PC版を見る',
     'note.full': 'PC版', 'note.toMobile': 'スマホ版に戻る'
   };
@@ -1715,6 +1780,89 @@ Fixes proposed: 4
     if (!es[0].isIntersecting) return; ob.disconnect(); setTimeout(function () { stampSeal(true); }, 200);
   }, { threshold: .75 }).observe(seal);
   seal.addEventListener('click', function () { stampSeal(true); vibrate(14); toast(t('seal.toast'), 'スシル'); });
+
+  /* ---------- 風鈴: the wind chime in the contact section (computers) ---------- */
+  (function () {
+    var el = document.getElementById('furin');
+    if (!el || getComputedStyle(el).display === 'none') return;
+    var bell = el.querySelector('.fb'), strip = el.querySelector('.furin-strip'), paper = el.querySelector('.furin-paper');
+    var section = el.parentNode;
+    // hang it on the bar's divider (between the links and the language button), so the string seems to come from it
+    function place() {
+      var lang = document.querySelector('.bar .lang-btn'), sr = section.getBoundingClientRect();
+      if (!lang) return;
+      var gap = parseFloat(getComputedStyle(lang.parentNode).columnGap) || 24;
+      var x = lang.getBoundingClientRect().left - gap / 2 - sr.left;
+      section.style.setProperty('--furin-x', x.toFixed(1) + 'px');
+    }
+    place(); addEventListener('resize', place); if (document.fonts) document.fonts.ready.then(place);
+    // Three linked swings, in radians: the bell on its long string (b), the clapper and strip inside it relative to
+    // the bell (r), and the paper relative to its string (p). Air is a smoothed wind (wind) the pointer stirs up and
+    // that dies away over a second or so, with turbulence on top that grows with it, so it gusts instead of pushing.
+    var b = 0, bv = 0, r = 0, rv = 0, p = 0, pv = 0, wind = 0, LIMIT = .5;
+    var sound = false, ac = null, lastRing = 0, on = false, raf = 0, last = 0, t0 = performance.now(), ph = [Math.random() * 9, Math.random() * 9, Math.random() * 9];
+    function ring(strength) {
+      var now = performance.now(); if (now - lastRing < 110) return; lastRing = now;
+      el.classList.remove('ring'); void el.getBoundingClientRect(); el.classList.add('ring');
+      if (!sound) return;
+      try {
+        ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+        var f = 2350 * (1 + (Math.random() - .5) * .03), at = ac.currentTime, vol = Math.max(.25, Math.min(1, strength)) * .1;
+        [[1, .5, 2.6], [2.32, .24, 1.6], [4.25, .12, .9], [6.63, .05, .5]].forEach(function (q) {
+          var o = ac.createOscillator(), g = ac.createGain();
+          o.type = 'sine'; o.frequency.value = f * q[0];
+          g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(vol * q[1], at + .004); g.gain.exponentialRampToValueAtTime(.0001, at + q[2]);
+          o.connect(g); g.connect(ac.destination); o.start(at); o.stop(at + q[2] + .05);
+        });
+      } catch (e) {}
+    }
+    function step(now) {
+      var dt = Math.min(.033, (now - last) / 1000 || .016); last = now;
+      var t = (now - t0) / 1000;
+      wind *= Math.exp(-dt / .9);                                  // the stirred air settles
+      var calm = .035 * Math.sin(t * .63 + ph[0]) + .02 * Math.sin(t * 1.7 + ph[1]);   // a faint breeze, always
+      var gust = Math.abs(wind) * (.55 * Math.sin(t * 7.3 + ph[0]) + .35 * Math.sin(t * 12.9 + ph[2]) + .25 * Math.sin(t * 19.1 + ph[1]));
+      var air = wind + calm + gust;
+      // bell: heavy, on a long string, so it moves slowly
+      var ba = -6 * b - 1.1 * bv + air * 1.1;
+      bv += ba * dt; b += bv * dt;
+      // clapper and strip: lighter, swung by the air on the paper, and left behind when the bell moves
+      var ra = -10 * r - 1.3 * rv + air * 5.5 + gust * 3 - ba * .9;
+      rv += ra * dt; r += rv * dt;
+      if (Math.abs(r) > LIMIT) {                                    // the clapper meets the glass
+        var hit = Math.abs(rv); r = Math.sign(r) * LIMIT;
+        if (rv * r > 0) rv = -rv * .3;
+        if (hit > .45) ring(hit / 2.5);
+      }
+      // paper: very light, it flutters, and bends as it swings
+      var pa = -24 * p - 2.2 * pv + air * 9 + gust * 14 - ra * .7;
+      pv += pa * dt; p += pv * dt; p = Math.max(-.9, Math.min(.9, p));
+      bell.style.transform = 'rotate(' + (b * 57.3).toFixed(2) + 'deg)';
+      strip.style.transform = 'rotate(' + (r * 57.3).toFixed(2) + 'deg)';
+      paper.style.transform = 'rotate(' + (p * 57.3).toFixed(2) + 'deg) skewX(' + Math.max(-14, Math.min(14, -pv * 4)).toFixed(2) + 'deg)';
+      raf = on ? requestAnimationFrame(step) : 0;
+    }
+    function start() { if (!raf && on && !reduce) { last = performance.now(); raf = requestAnimationFrame(step); } }
+    // the pointer stirs the air: faster and closer stirs more; direction follows the pointer
+    var px = null, pt = 0;
+    addEventListener('pointermove', function (e) {
+      if (e.pointerType === 'touch' || !on) { px = null; return; }
+      var now = performance.now();
+      if (px !== null && now > pt) {
+        var rc = el.getBoundingClientRect(), cx = rc.left + rc.width / 2, cy = rc.top + rc.height * .62;
+        var d = Math.hypot(e.clientX - cx, e.clientY - cy), reach = Math.max(0, 1 - d / 420);
+        var v = (e.clientX - px) / Math.max(8, now - pt);           // px per ms
+        wind += Math.max(-2.5, Math.min(2.5, v)) * reach * reach * .35;
+        wind = Math.max(-1.6, Math.min(1.6, wind));
+      }
+      px = e.clientX; pt = now;
+    }, { passive: true });
+    var sy = scrollY;
+    addEventListener('scroll', function () { var d = scrollY - sy; sy = scrollY; if (on) wind += Math.max(-.4, Math.min(.4, d * .004)) * (Math.random() < .5 ? -1 : 1); }, { passive: true });
+    el.addEventListener('click', function () { sound = true; rv += (Math.random() < .5 ? -1 : 1) * 3.4; bv += .35; ring(1); start(); });
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { on = es[0].isIntersecting; if (on) { place(); start(); } }).observe(section);
+    else { on = true; start(); }
+  })();
 
   /* ---------- clocks + which version this is ---------- */
   function clock(id, tz) { try { document.getElementById(id).textContent = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz }).format(new Date()); } catch (e) {} }
