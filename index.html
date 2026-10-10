@@ -2590,12 +2590,11 @@ Fixes proposed: 4
     display: 'uniform sampler2D uTexture;uniform vec3 uBg;uniform float uDark,uStrength,uGloss,uChroma,uPix,uTime;uniform vec2 dtexel,texel;' +
       'vec3 tx(vec2 p){return max(texture(uTexture,p).rgb,0.);}' +
       'float mx3(vec3 c){return max(c.r,max(c.g,c.b));}' +
-      // dark theme: ink adds light, so where it is thickest (the head of a trail) every channel would run past full
-      // and clip to white. Above 78% the brightest channel is eased toward full instead, and the others scaled with
-      // it, so thick ink stays the brightest version of its own colour. Anything dimmer is untouched.
-      // The very thickest part (the centre of the head) is then lifted a little toward white, at most 40%, so it has a
-      // small hot core of light while staying tinted with its colour.
-      'vec3 soft(vec3 x){float m=mx3(x),t=.78;if(m<=t)return x;vec3 y=x*((t+(1.-t)*(1.-exp(-(m-t)/(1.-t))))/m);return mix(y,vec3(1.),.4*smoothstep(1.3,3.2,m));}' +
+      // dark theme: ink adds light, so where it is thickest (the head of a trail) it runs past full and used to clip
+      // to plain white. Only that ink changes: it keeps its own hue at full brightness, lifted toward white as far as
+      // it was over (at most 45%), so the head glows in its colour with a little light at the centre. Ink that wasn't
+      // over full is drawn exactly as before, and the gloss is added on top afterwards, untouched.
+      'vec3 soft(vec3 x){float m=mx3(x);if(m<=1.)return x;return mix(x/m,vec3(1.),.45*smoothstep(1.,2.4,m));}' +
       // pixels: a hash per pixel cell, an ordered dither (the 4x4 Bayer pattern pixel art uses between two shades),
       // and a twinkle: about one cell in a hundred is a sparkle that brightens and fades on its own beat, drawn as a
       // little four-pointed plus, the way pixel art draws one
@@ -2630,7 +2629,7 @@ Fixes proposed: 4
       'if(uPix>0.){vec3 g=c*vis*(.65+.55*sh)+vec3(spec)*uGloss*.35*smoothstep(.02,.3,a*vis);' +
       'g-=.4*min(g.r,min(g.g,g.b));float m=mx3(g),dq=dith(cell)-.5,q=m<.05+dq*.02?0.:floor(m*6.+.5+dq*.6)/6.;g*=q/max(m,1e-4);' +
       'o=vec4(soft(uBg+g)+vec3(1.,.88,.55)*sparkle(cell)*smoothstep(.1,.3,q),1.);}else ' +
-      'o=vec4(soft(uBg+c*vis*(.65+.55*sh)+vec3(spec)*uGloss*.35*smoothstep(.02,.3,a*vis)),1.);' +
+      'o=vec4(soft(uBg+c*vis*(.65+.55*sh))+vec3(spec)*uGloss*.35*smoothstep(.02,.3,a*vis),1.);' +
       '}}'
   };
 
