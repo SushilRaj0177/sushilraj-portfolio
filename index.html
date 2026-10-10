@@ -2619,9 +2619,11 @@ Fixes proposed: 4
       // pixels: the ink's strength in flat quarter steps (its colour kept), dithered only where two steps meet;
       // the faintest haze is left out, so the paper around the ink stays clean
       'float pm=0.;if(uPix>0.){float m=mx3(A),dq=dith(cell)-.5;pm=m<.14+dq*.05?0.:floor(m*4.+.5+dq*.6)/4.;A*=pm/max(m,1e-4);}' +
-      // a ceiling on how dark the thickest ink gets (ember uses it on paper, so its head is a deep rust with room for
-      // the copper around it, not a wide black pool): past a knee the depth eases toward the ceiling, colour kept
-      'if(uDeep>0.){float m=mx3(A),k=uDeep*.55;if(m>k)A*=(k+(uDeep-k)*(1.-exp(-(m-k)/(uDeep-k))))/m;}' +
+      // ember on paper: its glow is given more, and its darkness less. The glow: 22% more colour, so the copper reaches
+      // further and its mid-tones are richer, and some of the grey it would absorb is given back, so the copper and
+      // amber come out clean instead of muddy. The darkness: a ceiling on how dark the thickest ink gets, so the head
+      // is a deep rust, not a wide black pool (past a knee the depth eases toward the ceiling, colour kept).
+      'if(uDeep>0.){A*=1.22;A-=.3*min(A.r,min(A.g,A.b));float m=mx3(A),k=uDeep*.55;if(m>k)A*=(k+(uDeep-k)*(1.-exp(-(m-k)/(uDeep-k))))/m;}' +
       'o=vec4(uBg*exp(-A),1.);' +
       'if(uPix>0.)o.rgb=mix(o.rgb,vec3(1.,.96,.78),min(1.,sparkle(cell)*smoothstep(.2,.6,pm)));' +
       '}else{' +
