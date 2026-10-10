@@ -2587,7 +2587,7 @@ Fixes proposed: 4
     clear: 'uniform sampler2D uTexture;uniform float value;void main(){o=value*texture(uTexture,vUv);}',
     // Light theme: the dye is pigment on paper. It absorbs light (Beer-Lambert), so colours mix the way inks do
     // and edges darken a little, like watercolour. Dark theme: the dye glows like smoke, with a soft sheen.
-    display: 'uniform sampler2D uTexture;uniform vec3 uBg;uniform float uDark,uStrength,uGloss,uChroma,uPix,uTime;uniform vec2 dtexel,texel;' +
+    display: 'uniform sampler2D uTexture;uniform vec3 uBg;uniform float uDark,uStrength,uGloss,uChroma,uPix,uTime,uDeep;uniform vec2 dtexel,texel;' +
       'vec3 tx(vec2 p){return max(texture(uTexture,p).rgb,0.);}' +
       'float mx3(vec3 c){return max(c.r,max(c.g,c.b));}' +
       // dark theme: ink adds light, so where it is thickest (the head of a trail) it runs past full and used to clip
@@ -2619,6 +2619,9 @@ Fixes proposed: 4
       // pixels: the ink's strength in flat quarter steps (its colour kept), dithered only where two steps meet;
       // the faintest haze is left out, so the paper around the ink stays clean
       'float pm=0.;if(uPix>0.){float m=mx3(A),dq=dith(cell)-.5;pm=m<.14+dq*.05?0.:floor(m*4.+.5+dq*.6)/4.;A*=pm/max(m,1e-4);}' +
+      // a ceiling on how dark the thickest ink gets (ember uses it on paper, so its head is a deep rust with room for
+      // the copper around it, not a wide black pool): past a knee the depth eases toward the ceiling, colour kept
+      'if(uDeep>0.){float m=mx3(A),k=uDeep*.55;if(m>k)A*=(k+(uDeep-k)*(1.-exp(-(m-k)/(uDeep-k))))/m;}' +
       'o=vec4(uBg*exp(-A),1.);' +
       'if(uPix>0.)o.rgb=mix(o.rgb,vec3(1.,.96,.78),min(1.,sparkle(cell)*smoothstep(.2,.6,pm)));' +
       '}else{' +
@@ -2733,7 +2736,7 @@ Fixes proposed: 4
                         light: [[.32, .05, .06], [.15, .25, .01], [.01, .26, .10], [.00, .06, .32], [.31, .20, .02]] },
     pixels: { mix: 1, mixL: 1, dark: [], light: [] }
   };
-  var pal = PALETTES[root.dataset.palette] || PALETTES.indigo, AURORA_CHROMA = .75, PIXELS_CHROMA = .6;
+  var pal = PALETTES[root.dataset.palette] || PALETTES.indigo, AURORA_CHROMA = .75, PIXELS_CHROMA = .6, EMBER_DEEP = 1.9;
   // pixels (画素): pixel art that drifts between blues and sea greens. The blues are ice, deep blue, frost teal and
   // lavender (and snow at night); each has a green it turns into, shade for shade: sea green, pine, jade, mint and
   // sea foam. It holds blue, eases over to green, holds, and eases back, on a slow loop, so the ink changes as it is
@@ -2850,6 +2853,7 @@ Fixes proposed: 4
     gl.uniform1f(u.uDark, theme.dark); gl.uniform1f(u.uStrength, strength); gl.uniform1f(u.uGloss, 1.0);
     var pix = pal === PALETTES.pixels;
     gl.uniform1f(u.uChroma, pal === PALETTES.aurora ? AURORA_CHROMA : pix ? PIXELS_CHROMA : 0);
+    gl.uniform1f(u.uDeep, pal === PALETTES.ember ? EMBER_DEEP : 0);
     // pixels: cells about 5 px across, and the time the sparkles twinkle to
     gl.uniform1f(u.uPix, pix ? Math.max(2, Math.round(5 * canvas.width / cssW)) : 0);
     gl.uniform1f(u.uTime, pix ? performance.now() / 1000 % 600 : 0);
