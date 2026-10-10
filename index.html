@@ -2593,7 +2593,9 @@ Fixes proposed: 4
       // dark theme: ink adds light, so where it is thickest (the head of a trail) every channel would run past full
       // and clip to white. Above 78% the brightest channel is eased toward full instead, and the others scaled with
       // it, so thick ink stays the brightest version of its own colour. Anything dimmer is untouched.
-      'vec3 soft(vec3 x){float m=mx3(x),t=.78;if(m<=t)return x;return x*((t+(1.-t)*(1.-exp(-(m-t)/(1.-t))))/m);}' +
+      // The very thickest part (the centre of the head) is then lifted a little toward white, at most 40%, so it has a
+      // small hot core of light while staying tinted with its colour.
+      'vec3 soft(vec3 x){float m=mx3(x),t=.78;if(m<=t)return x;vec3 y=x*((t+(1.-t)*(1.-exp(-(m-t)/(1.-t))))/m);return mix(y,vec3(1.),.4*smoothstep(1.3,3.2,m));}' +
       // pixels: a hash per pixel cell, an ordered dither (the 4x4 Bayer pattern pixel art uses between two shades),
       // and a twinkle: about one cell in a hundred is a sparkle that brightens and fades on its own beat, drawn as a
       // little four-pointed plus, the way pixel art draws one
