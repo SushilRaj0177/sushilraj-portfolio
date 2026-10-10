@@ -152,15 +152,15 @@ section { scroll-margin-top: 64px; }
 .cursor.hot .arrow { transform: scale(1.14); }
 .cursor.down .arrow { transform: scale(.86); }
 .cursor.hot.down .arrow { transform: scale(.98); }
-.cursor .tag { position: absolute; left: 0; top: 0; white-space: nowrap; }
-.cursor .tag span {
+.cursor .cur-tag { position: absolute; left: 0; top: 0; white-space: nowrap; }
+.cursor .cur-tag span {
   display: block; margin: 22px 0 0 14px; padding: 5px 8px 5px 9px; border-radius: 4px; background: #0b0c0e; color: #fff;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .7), 0 4px 12px -2px rgba(0, 0, 0, .35);
   font-family: var(--mono); font-size: 10.5px; line-height: 1.2; letter-spacing: .08em; text-transform: uppercase;
   opacity: 0; transform: translateY(-4px); transition: opacity .2s, transform .35s var(--ease);
 }
-:root[data-mode="dark"] .cursor .tag span { background: #fff; color: #0b0c0e; box-shadow: 0 0 0 1px rgba(0, 0, 0, .6), 0 4px 12px -2px rgba(0, 0, 0, .5); }
-.cursor.big .tag span { opacity: 1; transform: none; }
+:root[data-mode="dark"] .cursor .cur-tag span { background: #fff; color: #0b0c0e; box-shadow: 0 0 0 1px rgba(0, 0, 0, .6), 0 4px 12px -2px rgba(0, 0, 0, .5); }
+.cursor.big .cur-tag span { opacity: 1; transform: none; }
 
 /* bar */
 .bar {
@@ -340,6 +340,24 @@ h1 .ch { display: inline-block; will-change: transform; }
 .btn:hover { border-color: var(--ink); }
 .btn.solid { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .btn.solid:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* computers: hovering a button floods it with ink from the point the pointer came in, and it drains back out toward
+   where the pointer left; buttons also lean a little toward the pointer (set from script) */
+@media (hover: hover) and (pointer: fine) {
+  .btn { position: relative; isolation: isolate; overflow: hidden; transition: color .35s, border-color .35s, translate .5s var(--ease); }
+  .btn::before {
+    content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; background: var(--ink); pointer-events: none;
+    clip-path: circle(0 at var(--mx, 50%) var(--my, 50%)); transition: clip-path .55s var(--ease);
+  }
+  .btn:hover::before { clip-path: circle(140% at var(--mx, 50%) var(--my, 50%)); }
+  .btn:hover { color: var(--bg); border-color: var(--ink); }
+  .btn.solid:hover { background: var(--ink); border-color: var(--accent); color: #fff; }
+  .btn.solid::before { background: var(--accent); }
+  .lang-btn, .theme-btn { transition: background-color .3s, border-color .3s, transform .5s var(--ease), translate .5s var(--ease); }
+  /* the email address: an underline draws in under it */
+  .addr::after { content: ""; position: absolute; left: 0; right: 0; bottom: -.06em; height: 2px; background: currentColor; transform: scaleX(0); transform-origin: right center; transition: transform .5s var(--ease); pointer-events: none; }
+  .addr:hover::after { transform: scaleX(1); transform-origin: left center; }
+}
+@media (prefers-reduced-motion: reduce) { .btn::before { transition: none; } .btn, .lang-btn, .theme-btn { translate: none !important; } }
 .private { font-size: 13.5px; color: var(--ink-3); align-self: center; }
 .card-vis { position: relative; overflow: hidden; background: var(--card-2); border-left: 1px solid var(--line); min-width: 0; --rx: 0deg; --ry: 0deg; --gx: 50%; --gy: 50%; }
 .card-vis::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .5s;
@@ -1042,7 +1060,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="rail" id="rail" aria-hidden="true"><div class="thumb"></div></div>
-<div class="cursor away" id="cursor" aria-hidden="true"><div class="cross"><svg class="arrow" viewBox="0 0 24 24"><path d="M3 2 L20.5 9.6 L12.4 12.1 L9.4 20.3 Z"/></svg></div><div class="tag"><span id="cursorLabel">Open</span></div></div>
+<div class="cursor away" id="cursor" aria-hidden="true"><div class="cross"><svg class="arrow" viewBox="0 0 24 24"><path d="M3 2 L20.5 9.6 L12.4 12.1 L9.4 20.3 Z"/></svg></div><div class="cur-tag"><span id="cursorLabel">Open</span></div></div>
 
 <header class="bar">
   <a class="brand" href="#top">Sushil Raj</a>
@@ -1997,7 +2015,7 @@ Fixes proposed: 4
       // strings: a white one from above to a little paper flower and the bell, an orange thread through it
       var white = new THREE.MeshStandardMaterial({ color: 0xf3f3f1, roughness: .8 }), orange = new THREE.MeshStandardMaterial({ color: 0xe8742a, roughness: .7 });
       function thread(mat, y0, y1, rad) { var m = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, y0 - y1, 6), mat); m.position.y = (y0 + y1) / 2; return m; }
-      pivot.add(thread(white, 2000, Y_TOP + 70, .9));
+      pivot.add(thread(orange, 2000, Y_TOP + 70, .9));
       var flower = new THREE.Group(); flower.position.y = Y_TOP + 70;
       for (var f = 0; f < 5; f++) { var petal = new THREE.Mesh(new THREE.CircleGeometry(4.2, 16), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .9, side: THREE.DoubleSide })); var a = f / 5 * Math.PI * 2; petal.position.set(Math.cos(a) * 4.5, Math.sin(a) * 4.5, 0); flower.add(petal); }
       flower.rotation.set(.5, .3, 0); bell.add(flower);
@@ -2082,6 +2100,19 @@ Fixes proposed: 4
     if (document.readyState === 'complete') later(); else addEventListener('load', later);
     if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { if (es[0].isIntersecting) { near = true; build(); } }, { rootMargin: '1600px 0px' }).observe(section);
     else { near = true; build(); }
+  })();
+
+  /* ---------- buttons: the ink comes in where the pointer does, and they lean toward it (computers) ---------- */
+  if (fine && !reduce) (function () {
+    function at(b, e) { var r = b.getBoundingClientRect(); b.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%'); b.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%'); return r; }
+    document.querySelectorAll('.btn, .lang-btn, .theme-btn').forEach(function (b) {
+      b.addEventListener('pointerenter', function (e) { at(b, e); });
+      b.addEventListener('pointermove', function (e) {
+        var r = at(b, e), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+        b.style.translate = Math.max(-6, Math.min(6, dx * .18)).toFixed(1) + 'px ' + Math.max(-5, Math.min(5, dy * .28)).toFixed(1) + 'px';
+      });
+      b.addEventListener('pointerleave', function (e) { at(b, e); b.style.translate = ''; });
+    });
   })();
 
   /* ---------- clocks + which version this is ---------- */
@@ -2274,7 +2305,7 @@ Fixes proposed: 4
   if (fine && !reduce) {
     root.classList.add('has-cursor');
     var cx = -100, cy = -100, tx = cx, ty = cy, moved = false;
-    var cross = cursor.querySelector('.cross'), tag = cursor.querySelector('.tag');
+    var cross = cursor.querySelector('.cross'), tag = cursor.querySelector('.cur-tag');
     var HOT = 'a,button,input,label,select,[role="switch"],[data-copy],[data-cursor]';
     addEventListener('pointermove', function (e) {
       cx = e.clientX; cy = e.clientY;
