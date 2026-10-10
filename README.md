@@ -16,6 +16,26 @@ My personal site. The page floats on a live ink simulation (WebGL2 stable fluids
 - **Sections:** six projects, about, Japan, and contact, signed off with a name seal (判子) reading スシル
 - **Scrolling:** besides stirring the ink, the name sinks back as you leave the top, headings rise into place, and the skill columns fade up
 
+## Credits
+
+### Original to this site
+
+Concept, design and writing by **Sushil Raj**:
+
+- A portfolio that floats on live ink, with type that inverts where the ink passes
+- The five inks and their palettes, including Pixels: pixel art with a dithered look and twinkling sparkles that drifts between blue and sea green
+- The phone gestures: a scrolling finger stirs the ink, while a sideways stroke or a press and hold paints it
+- The glass wind chime (風鈴) hanging from the bar's divider, with its painted globe, clapper, paper strip, and the way the pointer's wind moves it
+- The Japan thread: the section on where it comes from, the bilingual section tags, the name in katakana, the hanko seal that signs off the page, and the またね tab title
+- All the words on the site, in English and Japanese
+
+### Built on
+
+- The ink is a fluid simulation using Jos Stam's *Stable Fluids* method ([SIGGRAPH 1999](https://www.dgp.toronto.edu/public_user/stam/reality/Research/pdf/ns.pdf)), run on the GPU as described in *GPU Gems*, chapter 38 ([Mark Harris, 2004](https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-38-fast-fluid-dynamics-simulation-gpu)). [Pavel Dobryakov's WebGL fluid simulation](https://github.com/PavelDoGreat/WebGL-Fluid-Simulation) was the reference for running it in a browser.
+- Libraries: [GSAP](https://gsap.com) and ScrollTrigger, [Lenis](https://github.com/darkroomengineering/lenis), and [three.js](https://threejs.org)
+- Fonts: Geist and Geist Mono, Instrument Serif, Unbounded, Shippori Mincho B1, Zen Kaku Gothic New and M PLUS 1, all from [Google Fonts](https://fonts.google.com)
+- The wind chime was modelled on photographs of real glass fūrin. The seal, tanzaku and seigaiha wave pattern are traditional Japanese designs.
+
 ## Run it
 
 It's a single static page with no build step. Open `index.html`, or serve the folder:
