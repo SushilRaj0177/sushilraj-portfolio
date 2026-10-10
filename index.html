@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sushil Raj · スシル</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='2' width='60' height='60' rx='11' fill='%23d23c2c'/%3E%3Crect x='6.5' y='6.5' width='51' height='51' rx='7.5' fill='none' stroke='%23fff' stroke-opacity='.55' stroke-width='1.6'/%3E%3Cpath fill='%23fff' transform='translate%288.61 50.23%29 scale%280.05215 -0.05215%29' d='M585 356Q585 347 599 341Q693 303 762.5 250.0Q832 197 832 139Q832 105 812.0 86.0Q792 67 767 67Q746 67 729.0 82.5Q712 98 701 126Q680 181 645.5 230.5Q611 280 571 316Q563 322 557 322Q549 322 541 314Q456 224 347.0 154.0Q238 84 81 24Q75 22 71 22Q65 22 65 26Q65 31 77 38Q182 96 285.5 187.0Q389 278 466.5 376.0Q544 474 573 551Q577 562 577 568Q577 573 572 573Q562 573 497.5 554.0Q433 535 391 517L371 507Q361 502 351.5 498.0Q342 494 334 494Q309 494 281.0 516.5Q253 539 234.0 570.0Q215 601 215 625Q215 632 217.0 636.5Q219 641 222 641Q225 641 233.0 632.5Q241 624 250 619Q278 602 318 602Q346 602 576 643Q591 646 614 663Q616 664 625.0 670.5Q634 677 641 677Q656 677 684.0 658.0Q712 639 734.0 615.0Q756 591 756 576Q756 568 750.0 561.5Q744 555 729 543Q702 523 692 507Q638 426 591 369Q585 362 585 356Z'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0e11'/%3E%3Cpath fill='%23f6f6f4' transform='translate%2811.64 51.14%29 scale%280.05391 -0.05391%29' d='M355 -16Q263 -16 197.0 15.0Q131 46 94.0 102.0Q57 158 52 234L205 241Q211 199 229.5 169.5Q248 140 279.5 125.0Q311 110 357 110Q395 110 421.5 119.0Q448 128 462.0 146.5Q476 165 476 192Q476 217 464.0 235.5Q452 254 418.0 269.5Q384 285 318 300Q227 321 171.5 347.0Q116 373 91.0 412.5Q66 452 66 512Q66 576 97.5 624.0Q129 672 189.0 699.0Q249 726 332 726Q420 726 481.0 695.0Q542 664 576.5 610.0Q611 556 618 486L466 478Q463 515 446.0 542.5Q429 570 400.0 585.0Q371 600 330 600Q278 600 248.5 577.0Q219 554 219 517Q219 491 232.5 473.5Q246 456 277.5 443.0Q309 430 367 418Q466 398 523.5 367.5Q581 337 605.0 295.0Q629 253 629 199Q629 133 595.5 84.5Q562 36 500.5 10.0Q439 -16 355 -16Z'/%3E%3Crect x='45' y='43' width='11' height='11' rx='2.2' fill='%23e0543d'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="theme-color" content="#d23c2c">
+<meta name="theme-color" content="#0d0e11">
 <meta name="description" content="Sushil Raj, a computer science student turning complex ideas into tools people can actually use, often with a little inspiration from Japan.">
 <!-- link previews (LinkedIn, WhatsApp, X, Slack) -->
 <meta property="og:type" content="website">
@@ -1963,8 +1963,9 @@ Fixes proposed: 4
             '}'].join('\n')
         });
       };
-      var pivot = new THREE.Group(); scene.add(pivot);
-      var bell = new THREE.Group(); pivot.add(bell);
+      // it hangs from the little paper flower: that is the point it swings about, and there is nothing above it
+      var pivot = new THREE.Group(); pivot.position.y = Y_TOP + 70; scene.add(pivot);
+      var bell = new THREE.Group(); bell.position.y = -(Y_TOP + 70); pivot.add(bell);
       // the bell: a glass globe cut open at the bottom
       var prof = []; for (var i = 0; i <= 40; i++) { var th = TC * i / 40; prof.push(new THREE.Vector2(Math.max(.01, R * Math.sin(th)), R * Math.cos(th))); }
       var shell = new THREE.LatheGeometry(prof, 96);
@@ -2019,10 +2020,9 @@ Fixes proposed: 4
       // strings: a white one from above to a little paper flower and the bell, an orange thread through it
       var white = new THREE.MeshStandardMaterial({ color: 0xf3f3f1, roughness: .8 }), orange = new THREE.MeshStandardMaterial({ color: 0xe8742a, roughness: .7 });
       function thread(mat, y0, y1, rad) { var m = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, y0 - y1, 6), mat); m.position.y = (y0 + y1) / 2; return m; }
-      pivot.add(thread(orange, 2000, Y_TOP + 70, .9));
-      var flower = new THREE.Group(); flower.position.y = Y_TOP + 70;
+      var flower = new THREE.Group();
       for (var f = 0; f < 5; f++) { var petal = new THREE.Mesh(new THREE.CircleGeometry(4.2, 16), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .9, side: THREE.DoubleSide })); var a = f / 5 * Math.PI * 2; petal.position.set(Math.cos(a) * 4.5, Math.sin(a) * 4.5, 0); flower.add(petal); }
-      flower.rotation.set(.5, .3, 0); bell.add(flower);
+      flower.rotation.set(.5, .3, 0); pivot.add(flower);
       bell.add(thread(orange, Y_TOP + 70, Y_TOP + 6, 1));
       var knot = new THREE.Mesh(new THREE.SphereGeometry(3.4, 12, 10), orange); knot.position.y = Y_TOP + 4; bell.add(knot);
       // the clapper and everything below it swings from the top of the bell, inside it
