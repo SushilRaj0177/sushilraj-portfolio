@@ -586,6 +586,8 @@ h1 .ch { display: inline-block; will-change: transform; }
 .furin .furin-hit { display: none; }
 .furin.is3d { width: 360px; margin-left: -180px; height: 780px; aspect-ratio: auto; pointer-events: none; }
 .furin.is3d svg { display: none; }
+/* the drawn chime is only a fallback: it stays hidden while the glass one loads, and shows only if WebGL or three.js is unavailable */
+.furin:not(.flat) svg { visibility: hidden; }
 .furin.is3d .furin-gl { display: block; width: 360px; height: 780px; }
 .furin.is3d .furin-hit { display: block; position: absolute; left: 120px; top: 232px; width: 120px; height: 470px; pointer-events: auto; border-radius: 40px; }
 
@@ -1379,7 +1381,7 @@ Fixes proposed: 4
           <clipPath id="furinBell"><path d="M54 420 C54 362 74 330 100 330 C126 330 146 362 146 420 Z"/></clipPath>
         </defs>
         <g class="fb">
-          <line class="furin-string" x1="100" y1="-4000" x2="100" y2="330"/>
+          <line class="furin-string" x1="100" y1="250" x2="100" y2="330"/><circle class="furin-knob" cx="100" cy="250" r="5"/>
           <g class="furin-strip">
             <line class="furin-string" x1="100" y1="340" x2="100" y2="500"/>
             <rect class="furin-clapper" x="92" y="394" width="16" height="15" rx="3.5"/>
@@ -2091,14 +2093,14 @@ Fixes proposed: 4
     function build() {
       if (built || !mod || !near) return; built = true;
       idle(function () {
-        try { var g = buildGlass(mod); el.insertBefore(g.canvas, el.firstChild); el.classList.add('is3d'); draw = g; g.frame(S); } catch (e) {}
+        try { var g = buildGlass(mod); el.insertBefore(g.canvas, el.firstChild); el.classList.add('is3d'); draw = g; g.frame(S); } catch (e) { el.classList.add('flat'); }
       }, { timeout: 1500 });
     }
     function fetchThree() {
       var probe = document.createElement('canvas');
-      if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) return;
+      if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) { el.classList.add('flat'); return; }
       Promise.all([import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js'),
-                   document.fonts ? document.fonts.load('800 60px "Shippori Mincho B1"', '風鈴スシル') : 0]).then(function (r) { mod = r[0]; build(); }).catch(function () {});
+                   document.fonts ? document.fonts.load('800 60px "Shippori Mincho B1"', '風鈴スシル') : 0]).then(function (r) { mod = r[0]; build(); }).catch(function () { el.classList.add('flat'); });
     }
     function later() { setTimeout(function () { idle(fetchThree, { timeout: 4000 }); }, 1500); }
     if (document.readyState === 'complete') later(); else addEventListener('load', later);
