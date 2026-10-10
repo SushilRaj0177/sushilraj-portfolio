@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sushil Raj</title>
+<title>Sushil Raj · スシル</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='2' width='60' height='60' rx='11' fill='%23d23c2c'/%3E%3Crect x='6.5' y='6.5' width='51' height='51' rx='7.5' fill='none' stroke='%23fff' stroke-opacity='.55' stroke-width='1.6'/%3E%3Cpath fill='%23fff' transform='translate%288.61 50.23%29 scale%280.05215 -0.05215%29' d='M585 356Q585 347 599 341Q693 303 762.5 250.0Q832 197 832 139Q832 105 812.0 86.0Q792 67 767 67Q746 67 729.0 82.5Q712 98 701 126Q680 181 645.5 230.5Q611 280 571 316Q563 322 557 322Q549 322 541 314Q456 224 347.0 154.0Q238 84 81 24Q75 22 71 22Q65 22 65 26Q65 31 77 38Q182 96 285.5 187.0Q389 278 466.5 376.0Q544 474 573 551Q577 562 577 568Q577 573 572 573Q562 573 497.5 554.0Q433 535 391 517L371 507Q361 502 351.5 498.0Q342 494 334 494Q309 494 281.0 516.5Q253 539 234.0 570.0Q215 601 215 625Q215 632 217.0 636.5Q219 641 222 641Q225 641 233.0 632.5Q241 624 250 619Q278 602 318 602Q346 602 576 643Q591 646 614 663Q616 664 625.0 670.5Q634 677 641 677Q656 677 684.0 658.0Q712 639 734.0 615.0Q756 591 756 576Q756 568 750.0 561.5Q744 555 729 543Q702 523 692 507Q638 426 591 369Q585 362 585 356Z'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#d23c2c">
 <meta name="description" content="Sushil Raj, a computer science student turning complex ideas into tools people can actually use, often with a little inspiration from Japan.">
 <!-- link previews (LinkedIn, WhatsApp, X, Slack) -->
 <meta property="og:type" content="website">
@@ -2113,6 +2117,12 @@ Fixes proposed: 4
       });
       b.addEventListener('pointerleave', function (e) { at(b, e); b.style.translate = ''; });
     });
+  })();
+
+  /* ---------- the tab: "see you" while you're away ---------- */
+  (function () {
+    var here = document.title, away = 'またね · Sushil Raj';
+    document.addEventListener('visibilitychange', function () { document.title = document.hidden ? away : here; });
   })();
 
   /* ---------- clocks + which version this is ---------- */
