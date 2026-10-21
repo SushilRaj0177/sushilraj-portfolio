@@ -375,8 +375,14 @@ h1 .ch { display: inline-block; will-change: transform; }
 .s-phone img { object-position: top; }
 .s-card { left: 16%; right: 16%; top: 50%; aspect-ratio: 755 / 510; }
 .s-full { left: 14%; top: 10%; width: 82%; aspect-ratio: 1280 / 860; }
+/* three phone screens side by side, the middle one forward */
+.s-tall { top: 21%; width: 26%; aspect-ratio: 428 / 779; border-radius: 20px; }
+.s-tall img { object-position: top; }
+.s-t1 { left: 11%; } .s-t2 { left: 37%; top: 10%; width: 28%; z-index: 1; } .s-t3 { left: 65%; }
 .s-wide, .s-full { transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)); }
 .s-phone { transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(40px); }
+.s-tall { transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)); }
+.s-t2 { transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(40px); }
 .s-card { transform: translateY(-50%) perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)); }
 .term {
   position: absolute; left: 15%; right: 15%; top: 50%;
@@ -1111,41 +1117,41 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 
   <div class="marquee" aria-hidden="true">
     <div class="marquee-track" id="marquee">
-      <span>Kehai Engine<i>/</i>MetroFlow<i>/</i>JADEN<i>/</i>QR Studio<i>/</i>Kotoba Connect<i>/</i>KAGUTSUCHI<i>/</i></span>
-      <span>Kehai Engine<i>/</i>MetroFlow<i>/</i>JADEN<i>/</i>QR Studio<i>/</i>Kotoba Connect<i>/</i>KAGUTSUCHI<i>/</i></span>
+      <span>Kehai Engine<i>/</i>Sumi<i>/</i>MetroFlow<i>/</i>JADEN<i>/</i>QR Studio<i>/</i>Kotoba Connect<i>/</i>KAGUTSUCHI<i>/</i></span>
+      <span>Kehai Engine<i>/</i>Sumi<i>/</i>MetroFlow<i>/</i>JADEN<i>/</i>QR Studio<i>/</i>Kotoba Connect<i>/</i>KAGUTSUCHI<i>/</i></span>
     </div>
     <div class="rev-wrap">
       <div class="marquee-track rev" id="marquee2">
-        <span><b>気配</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
-        <span><b>気配</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
-        <span><b>気配</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
+        <span><b>気配</b><i>·</i><b>墨</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
+        <span><b>気配</b><i>·</i><b>墨</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
+        <span><b>気配</b><i>·</i><b>墨</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
       </div>
       <div class="marquee-track rev tone" id="marquee2t">
-        <span><b>気配</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
-        <span><b>気配</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
-        <span><b>気配</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
+        <span><b>気配</b><i>·</i><b>墨</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
+        <span><b>気配</b><i>·</i><b>墨</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
+        <span><b>気配</b><i>·</i><b>墨</b><i>·</i><b>言葉</b><i>·</i><b>符</b><i>·</i><b>迦具土</b><i>·</i>Chennai<i>→</i>Tokyo<i>·</i></span>
       </div>
     </div>
   </div>
 
   <section class="work" id="work" aria-label="Work" data-i18n-attr="aria-label:nav.work">
     <div class="m-work-head">
-      <p class="eyebrow sec" data-n="01" data-kj="作品" data-en="Work" data-i18n="work.count">Six projects</p>
+      <p class="eyebrow sec" data-n="01" data-kj="作品" data-en="Work" data-i18n="work.count">Seven projects</p>
       <h2 class="rise" data-i18n-html="work.title">Things I've <span class="it">built</span></h2>
-      <p class="sub" data-i18n="work.sub">Three are live and one is still in progress. Each has tests, and the code for five of them is on GitHub.</p>
+      <p class="sub" data-i18n="work.sub">Three are live, one is in beta and one is still in progress. Each has tests, and the code for five of them is on GitHub.</p>
       <p class="swipe-hint" id="swipeHint" aria-hidden="true"><span data-i18n="work.swipe">Swipe through them</span><i>→</i></p>
     </div>
     <div class="work-pin" id="workPin">
       <div class="work-meta">
         <p class="eyebrow" data-i18n="work.selected">Selected work</p>
-        <span class="count" aria-live="polite"><b id="workNow">01</b> / 06</span>
+        <span class="count" aria-live="polite"><b id="workNow">01</b> / 07</span>
         <div class="bar-progress" aria-hidden="true"><i id="workProgress"></i></div>
         <div class="arrows"><button type="button" id="prevCard" aria-label="Previous project" data-i18n-attr="aria-label:work.prev">←</button><button type="button" id="nextCard" aria-label="Next project" data-i18n-attr="aria-label:work.next">→</button></div>
       </div>
       <div class="track" id="track">
         <div class="intro-card">
-          <div><p class="eyebrow sec" data-n="01" data-kj="作品" data-en="Work" data-i18n="work.count">Six projects</p><h2 class="rise" data-i18n-html="work.title">Things I've <span class="it">built</span></h2></div>
-          <p data-i18n="work.sub">Three are live and one is still in progress. Each has tests, and the code for five of them is on GitHub.</p>
+          <div><p class="eyebrow sec" data-n="01" data-kj="作品" data-en="Work" data-i18n="work.count">Seven projects</p><h2 class="rise" data-i18n-html="work.title">Things I've <span class="it">built</span></h2></div>
+          <p data-i18n="work.sub">Three are live, one is in beta and one is still in progress. Each has tests, and the code for five of them is on GitHub.</p>
         </div>
 
         <article class="card" aria-labelledby="c1">
@@ -1172,9 +1178,31 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
           </div></div>
         </article>
 
+        <article class="card" aria-labelledby="c7">
+          <div class="card-text">
+            <div class="card-top"><span class="idx">02</span><span class="tag live" data-i18n="tag.beta">Beta</span></div>
+            <h3 id="c7" class="scramble">Sumi<span class="jp" data-i18n-html="c7.jp"><span lang="ja">墨</span> — ink</span></h3>
+            <p class="desc" data-i18n="c7.desc">An Android app for the 612 kanji of JLPT N5 to N3, with a pen pal who writes to you using only the kanji you've learned.</p>
+            <ul>
+              <li data-i18n-html="c7.l1">Every reading in her AI-written letters is checked against the full JMdict dictionary on the phone</li>
+              <li data-i18n-html="c7.l2">A writing pad that checks each stroke, and spaced repetition timed to your exam date</li>
+              <li data-i18n-html="c7.l3">Kotlin and Jetpack Compose, <b>167</b> tests; no account, no ads, no tracking</li>
+            </ul>
+            <div class="acts">
+              <a class="btn solid" data-cursor="Join" data-i18n-attr="data-cursor:cur.join" data-i18n="c7.join" href="sumi/beta/">Join the beta →</a>
+              <span class="private" data-i18n="c7.private">Coming to Google Play.</span>
+            </div>
+          </div>
+          <div class="card-vis"><div class="vis-inner">
+            <div class="shot s-tall s-t1"><img src="img/sumi-stroke.webp" width="428" height="779" alt="Sumi drawing the stroke order of 五" data-i18n-attr="alt:c7.alt1" loading="lazy"></div>
+            <div class="shot s-tall s-t2"><img src="img/sumi-today.webp" width="428" height="779" alt="Sumi's Today screen with set 14 and 129 of 612 kanji mastered" data-i18n-attr="alt:c7.alt2" loading="lazy"></div>
+            <div class="shot s-tall s-t3"><img src="img/sumi-letters.webp" width="428" height="779" alt="A letter from Sumi-chan, written with the kanji learned so far" data-i18n-attr="alt:c7.alt3" loading="lazy"></div>
+          </div></div>
+        </article>
+
         <article class="card" aria-labelledby="c2">
           <div class="card-text">
-            <div class="card-top"><span class="idx">02</span><span class="tag" data-i18n="tag.progress">In progress</span></div>
+            <div class="card-top"><span class="idx">03</span><span class="tag" data-i18n="tag.progress">In progress</span></div>
             <h3 id="c2" class="scramble">MetroFlow<span class="jp" data-i18n-html="c2.jp">ODPT Challenge 2026 entry</span></h3>
             <p class="desc" data-i18n="c2.desc">A Tokyo transit planner. It routes door to door and marks every estimate as an estimate.</p>
             <ul>
@@ -1191,7 +1219,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 
         <article class="card" aria-labelledby="c3">
           <div class="card-text">
-            <div class="card-top"><span class="idx">03</span><span class="tag" data-i18n="tag.lib">Python library</span></div>
+            <div class="card-top"><span class="idx">04</span><span class="tag" data-i18n="tag.lib">Python library</span></div>
             <h3 id="c3" class="scramble">JADEN<span class="jp" data-i18n-html="c3.jp">Japanese address normalization</span></h3>
             <p class="desc" data-i18n="c3.desc">Reads messy Japanese addresses and returns clean, structured ones. Runs offline with no dependencies.</p>
             <ul>
@@ -1217,7 +1245,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 
         <article class="card" aria-labelledby="c4">
           <div class="card-text">
-            <div class="card-top"><span class="idx">04</span><span class="tag live" data-i18n="tag.live">Live</span></div>
+            <div class="card-top"><span class="idx">05</span><span class="tag live" data-i18n="tag.live">Live</span></div>
             <h3 id="c4" class="scramble">QR Studio<span class="jp" data-i18n-html="c4.jp"><span lang="ja">符</span> — a mark</span></h3>
             <p class="desc" data-i18n="c4.desc">A QR code designer that decodes each code before you download it, so you know it scans.</p>
             <ul>
@@ -1240,7 +1268,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 
         <article class="card" aria-labelledby="c5">
           <div class="card-text">
-            <div class="card-top"><span class="idx">05</span><span class="tag live" data-i18n="tag.live">Live</span></div>
+            <div class="card-top"><span class="idx">06</span><span class="tag live" data-i18n="tag.live">Live</span></div>
             <h3 id="c5" class="scramble">Kotoba Connect<span class="jp" data-i18n-html="c5.jp"><span lang="ja">言葉</span> — words</span></h3>
             <p class="desc" data-i18n="c5.desc">A place to share real Japanese sentences and explain their nuance, one word at a time.</p>
             <ul>
@@ -1263,7 +1291,7 @@ button.sw[aria-pressed="true"]::after { content: ""; position: absolute; inset: 
 
         <article class="card" aria-labelledby="c6">
           <div class="card-text">
-            <div class="card-top"><span class="idx">06</span><span class="tag" data-i18n="tag.hack">Hackathon project</span></div>
+            <div class="card-top"><span class="idx">07</span><span class="tag" data-i18n="tag.hack">Hackathon project</span></div>
             <h3 id="c6" class="scramble">KAGUTSUCHI<span class="jp" data-i18n-html="c6.jp"><span lang="ja">迦具土</span> — god of fire</span></h3>
             <p class="desc" data-i18n="c6.desc">A command-line tool, built with team Cipher-X, that audits public GitHub repositories for code quality and suggests fixes.</p>
             <ul>
@@ -1460,17 +1488,24 @@ Fixes proposed: 4
     'hint.touch': '長押ししてからなぞるとインクが動きます<br>タップで足せます',
     'hint.mobile': '長押ししてからなぞるとインクが動きます<br>タップでインクを足せます<br>右下でインクを設定 ↘',
     // work
-    'work.count': '6つのプロジェクト', 'work.title': '<span class="it">作った</span>もの',
-    'work.sub': '3つは公開中で、1つは開発中です。どれもテストを書いていて、そのうち5つはGitHubでコードを公開しています。',
+    'work.count': '7つのプロジェクト', 'work.title': '<span class="it">作った</span>もの',
+    'work.sub': '3つは公開中、1つはベータテスト中、1つは開発中です。どれもテストを書いていて、そのうち5つはGitHubでコードを公開しています。',
     'work.swipe': 'スワイプして見る', 'work.selected': '作品', 'work.prev': '前のプロジェクト', 'work.next': '次のプロジェクト',
-    'tag.live': '公開中', 'tag.progress': '開発中', 'tag.lib': 'Pythonライブラリ', 'tag.hack': 'ハッカソン作品',
-    'open': '開く ↗', 'code': 'コード ↗', 'cur.visit': '開く', 'cur.code': 'コード', 'cur.copy': 'コピー', 'cur.stamp': '押す',
+    'tag.live': '公開中', 'tag.progress': '開発中', 'tag.lib': 'Pythonライブラリ', 'tag.hack': 'ハッカソン作品', 'tag.beta': 'ベータ版',
+    'open': '開く ↗', 'code': 'コード ↗', 'cur.visit': '開く', 'cur.code': 'コード', 'cur.copy': 'コピー', 'cur.stamp': '押す', 'cur.join': '参加',
     'c1.jp': '<span lang="ja">気配</span> — けはい',
     'c1.desc': '本当にその場にいないと出席できない、出席管理のしくみです。署名付きで切り替わり続けるQRコードと、位置情報の確認を組み合わせています。',
     'c1.l1': '大学のクラブの選考課題として作り始め、その後も機能を増やし続けています',
     'c1.l2': 'サーバーのテスト<b>185</b>件、レイアウトのテスト<b>56</b>件',
     'c1.l3': '英語と日本語に対応した、インストールできるスマホアプリ',
     'c1.alt1': 'Kehai Engineの主催者用コンソール', 'c1.alt2': 'スマホに表示した教員用の画面。12人中7人が出席済み',
+    'c7.jp': '<span lang="ja">墨</span> — すみ',
+    'c7.desc': 'JLPT N5〜N3の漢字612字を学ぶAndroidアプリです。覚えた漢字だけを使って手紙をくれる文通相手がいます。',
+    'c7.l1': 'AIが書く手紙の読み方は、すべてスマホ内のJMdict辞書で確認してから表示します',
+    'c7.l2': '一画ずつ判定する書き取りパッドと、試験日に合わせた間隔反復',
+    'c7.l3': 'Kotlin と Jetpack Compose、テスト<b>167</b>件。アカウント・広告・トラッキングなし',
+    'c7.join': 'ベータに参加 →', 'c7.private': 'Google Playで近日公開。',
+    'c7.alt1': '「五」の書き順を描くSumiの画面', 'c7.alt2': 'Sumiの「今日」の画面。セット14、612字中129字を習得', 'c7.alt3': '覚えた漢字だけで書かれた、すみちゃんからの手紙',
     'c2.jp': 'ODPT Challenge 2026 応募作品',
     'c2.desc': '東京の乗り換え案内アプリです。出発地から目的地までの経路を調べ、推定値はすべて推定値だと明記します。',
     'c2.l1': '<b>2,105</b>駅を対象に経路を探索。最速経路はA*、それ以外の条件はダイクストラ法で求めます',

@@ -15,7 +15,7 @@ My personal site. The page floats on a live ink simulation (WebGL2 stable fluids
 - **Phones:** their own layout, with a vertical name, a swipe carousel, a full-screen menu and an ink sheet. A finger that's scrolling leaves no trail (the scroll stirs the ink instead). On the ink at the top, a stroke that starts sideways, or a press and hold, keeps the page still so the finger can paint, whirls included
 - **English and 日本語:** Japanese browsers get Japanese automatically; a button switches either way
 - **Japan:** a section on where my interest in Japan comes from. It started with stories (anime, manga and films), music, and the older stories: mythology, Shinto and folklore. What keeps me here is the language, the modern cityscapes and natural landscapes, and the way of life and the ideas underneath it. Each one has its kanji, brushed in from the top as it scrolls into view. I haven't been yet; I'm working towards an opportunity to study at Waseda, which would be my first time there
-- **Sections:** six projects, about, Japan, and contact, signed off with a name seal (判子) reading スシル
+- **Sections:** seven projects, about, Japan, and contact, signed off with a name seal (判子) reading スシル
 - **Scrolling:** besides stirring the ink, the name sinks back as you leave the top, headings rise into place, and the skill columns fade up
 
 ## Credits
@@ -57,5 +57,7 @@ og.jpg                 the link preview image
 favicon-32.png         tab icon (the page also carries it as SVG)
 apple-touch-icon.png   home-screen icon
 CNAME                  the custom domain, sushilraj.dev
+sumi/beta/             sign-up page for Sumi's Google Play beta
+sumi/privacy/          Sumi's privacy policy
 original/              the first version of the site
 ```

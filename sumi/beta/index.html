@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Test Sumi · Sushil Raj</title>
+<meta name="description" content="Help test Sumi, an Android app for learning the 612 JLPT N5 to N3 kanji, before it comes to Google Play.">
+<link rel="canonical" href="https://sushilraj.dev/sumi/beta/">
+<meta property="og:title" content="Test Sumi before it's on Google Play">
+<meta property="og:description" content="An Android app for the 612 JLPT N5 to N3 kanji, with a pen pal who writes using only the kanji you've learned. 12 testers needed.">
+<meta property="og:url" content="https://sushilraj.dev/sumi/beta/">
+<meta property="og:image" content="https://sushilraj.dev/sumi/icon.png">
+<meta name="theme-color" content="#0d0e11">
+<link rel="icon" href="/sumi/icon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@800&text=墨&display=swap">
+<script>
+  // ── Setting up the closed test ─────────────────────────────────────────────────────────────────────────
+  // With both links filled in, testers sign themselves up: join the group, opt in, install. With either left
+  // empty, the page asks for their Google account email instead and you add them to the tester list by hand.
+  //   GROUP: the Google Group's page, e.g. https://groups.google.com/g/sumi-testers
+  //          (Play Console → Testing → Closed testing → Testers: add the group's email as the tester list)
+  //   OPTIN: the "Join on the web" link from the same Testers page, e.g. https://play.google.com/apps/testing/app.sumi
+  var GROUP = '', OPTIN = '';
+  var MAIL = 'sushilraj0177@gmail.com';
+
+  // theme and language follow the main site's choices, if there are any
+  (function () {
+    function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    var r = document.documentElement, t = get('sr-theme'), l = get('sr-lang');
+    if (t === 'dark' || t === 'light') r.dataset.theme = t;
+    r.lang = l === 'ja' || l === 'en' ? l : /^ja\b/i.test(navigator.language || '') ? 'ja' : 'en';
+  })();
+</script>
+<style>
+:root {
+  --bg: #eef0f2; --card: #ffffff; --card-2: #f4f5f7; --ink: #0b0c0e; --ink-2: #5a616a; --ink-3: #8d939b;
+  --line: rgba(11, 12, 14, .09); --line-2: rgba(11, 12, 14, .2); --accent: #2f45ff; --accent-soft: rgba(47, 69, 255, .1);
+  --seal: #c4372a; --ok: #1f7a4d;
+  --shadow: 0 2px 4px rgba(11, 12, 14, .03), 0 40px 90px -40px rgba(11, 12, 14, .28);
+  --sans: "Geist", "Zen Kaku Gothic New", "Helvetica Neue", Arial, sans-serif;
+  --serif: "Instrument Serif", Georgia, serif;
+  --mono: "Geist Mono", "Zen Kaku Gothic New", ui-monospace, Menlo, monospace;
+  --mincho: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #08090b; --card: #111317; --card-2: #181b20; --ink: #eef0f3; --ink-2: #959ca6; --ink-3: #5f6670;
+    --line: rgba(255, 255, 255, .08); --line-2: rgba(255, 255, 255, .17); --accent: #8796ff; --accent-soft: rgba(135, 150, 255, .14);
+    --seal: #e0543d; --ok: #5fcf96; --shadow: 0 40px 90px -40px rgba(0, 0, 0, .8); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #08090b; --card: #111317; --card-2: #181b20; --ink: #eef0f3; --ink-2: #959ca6; --ink-3: #5f6670;
+  --line: rgba(255, 255, 255, .08); --line-2: rgba(255, 255, 255, .17); --accent: #8796ff; --accent-soft: rgba(135, 150, 255, .14);
+  --seal: #e0543d; --ok: #5fcf96; --shadow: 0 40px 90px -40px rgba(0, 0, 0, .8); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+:lang(ja) body, html:lang(ja) body { font-family: "Zen Kaku Gothic New", var(--sans); }
+/* one language at a time */
+html:lang(ja) [data-l="en"], html:not(:lang(ja)) [data-l="ja"] { display: none !important; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 1080px; margin: 0 auto; padding: 22px 24px; }
+.home { font-weight: 600; letter-spacing: -.01em; text-decoration: none; font-size: 15px; }
+.home span { color: var(--ink-3); font-weight: 400; margin-right: 6px; }
+.lang { font: 500 13px/1 var(--sans); padding: 9px 14px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--ink); cursor: pointer; }
+.lang:hover { background: var(--ink); color: var(--bg); }
+
+main { max-width: 1080px; margin: 0 auto; padding: 24px 24px 80px; }
+.hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; padding: 24px 0 64px; }
+.eyebrow { font: 500 12px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 18px; display: flex; align-items: center; gap: 10px; }
+.eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--seal); box-shadow: 0 0 0 4px color-mix(in srgb, var(--seal) 18%, transparent); }
+h1 { font-size: clamp(42px, 6.4vw, 78px); line-height: .98; letter-spacing: -.045em; font-weight: 600; margin: 0 0 22px; }
+h1 .it { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -.02em; }
+html:lang(ja) h1 { font-size: clamp(34px, 5vw, 60px); letter-spacing: -.02em; line-height: 1.15; word-break: auto-phrase; }
+html:lang(ja) .lede, html:lang(ja) section { word-break: auto-phrase; }
+.lede { font-size: 18.5px; color: var(--ink-2); max-width: 34em; margin: 0 0 28px; }
+.lede b { color: var(--ink); font-weight: 600; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 8px; font: 600 15px/1 var(--sans); padding: 15px 22px; border-radius: 999px; border: 1.5px solid var(--ink); background: var(--ink); color: var(--bg); text-decoration: none; cursor: pointer; transition: transform .2s, background .2s, color .2s; }
+.btn:hover { transform: translateY(-1px); }
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn.ghost:hover { background: var(--ink); color: var(--bg); }
+.btn:focus-visible, .lang:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.note { font-size: 13.5px; color: var(--ink-3); }
+
+.phones { position: relative; aspect-ratio: 1 / .92; max-width: 520px; width: 100%; justify-self: center; }
+.phones img { position: absolute; width: 38%; height: auto; border-radius: 20px; border: 1px solid var(--line); box-shadow: var(--shadow); background: var(--card-2); }
+.phones .p1 { left: 2%; top: 13%; transform: rotate(-5deg); }
+.phones .p2 { left: 31%; top: 0; z-index: 2; }
+.phones .p3 { right: 2%; top: 15%; transform: rotate(5deg); }
+/* a seal, like the one that signs off the main page */
+.seal { display: inline-grid; place-items: center; width: 1.05em; height: 1.05em; margin-left: .12em; vertical-align: .06em; border-radius: .12em; background: var(--seal); color: #fff; font: 800 .62em/1 var(--mincho); letter-spacing: 0; }
+
+section { border-top: 1px solid var(--line); padding: 56px 0; display: grid; grid-template-columns: 240px 1fr; gap: 40px; }
+section > h2 { font: 500 12px/1.6 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); margin: 4px 0 0; }
+section > h2 b { display: block; font: 600 26px/1.15 var(--sans); letter-spacing: -.03em; text-transform: none; color: var(--ink); margin-top: 6px; }
+.feats { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.feats li { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; color: var(--ink-2); font-size: 15px; }
+.feats li b { display: block; color: var(--ink); font-weight: 600; margin-bottom: 4px; font-size: 16px; }
+
+.need { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; }
+.need li { display: grid; grid-template-columns: 40px 1fr; gap: 8px; padding: 16px 0; border-bottom: 1px dashed var(--line-2); color: var(--ink-2); }
+.need li:last-child { border-bottom: 0; }
+.need li i { font: 500 12px/1.9 var(--mono); font-style: normal; color: var(--ink-3); }
+.need li b { color: var(--ink); font-weight: 600; }
+
+.join { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 28px; box-shadow: var(--shadow); }
+.steps { list-style: none; counter-reset: s; padding: 0; margin: 0 0 6px; display: grid; gap: 18px; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 36px 1fr; gap: 14px; align-items: start; }
+.steps li::before { content: counter(s); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font: 600 15px/1 var(--mono); background: var(--card-2); border: 1px solid var(--line-2); }
+.steps li p { margin: 6px 0 10px; color: var(--ink-2); }
+.steps li p b { color: var(--ink); }
+form { display: grid; gap: 14px; }
+label { display: grid; gap: 6px; font-size: 14px; font-weight: 500; }
+label small { font-weight: 400; color: var(--ink-3); }
+input { font: 16px/1.3 var(--sans); padding: 13px 15px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--bg); color: var(--ink); width: 100%; }
+input:invalid:not(:placeholder-shown) { border-color: var(--seal); }
+.check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; color: var(--ink-2); font-size: 14.5px; }
+.check input { width: 18px; height: 18px; margin: 2px 0 0; flex: none; accent-color: var(--ink); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.sent { display: none; padding: 16px 18px; border-radius: 14px; background: color-mix(in srgb, var(--ok) 12%, transparent); color: var(--ink); font-size: 15px; }
+.sent.on { display: block; }
+.alt { margin: 14px 0 0; font-size: 14px; color: var(--ink-3); }
+.alt button { font: inherit; color: var(--ink-2); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+
+.faq details { border-bottom: 1px solid var(--line); padding: 16px 0; }
+.faq details:first-child { padding-top: 0; }
+.faq summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font: 400 20px/1 var(--mono); color: var(--ink-3); transition: transform .25s; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { margin: 10px 0 0; color: var(--ink-2); }
+
+footer { max-width: 1080px; margin: 0 auto; padding: 28px 24px 48px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 13.5px; color: var(--ink-3); }
+footer a { color: var(--ink-2); }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; gap: 28px; padding-bottom: 40px; }
+  .phones { max-width: 420px; }
+  section { grid-template-columns: 1fr; gap: 20px; padding: 44px 0; }
+  .feats { grid-template-columns: 1fr; }
+  .row { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .top { padding: 16px; } main { padding: 8px 16px 64px; } footer { padding: 24px 16px 40px; }
+  .join { padding: 20px; border-radius: 18px; }
+  .lede { font-size: 17px; }
+  .phones { overflow: hidden; }
+}
+@media (prefers-reduced-motion: reduce) { .btn, .faq summary::after { transition: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="home" href="/"><span>←</span>Sushil Raj</a>
+  <button class="lang" id="lang" type="button"><span data-l="en">日本語</span><span data-l="ja">English</span></button>
+</header>
+
+<main>
+  <div class="hero">
+    <div>
+      <p class="eyebrow"><span class="dot"></span><span data-l="en">Closed beta · Android</span><span data-l="ja">クローズドベータ · Android</span></p>
+      <h1>
+        <span data-l="en">Help test <span class="it">Sumi</span><span class="seal" aria-hidden="true">墨</span> before it's on Google Play</span>
+        <span data-l="ja"><span class="it">Sumi</span><span class="seal" aria-hidden="true">墨</span>のベータテストに参加しませんか</span>
+      </h1>
+      <p class="lede" data-l="en">Sumi is an Android app for learning the <b>612 kanji of JLPT N5 to N3</b>, one small set a day, with a pen pal who writes to you using only the kanji you've already learned. Before it can go public, Google Play needs <b>12 people</b> to test it for 14 days.</p>
+      <p class="lede" data-l="ja">Sumiは、JLPT N5〜N3の<b>漢字612字</b>を1日1セットずつ学ぶAndroidアプリです。覚えた漢字だけを使って手紙をくれる文通相手がいます。一般公開の前に、Google Playの規定で<b>12人</b>のテスターに14日間試してもらう必要があります。</p>
+      <div class="cta">
+        <a class="btn" href="#join"><span data-l="en">Join the beta</span><span data-l="ja">ベータに参加する</span> ↓</a>
+        <span class="note" data-l="en">Free · Android 10 or newer</span><span class="note" data-l="ja">無料 · Android 10以降</span>
+      </div>
+    </div>
+    <div class="phones" aria-hidden="true">
+      <img class="p1" src="/img/sumi-stroke.webp" width="428" height="779" alt="">
+      <img class="p2" src="/img/sumi-today.webp" width="428" height="779" alt="">
+      <img class="p3" src="/img/sumi-letters.webp" width="428" height="779" alt="">
+    </div>
+  </div>
+
+  <section>
+    <h2><span data-l="en">The app</span><span data-l="ja">アプリ</span><b data-l="en">What's in it</b><b data-l="ja">できること</b></h2>
+    <ul class="feats">
+      <li data-l="en"><b>A set a day</b>612 kanji in 62 sets, with readings ranked by how often real words use them.</li>
+      <li data-l="ja"><b>1日1セット</b>612字を62セットに。読み方は実際の単語でよく使われる順に並べています。</li>
+      <li data-l="en"><b>Stroke order and writing</b>Watch each kanji drawn, then write it yourself on a pad that checks every stroke.</li>
+      <li data-l="ja"><b>書き順と書き取り</b>一画ずつ描かれる書き順を見て、一画ずつ判定する書き取りパッドで練習できます。</li>
+      <li data-l="en"><b>Letters from Sumi-chan</b>A pen pal who writes with only the kanji you know. Tap any word for its reading and meaning.</li>
+      <li data-l="ja"><b>すみちゃんからの手紙</b>覚えた漢字だけで書かれた手紙が届きます。単語をタップすると読み方と意味が出ます。</li>
+      <li data-l="en"><b>Reviews that stick</b>Spaced repetition timed around your exam date, plus widgets and a daily reminder.</li>
+      <li data-l="ja"><b>忘れない復習</b>試験日に合わせた間隔反復。ウィジェットや毎日のリマインダーもあります。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span data-l="en">Before you join</span><span data-l="ja">参加の前に</span><b data-l="en">What testing involves</b><b data-l="ja">テストの内容</b></h2>
+    <ul class="need">
+      <li data-l="en"><i>01</i><span>An <b>Android phone</b> running Android 10 or newer, with the Play Store.</span></li>
+      <li data-l="ja"><i>01</i><span>Android 10以降で、Playストアが使える<b>Androidスマホ</b>。</span></li>
+      <li data-l="en"><i>02</i><span>The <b>Google account</b> you use on that phone's Play Store. That's the address that gets invited.</span></li>
+      <li data-l="ja"><i>02</i><span>そのスマホのPlayストアで使っている<b>Googleアカウント</b>。招待はこのアドレスに届きます。</span></li>
+      <li data-l="en"><i>03</i><span>Keep Sumi installed for <b>14 days</b> and open it now and then. Google counts the days only while you stay opted in.</span></li>
+      <li data-l="ja"><i>03</i><span><b>14日間</b>アプリを入れたままにして、ときどき開いてください。参加している間だけ日数に数えられます。</span></li>
+      <li data-l="en"><i>04</i><span>Feedback is welcome but optional. You can send it privately from the app's Play Store page.</span></li>
+      <li data-l="ja"><i>04</i><span>感想は大歓迎ですが、必須ではありません。Playストアのアプリのページから非公開で送れます。</span></li>
+    </ul>
+  </section>
+
+  <section id="join">
+    <h2><span data-l="en">Sign up</span><span data-l="ja">申し込み</span><b data-l="en">Join the beta</b><b data-l="ja">ベータに参加</b></h2>
+
+    <!-- self-serve (shown once GROUP and OPTIN are set) -->
+    <div class="join" id="selfServe" hidden>
+      <ol class="steps">
+        <li><div>
+          <p data-l="en"><b>Join the testers' group</b> with the Google account on your phone.</p>
+          <p data-l="ja">スマホで使っているGoogleアカウントで<b>テスターのグループに参加</b>します。</p>
+          <a class="btn ghost" id="groupLink" href="#" target="_blank" rel="noopener"><span data-l="en">Join the group</span><span data-l="ja">グループに参加</span> ↗</a>
+        </div></li>
+        <li><div>
+          <p data-l="en"><b>Become a tester</b> on Google Play. It can take a few minutes after joining the group.</p>
+          <p data-l="ja">Google Playで<b>テスターになります</b>。グループに参加してから数分かかることがあります。</p>
+          <a class="btn ghost" id="optinLink" href="#" target="_blank" rel="noopener"><span data-l="en">Become a tester</span><span data-l="ja">テスターになる</span> ↗</a>
+        </div></li>
+        <li><div>
+          <p data-l="en"><b>Install Sumi</b> from the link on that page, and keep it for 14 days. Thank you!</p>
+          <p data-l="ja">そのページのリンクから<b>Sumiをインストール</b>して、14日間入れておいてください。ありがとうございます！</p>
+        </div></li>
+      </ol>
+    </div>
+
+    <!-- by request (until the group is set up) -->
+    <div class="join" id="request">
+      <form id="form" novalidate>
+        <div class="row">
+          <label><span data-l="en">Name <small>(optional)</small></span><span data-l="ja">お名前 <small>（任意）</small></span>
+            <input id="name" name="name" autocomplete="name" placeholder=" "></label>
+          <label><span data-l="en">Phone <small>(optional)</small></span><span data-l="ja">スマホの機種 <small>（任意）</small></span>
+            <input id="device" name="device" placeholder=" " autocomplete="off"></label>
+        </div>
+        <label><span data-l="en">Google account email</span><span data-l="ja">Googleアカウントのメールアドレス</span>
+          <input id="email" name="email" type="email" required autocomplete="email" inputmode="email" placeholder=" "></label>
+        <label class="check"><input type="checkbox" id="ok" required>
+          <span data-l="en">I have an Android phone and can keep Sumi installed for 14 days.</span>
+          <span data-l="ja">Androidスマホを持っていて、14日間Sumiを入れておけます。</span></label>
+        <div class="cta">
+          <button class="btn" type="submit"><span data-l="en">Send my request</span><span data-l="ja">申し込みを送る</span> →</button>
+          <span class="note" id="err" role="alert"></span>
+        </div>
+        <p class="note" data-l="en">This opens your email app with the request written out; just press send. Your address is only used to invite you to the test.</p>
+        <p class="note" data-l="ja">メールアプリが申し込みの文面入りで開くので、そのまま送信してください。アドレスはテストへの招待にだけ使います。</p>
+      </form>
+      <div class="sent" id="sent" role="status">
+        <span data-l="en">Thanks! Once your email is sent, you'll get a link to join within a day or two.</span>
+        <span data-l="ja">ありがとうございます！メールが届いたら、1〜2日以内に参加用のリンクをお送りします。</span>
+      </div>
+      <p class="alt"><span data-l="en">Email app didn't open? Write to</span><span data-l="ja">メールアプリが開かない場合は、</span>
+        <button type="button" id="copy">sushilraj0177@gmail.com</button><span data-l="en"> with your Google account email (tap to copy).</span><span data-l="ja">にGoogleアカウントのアドレスを送ってください（タップでコピー）。</span></p>
+    </div>
+  </section>
+
+  <section class="faq">
+    <h2><span data-l="en">Questions</span><span data-l="ja">よくある質問</span><b data-l="en">Good to know</b><b data-l="ja">知っておくこと</b></h2>
+    <div>
+      <details><summary><span data-l="en">Does it cost anything?</span><span data-l="ja">お金はかかりますか？</span></summary>
+        <p data-l="en">No. Sumi is free, with no ads and no in-app purchases.</p><p data-l="ja">いいえ。Sumiは無料で、広告もアプリ内課金もありません。</p></details>
+      <details><summary><span data-l="en">What does Sumi do with my data?</span><span data-l="ja">データはどう扱われますか？</span></summary>
+        <p data-l="en">There's no account and no tracking; your progress stays on your phone. The letters are optional and use your own free Gemini key. Details are in the <a href="/sumi/privacy/">privacy policy</a>.</p>
+        <p data-l="ja">アカウントもトラッキングもなく、学習の記録はスマホの中だけに保存されます。手紙の機能は任意で、ご自身の無料のGeminiキーを使います。詳しくは<a href="/sumi/privacy/">プライバシーポリシー</a>をご覧ください。</p></details>
+      <details><summary><span data-l="en">Do I need to know Japanese?</span><span data-l="ja">日本語ができないと参加できませんか？</span></summary>
+        <p data-l="en">No. It starts from N5, the very first level, and everything is explained in English.</p><p data-l="ja">いいえ。最初のレベルのN5から始まり、説明はすべて英語です。</p></details>
+      <details><summary><span data-l="en">What if I stop after a few days?</span><span data-l="ja">途中でやめてもいいですか？</span></summary>
+        <p data-l="en">You can leave whenever you like. It helps most if you keep it installed for the full 14 days, since Google only counts testers who stay.</p>
+        <p data-l="ja">いつでもやめられます。ただ、Googleは参加し続けたテスターだけを数えるので、14日間入れておいてもらえると一番助かります。</p></details>
+      <details><summary><span data-l="en">I have an iPhone.</span><span data-l="ja">iPhoneしか持っていません。</span></summary>
+        <p data-l="en">Sorry, Sumi is Android only for now.</p><p data-l="ja">ごめんなさい、今のところSumiはAndroid専用です。</p></details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>Sumi · <span data-l="en">made by</span><span data-l="ja">制作</span> <a href="/">Sushil Raj</a></span>
+  <span><a href="/sumi/privacy/"><span data-l="en">Privacy policy</span><span data-l="ja">プライバシーポリシー</span></a></span>
+</footer>
+
+<script>
+(function () {
+  var r = document.documentElement;
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  document.getElementById('lang').addEventListener('click', function () {
+    r.lang = r.lang === 'ja' ? 'en' : 'ja'; store('sr-lang', r.lang);
+  });
+
+  if (GROUP && OPTIN) {
+    document.getElementById('groupLink').href = GROUP;
+    document.getElementById('optinLink').href = OPTIN;
+    document.getElementById('selfServe').hidden = false;
+    document.getElementById('request').hidden = true;
+  }
+
+  var form = document.getElementById('form'), err = document.getElementById('err');
+  var t = function (en, ja) { return r.lang === 'ja' ? ja : en; };
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = document.getElementById('email'), ok = document.getElementById('ok');
+    if (!email.value.trim() || !email.checkValidity()) { err.textContent = t('Please enter the email of your Google account.', 'Googleアカウントのメールアドレスを入力してください。'); email.focus(); return; }
+    if (!ok.checked) { err.textContent = t('Please tick the box above.', '上のチェックボックスにチェックを入れてください。'); ok.focus(); return; }
+    err.textContent = '';
+    var name = document.getElementById('name').value.trim(), device = document.getElementById('device').value.trim();
+    var body = 'Hi Sushil,\n\nI\'d like to test Sumi.\n\nGoogle account: ' + email.value.trim() +
+      (name ? '\nName: ' + name : '') + (device ? '\nPhone: ' + device : '') + '\n';
+    location.href = 'mailto:' + MAIL + '?subject=' + encodeURIComponent('Sumi beta: ' + email.value.trim()) + '&body=' + encodeURIComponent(body);
+    document.getElementById('sent').classList.add('on');
+  });
+
+  var copy = document.getElementById('copy');
+  copy.addEventListener('click', function () {
+    var done = function () { var was = copy.textContent; copy.textContent = t('Copied', 'コピーしました'); setTimeout(function () { copy.textContent = was; }, 1400); };
+    if (navigator.clipboard) navigator.clipboard.writeText(MAIL).then(done, function () {}); else done();
+  });
+})();
+</script>
+</body>
+</html>
