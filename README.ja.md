@@ -57,7 +57,8 @@ og.jpg                 リンクプレビュー画像
 favicon-32.png         タブのアイコン（ページ内にも SVG として含む）
 apple-touch-icon.png   ホーム画面用アイコン
 CNAME                  独自ドメイン sushilraj.dev
-sumi/beta/             SumiのGoogle Playベータテストの申し込みページ
+sumi/                  Sumiの紹介ページ（Google Playベータテストの申し込み付き）
+sumi/beta/             Sumiのページの申し込み欄へ転送
 sumi/privacy/          Sumiのプライバシーポリシー
 original/              サイトの最初のバージョン
 ```

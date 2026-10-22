@@ -57,7 +57,8 @@ og.jpg                 the link preview image
 favicon-32.png         tab icon (the page also carries it as SVG)
 apple-touch-icon.png   home-screen icon
 CNAME                  the custom domain, sushilraj.dev
-sumi/beta/             sign-up page for Sumi's Google Play beta
+sumi/                  Sumi's product page, with its Google Play beta sign-up
+sumi/beta/             redirects to the sign-up on Sumi's page
 sumi/privacy/          Sumi's privacy policy
 original/              the first version of the site
 ```

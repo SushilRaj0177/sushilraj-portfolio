@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sumi · JLPT kanji, one set a day</title>
+<meta name="description" content="Sumi is an Android app for the 612 kanji of JLPT N5 to N3, one small set a day, with a pen pal who writes to you using only the kanji you've learned. Now in closed beta on Google Play.">
+<link rel="canonical" href="https://sushilraj.dev/sumi/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Sumi · JLPT kanji, one set a day">
+<meta property="og:description" content="612 kanji from N5 to N3, stroke order, a writing pad that checks every stroke, and letters from a pen pal who only uses the kanji you know. Closed beta on Google Play.">
+<meta property="og:url" content="https://sushilraj.dev/sumi/">
+<meta property="og:image" content="https://sushilraj.dev/sumi/img/og.jpg">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="500">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101015" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/sumi/icon.png">
+<link rel="apple-touch-icon" href="/sumi/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&text=墨字&display=swap">
+<script>
+  // ── The closed test ───────────────────────────────────────────────────────────────────────────────────
+  // Testers sign themselves up: join the Google Group (Play Console's tester list), then opt in on Play.
+  var GROUP = 'https://groups.google.com/g/sumi-testers-android';
+  var OPTIN = 'https://play.google.com/apps/testing/app.sumi';
+  var MAIL = 'sushilraj0177@gmail.com';
+
+  // theme and language follow the main site's choices
+  (function () {
+    function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    var r = document.documentElement, t = get('sr-theme'), l = get('sr-lang');
+    if (t === 'dark' || t === 'light') r.dataset.theme = t;
+    r.lang = l === 'ja' || l === 'en' ? l : /^ja\b/i.test(navigator.language || '') ? 'ja' : 'en';
+  })();
+</script>
+<style>
+/* Sumi's own palette, taken from the app: warm paper, ink, aizome indigo and a vermilion seal */
+:root {
+  --bg: #f7f5f0; --bg-2: #f1ece1; --surface: #ffffff; --sunken: #efece5;
+  --ink: #1b1b1f; --ink-2: #5c5b63; --ink-3: #9796a0; --line: #e5e1d8; --line-2: #d6d1c5;
+  --accent: #2b4c8c; --accent-soft: #e2e5ec; --on-accent: #ffffff;
+  --good: #2f7a52; --good-soft: #e3f0e7; --bad: #b2392a; --bad-soft: #f8e4e0; --seal: #c0402a;
+  --decor: rgba(120, 96, 60, .09);
+  --shadow: 0 1px 2px rgba(27, 27, 31, .04), 0 30px 70px -36px rgba(40, 30, 10, .35);
+  --phone: #1c1c21;
+  --sans: "Inter", "Zen Kaku Gothic New", system-ui, sans-serif;
+  --round: "Nunito", "Inter", "Zen Kaku Gothic New", sans-serif;
+  --jp: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --brush: "Yuji Syuku", "Zen Kaku Gothic New", serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101015; --bg-2: #15151c; --surface: #19191f; --sunken: #22222a;
+    --ink: #f4f1ea; --ink-2: #bdbac4; --ink-3: #807e89; --line: #2b2b35; --line-2: #3a3a46;
+    --accent: #93b1ff; --accent-soft: #252c40; --on-accent: #0f0f13;
+    --good: #7fd6a2; --good-soft: #173a28; --bad: #ff9c88; --bad-soft: #43221b; --seal: #ff8e72;
+    --decor: rgba(147, 177, 255, .06);
+    --shadow: 0 30px 80px -36px rgba(0, 0, 0, .85);
+    --phone: #2a2a32;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101015; --bg-2: #15151c; --surface: #19191f; --sunken: #22222a;
+  --ink: #f4f1ea; --ink-2: #bdbac4; --ink-3: #807e89; --line: #2b2b35; --line-2: #3a3a46;
+  --accent: #93b1ff; --accent-soft: #252c40; --on-accent: #0f0f13;
+  --good: #7fd6a2; --good-soft: #173a28; --bad: #ff9c88; --bad-soft: #43221b; --seal: #ff8e72;
+  --decor: rgba(147, 177, 255, .06);
+  --shadow: 0 30px 80px -36px rgba(0, 0, 0, .85);
+  --phone: #2a2a32;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 76px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+html:lang(ja) body { font-family: var(--jp); }
+html:lang(ja) .ja-wrap, html:lang(ja) p, html:lang(ja) h1, html:lang(ja) h2, html:lang(ja) h3 { word-break: auto-phrase; }
+a { color: inherit; }
+img { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+/* one language at a time */
+html:lang(ja) [data-l="en"], html:not(:lang(ja)) [data-l="ja"] { display: none !important; }
+.wrap { max-width: 1140px; margin: 0 auto; padding: 0 28px; }
+[lang="ja"], .j { font-family: var(--jp); }
+
+/* ---------- top bar ---------- */
+.top { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 82%, transparent); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); border-bottom: 1px solid transparent; transition: border-color .3s; }
+.top.stuck { border-bottom-color: var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 16px; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 800 19px/1 var(--round); letter-spacing: -.01em; }
+.brand img { width: 32px; height: 32px; border-radius: 9px; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.top nav { display: flex; gap: 22px; margin-left: 28px; font-size: 14.5px; color: var(--ink-2); }
+.top nav a { text-decoration: none; transition: color .2s; }
+.top nav a:hover { color: var(--ink); }
+.top .sp { flex: 1; }
+.pill-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; cursor: pointer; font-size: 13.5px; font-weight: 500; text-decoration: none; transition: background .2s, color .2s, border-color .2s; }
+.pill-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.pill-btn.icon { width: 38px; padding: 0; }
+.pill-btn svg { width: 17px; height: 17px; }
+.back { font-size: 13.5px; color: var(--ink-3); text-decoration: none; white-space: nowrap; }
+.back:hover { color: var(--ink); }
+.top .cta-s { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.top .cta-s:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.moon { display: none; } :root[data-theme="dark"] .moon { display: block; } :root[data-theme="dark"] .sun { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .moon { display: block; } :root:not([data-theme="light"]) .sun { display: none; } }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; gap: 10px; height: 54px; padding: 0 26px; border-radius: 999px; font: 600 16px/1 var(--sans); text-decoration: none; border: 1.5px solid var(--accent); background: var(--accent); color: var(--on-accent); cursor: pointer; transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, background .2s, color .2s; box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--accent) 70%, transparent); }
+html:lang(ja) .btn { font-family: var(--jp); font-weight: 700; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 16px 36px -14px color-mix(in srgb, var(--accent) 80%, transparent); }
+.btn .arr { transition: transform .25s; } .btn:hover .arr { transform: translateX(3px); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-2); box-shadow: none; }
+.btn.ghost:hover { border-color: var(--ink); }
+.btn.small { height: 44px; padding: 0 20px; font-size: 15px; }
+
+/* ---------- hero ---------- */
+.hero { position: relative; padding: 56px 0 40px; overflow: hidden; }
+.hero::before { content: "墨"; position: absolute; right: -4%; top: -6%; font: 520px/1 var(--brush); color: var(--decor); pointer-events: none; z-index: 0; }
+.hero .wrap { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 40px; align-items: center; }
+.badge { display: inline-flex; align-items: center; gap: 10px; padding: 7px 14px 7px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; font-weight: 500; color: var(--ink-2); box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.badge i { width: 8px; height: 8px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 50%, transparent); animation: live 2.4s infinite; }
+@keyframes live { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 45%, transparent); } 70%, 100% { box-shadow: 0 0 0 9px transparent; } }
+.hero h1 { margin: 22px 0 0; font: 900 clamp(64px, 9vw, 120px)/.9 var(--round); letter-spacing: -.035em; display: flex; align-items: center; gap: 18px; }
+.hero h1 .seal { display: inline-grid; place-items: center; width: 1.5em; height: 1.5em; border-radius: .2em; background: var(--seal); color: #fff; font: 400 .3em/1 var(--brush); letter-spacing: 0; transform: translateY(.35em) rotate(-4deg); box-shadow: 0 6px 16px -6px var(--seal); }
+.hero .sub { margin: 14px 0 0; font: 700 clamp(22px, 2.6vw, 30px)/1.25 var(--round); letter-spacing: -.01em; color: var(--ink-2); }
+html:lang(ja) .hero .sub { font-family: var(--jp); }
+.hero .sub b { color: var(--accent); font-weight: 800; }
+.hero .lede { margin: 20px 0 0; font-size: 18px; color: var(--ink-2); max-width: 31em; }
+.hero .lede b { color: var(--ink); font-weight: 600; }
+.hero .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 28px 0 0; padding: 0; list-style: none; font-size: 14px; color: var(--ink-3); }
+.facts li { display: flex; align-items: center; gap: 8px; }
+.facts li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--line-2); }
+.facts li:first-child::before { display: none; }
+.facts b { color: var(--ink); font-weight: 600; }
+
+/* phones */
+.phone { position: relative; border-radius: 34px; padding: 9px; background: var(--phone); box-shadow: var(--shadow), inset 0 0 0 1px rgba(255,255,255,.06); }
+.phone img { width: 100%; height: auto; aspect-ratio: 560 / 1019; object-fit: cover; object-position: top; border-radius: 26px; background: var(--sunken); }
+.trio { position: relative; height: 630px; }
+.trio .phone { position: absolute; width: 48%; transition: transform .9s cubic-bezier(.2,.8,.2,1); }
+.trio .p1 { left: -3%; top: 70px; transform: rotate(-7deg); z-index: 1; }
+.trio .p2 { left: 27%; top: 0; z-index: 3; }
+.trio .p3 { right: -3%; top: 86px; transform: rotate(7deg); z-index: 2; }
+.trio .note { position: absolute; z-index: 4; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; box-shadow: var(--shadow); font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.trio .note b { color: var(--ink); font-weight: 600; }
+.trio .note .k { font: 26px/1 var(--jp); color: var(--ink); }
+.trio .n1 { left: -5%; top: 500px; }
+.trio .n2 { right: -4%; top: 22px; }
+.trio .n2 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--seal); }
+
+/* ---------- sections ---------- */
+section { padding: 110px 0; position: relative; }
+.alt { background: var(--bg-2); }
+.kicker { display: inline-flex; align-items: center; gap: 10px; font: 600 12.5px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 18px; }
+html:lang(ja) .kicker { letter-spacing: .08em; }
+.kicker .kj { font: 16px/1 var(--jp); letter-spacing: 0; color: var(--seal); }
+h2 { margin: 0; font: 800 clamp(34px, 4.6vw, 54px)/1.06 var(--round); letter-spacing: -.025em; max-width: 17em; }
+html:lang(ja) h2 { font-family: var(--jp); font-weight: 700; letter-spacing: -.01em; line-height: 1.25; }
+h2 em { font-style: normal; color: var(--accent); }
+.intro { margin: 18px 0 0; font-size: 18px; color: var(--ink-2); max-width: 36em; }
+h3 { margin: 0; font: 800 21px/1.25 var(--round); letter-spacing: -.01em; }
+html:lang(ja) h3 { font-family: var(--jp); font-weight: 700; }
+
+/* reveal on scroll */
+.rv { opacity: 0; transform: translateY(26px); transition: opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1); transition-delay: var(--d, 0s); }
+.rv.in { opacity: 1; transform: none; }
+.no-js .rv { opacity: 1; transform: none; }
+
+/* ---------- a day ---------- */
+.day { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 26px; margin-top: 60px; counter-reset: d; }
+.day .step { counter-increment: d; }
+.day .phone { border-radius: 28px; padding: 7px; }
+.day .phone img { border-radius: 22px; }
+.day .shot { position: relative; height: 380px; overflow: hidden; border-radius: 28px 28px 0 0; -webkit-mask-image: linear-gradient(#000 72%, transparent); mask-image: linear-gradient(#000 72%, transparent); }
+.day .cap { margin-top: 6px; }
+.day .num { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font: 800 14px/1 var(--round); margin-bottom: 12px; }
+.day .num::before { content: counter(d); }
+.day p { margin: 8px 0 0; color: var(--ink-2); font-size: 15.5px; }
+.step:hover .phone { transform: translateY(-6px); }
+.day .phone { transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+
+/* ---------- Sumi-chan ---------- */
+.chan { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 64px; align-items: start; margin-top: 56px; }
+.chan .points { list-style: none; padding: 0; margin: 0; display: grid; gap: 22px; }
+.chan .points li { display: grid; grid-template-columns: 44px 1fr; gap: 16px; }
+.chan .points .ic { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line); color: var(--accent); }
+.chan .points .ic svg { width: 21px; height: 21px; }
+.chan .points h3 { font-size: 18px; }
+.chan .points p { margin: 4px 0 0; color: var(--ink-2); font-size: 15.5px; }
+.persona { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.persona > span span { color: var(--ink-3); margin-left: 3px; }
+.persona > span { font-size: 12.5px; padding: 4px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); }
+
+/* the letter demo */
+.demo { position: sticky; top: 90px; }
+.demo-card { background: var(--surface); border: 1px solid var(--line); border-radius: 26px; box-shadow: var(--shadow); overflow: hidden; }
+.demo-head { padding: 20px 22px 16px; border-bottom: 1px solid var(--line); background: linear-gradient(var(--surface), color-mix(in srgb, var(--sunken) 50%, var(--surface))); }
+.demo-head .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.demo-head .lbl { font-size: 12.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+html:lang(ja) .demo-head .lbl { letter-spacing: .02em; }
+.demo-head .read { font-size: 13.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.demo-head .read b { color: var(--ink); }
+.range { position: relative; margin: 14px 0 10px; }
+.range input { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; cursor: pointer; margin: 0; position: relative; z-index: 2; }
+.range input::-webkit-slider-runnable-track { height: 6px; border-radius: 6px; background: transparent; }
+.range input::-moz-range-track { height: 6px; border-radius: 6px; background: transparent; }
+.range input::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; margin-top: -8px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.18); transition: transform .15s; }
+.range input::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+.range input:active::-webkit-slider-thumb { transform: scale(1.15); }
+.range .bar { position: absolute; left: 11px; right: 11px; top: 11px; height: 6px; border-radius: 6px; display: flex; gap: 2px; z-index: 1; pointer-events: none; }
+.range .bar i { flex: 1; border-radius: 2px; background: var(--sunken); transition: background .25s; }
+.range .bar i.on { background: var(--accent); }
+.range .bar i.on.l4 { background: color-mix(in srgb, var(--accent) 58%, var(--bg)); }
+.range .bar i.on.l3 { background: color-mix(in srgb, var(--accent) 30%, var(--bg)); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; font-size: 12.5px; color: var(--ink-2); cursor: pointer; transition: all .2s; }
+.chip:hover { border-color: var(--ink-3); color: var(--ink); }
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--sunken); }
+.seg button { height: 28px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; font-size: 12.5px; color: var(--ink-2); cursor: pointer; transition: all .2s; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.demo-body { position: relative; padding: 22px 22px 18px; min-height: 300px; }
+.tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+.tabs button { flex: 1; min-width: 0; border: 1px solid var(--line); background: transparent; border-radius: 12px; padding: 8px 10px; text-align: left; cursor: pointer; transition: all .2s; }
+.tabs button .t { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-3); }
+.tabs button .t i { width: 6px; height: 6px; border-radius: 50%; background: var(--seal); }
+.tabs button .p { font: 13px/1.4 var(--jp); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.tabs button[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.letter { font: 500 27px/2.2 var(--jp); color: var(--ink); letter-spacing: .02em; min-height: 128px; }
+.letter .w { display: inline; white-space: nowrap; }
+.letter .sp { display: inline-block; width: .35em; }
+.letter .tap { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 6px; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent); cursor: pointer; border-radius: 6px; transition: background .2s; }
+.letter .tap:hover, .letter .tap.sel { background: var(--accent-soft); }
+.letter ruby { ruby-align: center; }
+.letter rt { font-size: .42em; color: var(--ink-3); letter-spacing: 0; font-weight: 500; }
+.letter .fresh { animation: flip .55s cubic-bezier(.2,.8,.2,1); }
+@keyframes flip { from { opacity: 0; filter: blur(4px); transform: translateY(6px); } to { opacity: 1; filter: none; transform: none; } }
+.under { margin-top: 10px; display: grid; gap: 8px; }
+.under .kana { font: 15px/1.7 var(--jp); color: var(--ink-2); }
+.under .en { font-size: 15px; color: var(--ink); background: var(--sunken); border-radius: 14px; padding: 12px 14px; }
+.under [hidden] { display: none; }
+.demo-foot { display: flex; align-items: center; gap: 8px; padding: 0 22px 20px; }
+.demo-foot .sp { flex: 1; }
+.tog { height: 32px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--surface); font-size: 13px; cursor: pointer; transition: all .2s; }
+.tog[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.hint { font-size: 12.5px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
+.sheet { position: absolute; left: 10px; right: 10px; bottom: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 -10px 40px -10px rgba(0,0,0,.25); padding: 16px 18px 18px; transform: translateY(calc(100% + 20px)); opacity: 0; transition: transform .45s cubic-bezier(.2,.8,.2,1), opacity .3s; z-index: 5; }
+.sheet.open { transform: none; opacity: 1; }
+.sheet .grab { width: 36px; height: 4px; border-radius: 4px; background: var(--line-2); margin: 0 auto 12px; }
+.sheet .x { position: absolute; right: 12px; top: 12px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--sunken); cursor: pointer; display: grid; place-items: center; color: var(--ink-2); }
+.sheet .r { font: 13px/1 var(--jp); color: var(--ink-3); }
+.sheet .wd { font: 600 34px/1.2 var(--jp); margin: 4px 0 2px; }
+.sheet .gl { font-size: 12.5px; color: var(--ink-3); }
+.sheet .m { margin-top: 10px; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.sheet .mv { font-weight: 600; font-size: 17px; }
+.sheet .ks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.sheet .kc { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px 6px 8px; }
+.sheet .kc .c { font: 22px/1 var(--jp); }
+.sheet .kc .d { font-size: 12px; line-height: 1.3; color: var(--ink-2); }
+.sheet .kc .d small { display: block; color: var(--ink-3); }
+.sheet .kc.ok .d small { color: var(--good); }
+.chat { margin-top: 22px; display: grid; gap: 14px; }
+.chat .card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 16px; box-shadow: var(--shadow); }
+.bub { max-width: 82%; padding: 10px 14px; border-radius: 18px; font: 15px/1.6 var(--jp); }
+.bub.me { margin-left: auto; background: var(--accent); color: var(--on-accent); border-bottom-right-radius: 6px; }
+.bub.her { background: var(--sunken); border-bottom-left-radius: 6px; }
+.tip { margin-top: 8px; display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; color: var(--ink-2); background: color-mix(in srgb, var(--good-soft) 70%, transparent); border-radius: 12px; padding: 8px 12px; }
+.tip svg { flex: none; width: 16px; height: 16px; margin-top: 3px; color: var(--good); }
+.mem h4 { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--ink-2); display: flex; justify-content: space-between; }
+.mem h4 small { font-weight: 400; color: var(--ink-3); }
+.mem ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.mem li { display: flex; gap: 10px; align-items: baseline; font-size: 14px; padding: 8px 10px; border-radius: 10px; background: var(--sunken); }
+.mem li i { font-style: normal; font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .05em; min-width: 62px; }
+.chat .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* ---------- accuracy ---------- */
+.acc { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 56px; }
+.acc .c { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 24px; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(0,0,0,.03); transition: transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s; }
+.acc .c:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.acc .vis { height: 200px; border-radius: 16px; background: var(--sunken); margin-bottom: 22px; position: relative; overflow: hidden; display: grid; place-items: center; }
+.acc p { margin: 8px 0 0; color: var(--ink-2); font-size: 15.5px; }
+.chk { display: grid; gap: 10px; width: 84%; }
+.chk .w { font: 600 34px/1 var(--jp); text-align: center; letter-spacing: .04em; }
+.chk .ln { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--surface); border-radius: 12px; padding: 9px 12px; font: 15px/1 var(--jp); }
+.chk .ln small { font: 12px/1 var(--sans); color: var(--ink-3); }
+.chk .bad { color: var(--bad); text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.chk .good { color: var(--good); font-weight: 700; }
+.mark { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 700 13px/1 var(--sans); flex: none; }
+.mark.n { background: var(--bad-soft); color: var(--bad); }
+.mark.y { background: var(--good-soft); color: var(--good); }
+.vis.write img { position: absolute; inset: 0; width: 100%; height: auto; transform: translateY(-14%); }
+.quiz { width: 86%; display: grid; grid-template-columns: 74px 1fr; gap: 12px; align-items: center; }
+.quiz .q { font: 600 56px/1 var(--jp); text-align: center; background: var(--surface); border-radius: 14px; padding: 9px 0; }
+.quiz .o { display: grid; gap: 6px; }
+.quiz .o span { font-size: 13.5px; background: var(--surface); border-radius: 9px; padding: 6px 10px; display: flex; justify-content: space-between; border: 1px solid transparent; }
+.quiz .o span em { font-style: normal; font-size: 11px; color: var(--ink-3); }
+.quiz .o .ok { border-color: var(--good); background: var(--good-soft); color: var(--good); font-weight: 600; }
+.more { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 40px; margin-top: 46px; padding-top: 34px; border-top: 1px solid var(--line); list-style: none; padding-left: 0; }
+.more li { display: flex; gap: 12px; color: var(--ink-2); font-size: 15px; }
+.more li svg { flex: none; width: 18px; height: 18px; margin-top: 3px; color: var(--accent); }
+.more b { color: var(--ink); font-weight: 600; }
+
+/* ---------- roadmap ---------- */
+.road { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; margin-top: 50px; }
+.levels { display: grid; gap: 16px; }
+.lv { display: grid; grid-template-columns: 74px 1fr auto; align-items: center; gap: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px 22px; }
+.lv .n { font: 900 30px/1 var(--round); color: var(--accent); }
+.lv.n4 .n { color: color-mix(in srgb, var(--accent) 72%, var(--bg)); }
+.lv.n3 .n { color: color-mix(in srgb, var(--accent) 50%, var(--bg)); }
+.lv .t { font-weight: 600; } .lv .s { font-size: 14px; color: var(--ink-3); }
+.lv .ex { font: 22px/1 var(--jp); color: var(--ink-2); letter-spacing: .1em; }
+.grid62 { display: grid; grid-template-columns: repeat(10, 1fr); gap: 7px; max-width: 460px; margin-left: auto; }
+.grid62 i { aspect-ratio: 1; border-radius: 7px; background: var(--sunken); border: 1px solid var(--line); transition: background .4s, transform .4s, border-color .4s; transition-delay: calc(var(--i) * 16ms); }
+.grid62.in i { transform: none; }
+.grid62.in i.l5 { background: var(--accent); border-color: var(--accent); }
+.grid62.in i.l4 { background: color-mix(in srgb, var(--accent) 58%, var(--bg)); border-color: transparent; }
+.grid62.in i.l3 { background: color-mix(in srgb, var(--accent) 30%, var(--bg)); border-color: transparent; }
+.legend { display: flex; justify-content: flex-end; max-width: 460px; margin-left: auto; gap: 18px; margin-top: 16px; font-size: 13px; color: var(--ink-3); }
+.legend span { display: flex; align-items: center; gap: 7px; }
+.legend i { width: 11px; height: 11px; border-radius: 3px; }
+.exam { margin-top: 26px; display: flex; gap: 14px; align-items: center; padding: 16px 18px; border-radius: 18px; background: var(--accent-soft); color: var(--ink); font-size: 15px; }
+.exam svg { flex: none; width: 22px; height: 22px; color: var(--accent); }
+
+/* ---------- privacy ---------- */
+.priv { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 50px; }
+.priv .c { padding: 26px; border-radius: 22px; border: 1px solid var(--line); background: var(--surface); }
+.priv .big { font: 900 38px/1 var(--round); letter-spacing: -.02em; margin-bottom: 14px; color: var(--accent); }
+html:lang(ja) .priv .big { font: 700 30px/1.2 var(--jp); }
+.priv p { margin: 8px 0 0; color: var(--ink-2); font-size: 15.5px; }
+.priv-link { margin-top: 26px; font-size: 15px; color: var(--ink-2); }
+
+/* ---------- join ---------- */
+.join { background: var(--ink); color: var(--bg); border-radius: 36px; padding: 64px; position: relative; overflow: hidden; }
+.join::after { content: "字"; position: absolute; right: -50px; bottom: -150px; font: 420px/1 var(--brush); color: color-mix(in srgb, var(--bg) 7%, transparent); pointer-events: none; }
+.join .kicker { color: color-mix(in srgb, var(--bg) 70%, var(--accent)); }
+.join h2 { color: var(--bg); }
+.join .intro { color: color-mix(in srgb, var(--bg) 72%, transparent); }
+.join .intro b { color: var(--bg); }
+.count { display: flex; align-items: center; gap: 14px; margin-top: 26px; font-size: 14px; color: color-mix(in srgb, var(--bg) 70%, transparent); }
+.count .dots { display: flex; gap: 5px; }
+.count .dots i { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid color-mix(in srgb, var(--bg) 35%, transparent); }
+.steps { list-style: none; padding: 0; margin: 44px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; position: relative; z-index: 1; }
+.steps li { background: color-mix(in srgb, var(--bg) 7%, transparent); border: 1px solid color-mix(in srgb, var(--bg) 13%, transparent); border-radius: 24px; padding: 24px; display: flex; flex-direction: column; }
+.steps .no { font: 900 15px/1 var(--round); color: color-mix(in srgb, var(--bg) 55%, transparent); margin-bottom: 18px; }
+.steps h3 { color: var(--bg); }
+.steps p { margin: 8px 0 20px; color: color-mix(in srgb, var(--bg) 70%, transparent); font-size: 15px; flex: 1; }
+.steps .btn { align-self: flex-start; background: var(--bg); color: var(--ink); border-color: var(--bg); box-shadow: none; height: 46px; font-size: 15px; padding: 0 20px; }
+.steps .btn:hover { box-shadow: 0 12px 30px -12px rgba(0,0,0,.5); }
+.steps .btn.dim { background: transparent; color: var(--bg); border-color: color-mix(in srgb, var(--bg) 30%, transparent); }
+.join .small { position: relative; z-index: 1; margin-top: 26px; font-size: 14px; color: color-mix(in srgb, var(--bg) 60%, transparent); }
+.join .small a, .join .small button { color: var(--bg); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font-size: inherit; }
+
+/* ---------- faq ---------- */
+.faq { display: grid; grid-template-columns: .8fr 1.2fr; gap: 64px; }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 22px 0; font-weight: 600; font-size: 17px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary .pl { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line-2); display: grid; place-items: center; transition: transform .3s, background .3s; }
+.faq summary .pl::before { content: "+"; font: 400 18px/1 var(--sans); color: var(--ink-2); }
+.faq details[open] summary .pl { transform: rotate(45deg); background: var(--sunken); }
+.faq details p { margin: -6px 0 22px; color: var(--ink-2); max-width: 40em; }
+
+footer { border-top: 1px solid var(--line); padding: 40px 0 56px; font-size: 13.5px; color: var(--ink-3); }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px; }
+footer .credits { max-width: 46em; line-height: 1.7; }
+footer a { color: var(--ink-2); }
+footer .links { display: flex; gap: 18px; }
+
+/* ---------- smaller screens ---------- */
+@media (max-width: 1020px) {
+  .top nav { display: none; }
+  .hero .wrap { grid-template-columns: 1fr; }
+  .trio { height: auto; aspect-ratio: 1 / 1.08; max-width: 560px; width: 100%; margin: 10px auto 0; }
+  .trio .p1 { left: 0; } .trio .p3 { right: 0; } .trio .n1 { left: 0; top: auto; bottom: 4%; } .trio .n2 { right: 0; }
+  .trio .p1 { top: 12%; } .trio .p3 { top: 15%; }
+  .day { grid-template-columns: repeat(2, 1fr); gap: 34px 22px; }
+  .chan { grid-template-columns: 1fr; gap: 44px; }
+  .demo { position: relative; top: 0; }
+  .acc { grid-template-columns: 1fr; max-width: 560px; }
+  .more { grid-template-columns: 1fr 1fr; }
+  .road { grid-template-columns: 1fr; gap: 40px; }
+  .priv { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
+  .faq { grid-template-columns: 1fr; gap: 20px; }
+}
+@media (max-width: 620px) {
+  .wrap { padding: 0 16px; }
+  .top .wrap { height: 58px; gap: 8px; }
+  .back { display: none; }
+  .top .cta-s { display: none; }
+  html { scroll-padding-top: 66px; }
+  .hero { padding-top: 32px; }
+  .hero::before { font-size: 300px; right: -20%; top: 2%; }
+  .hero .lede { font-size: 17px; }
+  .btn { height: 50px; padding: 0 22px; font-size: 15.5px; }
+  .trio .note { font-size: 11.5px; padding: 7px 10px; }
+  .trio .note .k { font-size: 20px; }
+  .trio .n1 { left: 0; bottom: 6%; } .trio .n2 { right: 0; top: 2%; }
+  .phone { border-radius: 24px; padding: 6px; } .phone img { border-radius: 19px; }
+  section { padding: 76px 0; }
+  .intro { font-size: 16.5px; }
+  .day { gap: 30px 14px; } .day .shot { height: 300px; }
+  .day p { font-size: 14.5px; }
+  .demo-head, .demo-body { padding-left: 16px; padding-right: 16px; } .demo-foot { padding: 0 16px 16px; flex-wrap: wrap; }
+  .letter { font-size: 23px; }
+  .tabs button .p { display: none; }
+  .chat .two { grid-template-columns: 1fr; }
+  .more { grid-template-columns: 1fr; }
+  .lv { grid-template-columns: 58px 1fr; } .lv .ex { display: none; }
+  .join { padding: 40px 22px; border-radius: 26px; }
+  .join::after { font-size: 300px; bottom: -60px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .rv { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="brand" href="#hero" aria-label="Sumi"><img src="img/icon.webp" width="32" height="32" alt="">Sumi</a>
+    <nav aria-label="Sections">
+      <a href="#day"><span data-l="en">How it works</span><span data-l="ja">使い方</span></a>
+      <a href="#chan"><span data-l="en">Sumi-chan</span><span data-l="ja">すみちゃん</span></a>
+      <a href="#accuracy"><span data-l="en">Accuracy</span><span data-l="ja">正確さ</span></a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <span class="sp"></span>
+    <a class="back" href="/"><span data-l="en">by Sushil Raj</span><span data-l="ja">制作 Sushil Raj</span></a>
+    <button class="pill-btn" id="lang" type="button"><span data-l="en">日本語</span><span data-l="ja">EN</span></button>
+    <button class="pill-btn icon" id="theme" type="button" aria-label="Light or dark">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <a class="pill-btn cta-s" href="#join"><span data-l="en">Join the beta</span><span data-l="ja">ベータに参加</span></a>
+  </div>
+</header>
+
+<main>
+  <!-- ======================= hero ======================= -->
+  <section class="hero" id="hero">
+    <div class="wrap">
+      <div>
+        <span class="badge rv"><i></i><span data-l="en">Closed beta on Google Play · Android</span><span data-l="ja">Google Playでクローズドベータ中 · Android</span></span>
+        <h1 class="rv" style="--d:.05s">Sumi<span class="seal" aria-hidden="true">墨</span></h1>
+        <p class="sub rv" style="--d:.1s"><span data-l="en">JLPT kanji, <b>N5 to N3</b>, one set a day.</span><span data-l="ja">JLPTの漢字を<b>N5からN3</b>まで、<span style="white-space:nowrap">1日1セットずつ。</span></span></p>
+        <p class="lede rv" style="--d:.15s" data-l="en">612 kanji in 62 small sets, with stroke order, quizzes and a writing pad that checks every stroke. And <b>Sumi-chan</b>, a pen pal who writes to you using only the kanji you've already learned.</p>
+        <p class="lede rv" style="--d:.15s" data-l="ja">612字を62の小さなセットに。書き順、クイズ、一画ずつ判定する書き取りパッドで覚えます。そして、覚えた漢字だけを使って手紙をくれる文通相手、<b>すみちゃん</b>がいます。</p>
+        <div class="cta rv" style="--d:.2s">
+          <a class="btn" href="#join"><span data-l="en">Join the beta</span><span data-l="ja">ベータに参加する</span> <span class="arr">→</span></a>
+          <a class="btn ghost" href="#chan"><span data-l="en">Read a letter</span><span data-l="ja">手紙を読んでみる</span></a>
+        </div>
+        <ul class="facts rv" style="--d:.25s">
+          <li><b data-l="en">Free</b><b data-l="ja">無料</b></li>
+          <li><span data-l="en">No ads, no account</span><span data-l="ja">広告・アカウントなし</span></li>
+          <li>Android 10+</li>
+        </ul>
+      </div>
+      <div class="trio" aria-hidden="true">
+        <div class="phone p1 rv" style="--d:.15s"><img src="img/stroke.webp" width="560" height="1019" alt=""></div>
+        <div class="phone p2 rv" style="--d:.05s"><img src="img/today.webp" width="560" height="1019" alt=""></div>
+        <div class="phone p3 rv" style="--d:.25s"><img src="img/letters.webp" width="560" height="1019" alt=""></div>
+        <div class="note n1 rv" style="--d:.45s"><span class="k">歩</span><span><b data-l="en">Walk</b><b data-l="ja">歩く</b> · <span data-l="en">set 21, N4</span><span data-l="ja">セット21・N4</span></span></div>
+        <div class="note n2 rv" style="--d:.55s"><span class="dot"></span><span data-l="en"><b>New letter</b> from Sumi-chan</span><span data-l="ja">すみちゃんから<b>新しい手紙</b></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= a day ======================= -->
+  <section class="alt" id="day">
+    <div class="wrap">
+      <p class="kicker rv"><span class="kj">一日</span><span data-l="en">How a day works</span><span data-l="ja">1日の流れ</span></p>
+      <h2 class="rv"><span data-l="en">Ten kanji a day, <em>learned properly.</em></span><span data-l="ja">1日10字を、<em>しっかり覚える。</em></span></h2>
+      <p class="intro rv" data-l="en">Each set is a short lesson. You meet the kanji, watch how they're written, get quizzed, and write them yourself.</p>
+      <p class="intro rv" data-l="ja">1セットは短いレッスンです。漢字に出会い、書き順を見て、クイズに答え、自分で書いてみます。</p>
+      <div class="day">
+        <div class="step rv">
+          <div class="shot"><div class="phone"><img src="img/today.webp" width="560" height="1019" alt="Today screen with set 14 and its ten kanji" loading="lazy"></div></div>
+          <div class="cap"><span class="num"></span>
+            <h3><span data-l="en">Learn a set</span><span data-l="ja">セットを学ぶ</span></h3>
+            <p data-l="en">Readings come in the order real words use them, with example words you'll actually meet.</p>
+            <p data-l="ja">読み方は実際の単語でよく使われる順。よく出会う例語も一緒に。</p></div>
+        </div>
+        <div class="step rv" style="--d:.08s">
+          <div class="shot"><div class="phone"><img src="img/stroke.webp" width="560" height="1019" alt="The kanji 五 drawn stroke by stroke" loading="lazy"></div></div>
+          <div class="cap"><span class="num"></span>
+            <h3><span data-l="en">Watch the strokes</span><span data-l="ja">書き順を見る</span></h3>
+            <p data-l="en">Every kanji is drawn for you stroke by stroke, in the right order and direction.</p>
+            <p data-l="ja">すべての漢字を、正しい順番と向きで一画ずつ描いて見せます。</p></div>
+        </div>
+        <div class="step rv" style="--d:.16s">
+          <div class="shot"><div class="phone"><img src="img/quiz.webp" width="560" height="1019" alt="A quiz asking what 本 means, answered correctly" loading="lazy"></div></div>
+          <div class="cap"><span class="num"></span>
+            <h3><span data-l="en">Take the quiz</span><span data-l="ja">クイズに答える</span></h3>
+            <p data-l="en">It waits for you: see the answer, hear it, then continue. Misses come back at the end.</p>
+            <p data-l="ja">急かしません。答えを見て、聞いてから次へ。間違えた問題は最後にもう一度。</p></div>
+        </div>
+        <div class="step rv" style="--d:.24s">
+          <div class="shot"><div class="phone"><img src="img/write.webp" width="560" height="1019" alt="The writing pad pointing out where stroke 1 of 五 goes" loading="lazy"></div></div>
+          <div class="cap"><span class="num"></span>
+            <h3><span data-l="en">Write it yourself</span><span data-l="ja">自分で書く</span></h3>
+            <p data-l="en">The pad checks each stroke's shape, direction and order, and shows you where it goes.</p>
+            <p data-l="ja">一画ごとに形・向き・順番を判定し、どこに書くかを教えてくれます。</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= Sumi-chan ======================= -->
+  <section id="chan">
+    <div class="wrap">
+      <p class="kicker rv"><span class="kj">便り</span><span data-l="en">Letters from Sumi-chan</span><span data-l="ja">すみちゃんからの手紙</span></p>
+      <h2 class="rv"><span data-l="en">A pen pal who writes <em>at your level.</em></span><span data-l="ja">あなたのレベルで<em>書いてくれる</em>文通相手。</span></h2>
+      <p class="intro rv" data-l="en">Sumi-chan writes short letters in natural Japanese. A word appears in kanji only once you've learned every kanji in it, so what you can read grows with you.</p>
+      <p class="intro rv" data-l="ja">すみちゃんは自然な日本語で短い手紙を書きます。単語は、その漢字をすべて覚えてから漢字で表示されるので、読める文章があなたと一緒に増えていきます。</p>
+
+      <div class="chan">
+        <ul class="points">
+          <li class="rv"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8 6 8-6"/><rect x="3" y="5" width="18" height="14" rx="2.5"/></svg></span>
+            <div><h3><span data-l="en">Only the kanji you know</span><span data-l="ja">覚えた漢字だけで</span></h3>
+              <p data-l="en">Everything else gets furigana or is written in kana, whichever you prefer. Try it with the slider: finish more sets and watch the letter change.</p>
+              <p data-l="ja">ほかの漢字にはふりがなが付くか、かなで書かれます（どちらか選べます）。スライダーでセットを進めると、手紙が変わっていくのが分かります。</p></div></li>
+          <li class="rv"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></span>
+            <div><h3><span data-l="en">Tap any word</span><span data-l="ja">単語をタップ</span></h3>
+              <p data-l="en">See its reading, meaning and kanji, save it to your words, and review it later on a spaced schedule.</p>
+              <p data-l="ja">読み方・意味・漢字を確認して単語帳に保存。間隔を空けて復習できます。</p></div></li>
+          <li class="rv"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span>
+            <div><h3><span data-l="en">Write back</span><span data-l="ja">返事を書く</span></h3>
+              <p data-l="en">Reply in Japanese or English and keep chatting. If your Japanese has a mistake, she adds a gentle tip.</p>
+              <p data-l="ja">日本語でも英語でも返事ができ、そのままチャットで続けられます。日本語にミスがあれば、やさしくアドバイスしてくれます。</p></div></li>
+          <li class="rv"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-6 6c0 2.2 1.2 3.6 2.3 4.7.8.8 1.2 1.6 1.2 2.6V18h5v-1.7c0-1 .4-1.8 1.2-2.6C16.8 12.6 18 11.2 18 9a6 6 0 0 0-6-6z"/><path d="M10 21h4"/></svg></span>
+            <div><h3><span data-l="en">She remembers you</span><span data-l="ja">あなたのことを覚えている</span></h3>
+              <p data-l="en">What you tell her comes up again later, and her own life carries on from letter to letter. You can see or erase what she remembers at any time.</p>
+              <p data-l="ja">話したことを後で覚えていて、彼女自身の毎日も手紙ごとに続いていきます。覚えている内容はいつでも確認・削除できます。</p></div></li>
+          <li class="rv"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></span>
+            <div><h3><span data-l="en">Hear her voice</span><span data-l="ja">声で聞く</span></h3>
+              <p data-l="en">She reads her letters aloud in a natural voice, and says exactly what you see on the page.</p>
+              <p data-l="ja">自然な声で手紙を読み上げます。読み方は画面に表示されているものと必ず同じです。</p></div></li>
+          <li class="rv"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+            <div><h3><span data-l="en">Make her yours</span><span data-l="ja">好みに合わせて</span></h3>
+              <p data-l="en">Choose her personality, how formal she is, how long her letters are and what she talks about.</p>
+              <p data-l="ja">性格、話し方の丁寧さ、手紙の長さ、話題を選べます。</p>
+              <div class="persona"><span>Gentle <span lang="ja">穏やか</span></span><span>Cheerful <span lang="ja">元気</span></span><span>Playful <span lang="ja">お茶目</span></span><span>Cool <span lang="ja">クール</span></span><span>Big sister <span lang="ja">お姉さん</span></span></div></div></li>
+        </ul>
+
+        <div class="demo rv">
+          <div class="demo-card" id="demo">
+            <div class="demo-head">
+              <div class="row">
+                <span class="lbl" data-l="en">Sets you've finished</span><span class="lbl" data-l="ja">終えたセット</span>
+                <span class="read" id="readout" aria-live="polite"></span>
+              </div>
+              <div class="range">
+                <div class="bar" id="bar" aria-hidden="true"></div>
+                <input type="range" id="sets" min="0" max="62" step="1" value="13" aria-label="Sets finished">
+              </div>
+              <div class="row">
+                <div class="presets" id="presets">
+                  <button class="chip" type="button" data-v="0"><span data-l="en">Day 1</span><span data-l="ja">初日</span></button>
+                  <button class="chip" type="button" data-v="8"><span data-l="en">N5 done</span><span data-l="ja">N5修了</span></button>
+                  <button class="chip" type="button" data-v="13"><span data-l="en">Set 14</span><span data-l="ja">セット14</span></button>
+                  <button class="chip" type="button" data-v="25"><span data-l="en">N4 done</span><span data-l="ja">N4修了</span></button>
+                </div>
+                <div class="seg" role="group" aria-label="Kanji you haven't learned">
+                  <button type="button" data-mode="furigana" aria-pressed="true"><span data-l="en">Furigana</span><span data-l="ja">ふりがな</span></button>
+                  <button type="button" data-mode="kana" aria-pressed="false"><span data-l="en">Kana</span><span data-l="ja">かな</span></button>
+                </div>
+              </div>
+            </div>
+            <div class="demo-body">
+              <div class="tabs" role="tablist" id="tabs"></div>
+              <div class="letter" id="letter" lang="ja"></div>
+              <div class="under">
+                <div class="kana" id="kana" lang="ja" hidden></div>
+                <div class="en" id="en" hidden></div>
+              </div>
+              <div class="sheet" id="sheet" role="dialog" aria-modal="false" aria-labelledby="sheetWord">
+                <div class="grab"></div>
+                <button class="x" type="button" id="sheetX" aria-label="Close">✕</button>
+                <div class="r" id="sheetR" lang="ja"></div>
+                <div class="wd" id="sheetWord" lang="ja"></div>
+                <div class="gl" id="sheetGl"></div>
+                <div class="m" data-l="en">Meaning</div><div class="m" data-l="ja">意味</div>
+                <div class="mv" id="sheetM"></div>
+                <div class="m" data-l="en">Kanji</div><div class="m" data-l="ja">漢字</div>
+                <div class="ks" id="sheetK"></div>
+              </div>
+            </div>
+            <div class="demo-foot">
+              <button class="tog" type="button" id="togKana" aria-pressed="false">かな</button>
+              <button class="tog" type="button" id="togEn" aria-pressed="false">English</button>
+              <span class="sp"></span>
+              <span class="hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11V5a2 2 0 0 1 4 0v6M13 10a2 2 0 0 1 4 0v2M17 11a2 2 0 0 1 4 0v4a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7L5 15a2 2 0 0 1 3-2.5L9 14"/></svg><span data-l="en">Tap a blue word</span><span data-l="ja">青い単語をタップ</span></span>
+            </div>
+          </div>
+
+          <div class="chat">
+            <div class="two">
+              <div class="card rv">
+                <div class="bub me" lang="ja">きょうはなにをしましたか？</div>
+                <div class="tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a6 6 0 0 0-6 6c0 2.2 1.2 3.6 2.3 4.7.8.8 1.2 1.6 1.2 2.6V18h5v-1.7c0-1 .4-1.8 1.2-2.6C16.8 12.6 18 11.2 18 9a6 6 0 0 0-6-6z"/></svg>
+                  <span><span data-l="en">Small tip:</span><span data-l="ja">ちょっとアドバイス：</span> <span lang="ja">「今日は何をしましたか」</span> <span data-l="en">is perfect, nice question!</span><span data-l="ja">は完璧、いい質問！</span></span></div>
+                <div class="bub her" lang="ja" style="margin-top:10px">雨の中、駅まで歩いたよ。</div>
+              </div>
+              <div class="card mem rv" style="--d:.08s">
+                <h4><span data-l="en">What she remembers</span><span data-l="ja">覚えていること</span><small data-l="en">example</small><small data-l="ja">例</small></h4>
+                <ul>
+                  <li><i data-l="en">About you</i><i data-l="ja">あなた</i><span data-l="en">Taking the N3 in December</span><span data-l="ja">12月にN3を受ける</span></li>
+                  <li><i data-l="en">Ask later</i><i data-l="ja">あとで</i><span data-l="en">How the mock test went</span><span data-l="ja">模試の結果</span></li>
+                  <li><i data-l="en">Her life</i><i data-l="ja">彼女</i><span data-l="en">Started a pottery class</span><span data-l="ja">陶芸教室に通い始めた</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= accuracy ======================= -->
+  <section class="alt" id="accuracy">
+    <div class="wrap">
+      <p class="kicker rv"><span class="kj">正確</span><span data-l="en">Built for accuracy</span><span data-l="ja">正確さへのこだわり</span></p>
+      <h2 class="rv"><span data-l="en">Nothing wrong reaches you <em>unchecked.</em></span><span data-l="ja">間違いを、<em>そのまま見せない。</em></span></h2>
+      <p class="intro rv" data-l="en">An app you learn from has to be right. Sumi checks its own work, and if something can't be checked, it isn't shown.</p>
+      <p class="intro rv" data-l="ja">学ぶためのアプリは正確でなければいけません。Sumiは自分の出力を確認し、確認できないものは表示しません。</p>
+      <div class="acc">
+        <div class="c rv">
+          <div class="vis">
+            <div class="chk" lang="ja">
+              <div class="w">夜中</div>
+              <div class="ln"><span class="bad">よる ＋ じゅう</span><span class="mark n">✕</span></div>
+              <div class="ln"><span class="good">よなか</span><small>JMdict</small><span class="mark y">✓</span></div>
+            </div>
+          </div>
+          <h3><span data-l="en">Every reading, checked</span><span data-l="ja">読み方はすべて確認</span></h3>
+          <p data-l="en">AI can get readings wrong. Every word in every letter is checked on your phone against the full JMdict dictionary, about 190,000 words, before you see it.</p>
+          <p data-l="ja">AIは読み方を間違えることがあります。手紙のすべての単語を、表示する前にスマホ内のJMdict辞書（約19万語）で確認します。</p>
+        </div>
+        <div class="c rv" style="--d:.08s">
+          <div class="vis write"><img src="img/write.webp" width="560" height="1019" alt="" loading="lazy"></div>
+          <h3><span data-l="en">Real stroke checking</span><span data-l="ja">本物の書き取り判定</span></h3>
+          <p data-l="en">The writing pad compares each stroke with KanjiVG's stroke data: its shape, its direction and its place in the order.</p>
+          <p data-l="ja">書き取りパッドは、一画ごとの形・向き・書き順をKanjiVGの筆画データと照らし合わせます。</p>
+        </div>
+        <div class="c rv" style="--d:.16s">
+          <div class="vis">
+            <div class="quiz">
+              <div class="q" lang="ja">南</div>
+              <div class="o">
+                <span>North <em lang="ja">北</em></span><span>West <em lang="ja">西</em></span><span class="ok">South ✓</span><span>East <em lang="ja">東</em></span>
+              </div>
+            </div>
+          </div>
+          <h3><span data-l="en">Quizzes you can't guess</span><span data-l="ja">勘では解けないクイズ</span></h3>
+          <p data-l="en">Wrong options are look-alikes or close in meaning, so you have to know the kanji, not rule out the odd one.</p>
+          <p data-l="ja">選択肢は形の似た漢字や意味の近い言葉。消去法ではなく、本当に覚えていないと解けません。</p>
+        </div>
+      </div>
+      <ul class="more">
+        <li class="rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3 4 4 4 8a4 4 0 0 1-8 0c0-2 1-3 1-3s0 2 2 2c0-3 1-5 1-7z"/></svg>
+          <span data-l="en"><b>Streaks with freezes.</b> Earn freezes that cover a missed day automatically.</span><span data-l="ja"><b>ストリークとフリーズ。</b>フリーズがあれば、休んだ日も自動でカバー。</span></li>
+        <li class="rv" style="--d:.05s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/></svg>
+          <span data-l="en"><b>Home-screen widgets.</b> Today's kanji on your home screen and in a notification.</span><span data-l="ja"><b>ホーム画面ウィジェット。</b>今日の漢字をホーム画面と通知に。</span></li>
+        <li class="rv" style="--d:.1s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span data-l="en"><b>A daily reminder</b> at the time you choose.</span><span data-l="ja"><b>毎日のリマインダー</b>を好きな時間に。</span></li>
+        <li class="rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>
+          <span data-l="en"><b>My words.</b> Flashcards for words you saved, at 1, 3, 7, 14 and 30 days.</span><span data-l="ja"><b>単語帳。</b>保存した単語を1・3・7・14・30日後に復習。</span></li>
+        <li class="rv" style="--d:.05s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+          <span data-l="en"><b>Kana charts</b> and a searchable library of all 612 kanji.</span><span data-l="ja"><b>かな表</b>と、612字すべてを検索できる漢字一覧。</span></li>
+        <li class="rv" style="--d:.1s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <span data-l="en"><b>Backup and restore</b> to Google Drive or any storage app.</span><span data-l="ja"><b>バックアップと復元</b>はGoogleドライブなどに。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ======================= roadmap ======================= -->
+  <section id="road">
+    <div class="wrap">
+      <p class="kicker rv"><span class="kj">道</span><span data-l="en">The road to N3</span><span data-l="ja">N3への道のり</span></p>
+      <h2 class="rv"><span data-l="en">612 kanji. <em>62 sets.</em> One at a time.</span><span data-l="ja">612字、<em>62セット。</em>ひとつずつ。</span></h2>
+      <div class="road">
+        <div class="levels">
+          <div class="lv n5 rv"><span class="n">N5</span><div><div class="t"><span data-l="en">79 kanji</span><span data-l="ja">79字</span></div><div class="s"><span data-l="en">8 sets · where everyone starts</span><span data-l="ja">8セット・ここからスタート</span></div></div><span class="ex" lang="ja">日一国</span></div>
+          <div class="lv n4 rv" style="--d:.06s"><span class="n">N4</span><div><div class="t"><span data-l="en">166 kanji</span><span data-l="ja">166字</span></div><div class="s"><span data-l="en">17 sets · everyday life</span><span data-l="ja">17セット・日常生活</span></div></div><span class="ex" lang="ja">駅歩家</span></div>
+          <div class="lv n3 rv" style="--d:.12s"><span class="n">N3</span><div><div class="t"><span data-l="en">367 kanji</span><span data-l="ja">367字</span></div><div class="s"><span data-l="en">37 sets · reading real Japanese</span><span data-l="ja">37セット・本物の日本語へ</span></div></div><span class="ex" lang="ja">政経際</span></div>
+          <div class="exam rv" style="--d:.18s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span data-l="en">Set your exam date and reviews are timed around it. Each kanji's meaning, readings and look-alikes are tracked as separate memories.</span>
+            <span data-l="ja">試験日を設定すると、それに合わせて復習が組まれます。漢字ごとに意味・読み方・似た字を別々の記憶として管理します。</span></div>
+        </div>
+        <div class="rv">
+          <div class="grid62" id="grid62" aria-label="62 sets: 8 at N5, 17 at N4, 37 at N3" role="img"></div>
+          <div class="legend"><span><i style="background:var(--accent)"></i>N5</span><span><i style="background:color-mix(in srgb, var(--accent) 58%, var(--bg))"></i>N4</span><span><i style="background:color-mix(in srgb, var(--accent) 30%, var(--bg))"></i>N3</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= privacy ======================= -->
+  <section class="alt" id="privacy">
+    <div class="wrap">
+      <p class="kicker rv"><span class="kj">私</span><span data-l="en">Private by design</span><span data-l="ja">プライバシー</span></p>
+      <h2 class="rv"><span data-l="en">Your progress <em>stays on your phone.</em></span><span data-l="ja">学習の記録は<em>スマホの中だけに。</em></span></h2>
+      <div class="priv">
+        <div class="c rv"><div class="big"><span data-l="en">No account</span><span data-l="ja">アカウント不要</span></div>
+          <p data-l="en">Open it and start. There's no sign-up and no Sumi server: your progress, letters and words live on your phone.</p>
+          <p data-l="ja">開いてすぐ始められます。登録もSumiのサーバーもなく、記録・手紙・単語はすべてスマホの中です。</p></div>
+        <div class="c rv" style="--d:.06s"><div class="big"><span data-l="en">No ads</span><span data-l="ja">広告なし</span></div>
+          <p data-l="en">No ads, no analytics, no tracking, and nothing to buy.</p>
+          <p data-l="ja">広告も分析ツールもトラッキングもなく、課金もありません。</p></div>
+        <div class="c rv" style="--d:.12s"><div class="big"><span data-l="en">Your key</span><span data-l="ja">自分のキー</span></div>
+          <p data-l="en">Sumi-chan's letters and voice use Google's Gemini with your own free key, sent straight from your phone to Google. Everything else works without it.</p>
+          <p data-l="ja">すみちゃんの手紙と声は、ご自身の無料のGeminiキーでスマホから直接Googleに送られます。それ以外の機能はキーなしで使えます。</p></div>
+      </div>
+      <p class="priv-link rv"><span data-l="en">The details are in the</span><span data-l="ja">詳しくは</span> <a href="/sumi/privacy/"><span data-l="en">privacy policy</span><span data-l="ja">プライバシーポリシー</span></a><span data-l="en">.</span><span data-l="ja">をご覧ください。</span></p>
+    </div>
+  </section>
+
+  <!-- ======================= join ======================= -->
+  <section id="join">
+    <div class="wrap">
+      <div class="join rv">
+        <p class="kicker"><span class="kj">参加</span><span data-l="en">Join the beta</span><span data-l="ja">ベータに参加</span></p>
+        <h2><span data-l="en">Help Sumi reach Google Play.</span><span data-l="ja">SumiをGoogle Playへ。</span></h2>
+        <p class="intro" data-l="en">Before an app can go public, Google Play needs <b>12 testers</b> to keep it for <b>14 days</b>. It takes about two minutes to join, and it's free.</p>
+        <p class="intro" data-l="ja">アプリを一般公開する前に、Google Playの規定で<b>12人</b>のテスターに<b>14日間</b>使ってもらう必要があります。参加は2分ほどで、無料です。</p>
+        <div class="count"><span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span data-l="en">12 testers needed</span><span data-l="ja">テスター12人を募集中</span></div>
+        <ol class="steps">
+          <li><span class="no">01</span>
+            <h3><span data-l="en">Join the testers' group</span><span data-l="ja">テスターのグループに参加</span></h3>
+            <p data-l="en">Use the Google account that's on your Android phone. Anyone can join.</p>
+            <p data-l="ja">Androidスマホで使っているGoogleアカウントで参加してください。どなたでも参加できます。</p>
+            <a class="btn js-group" href="https://groups.google.com/g/sumi-testers-android" target="_blank" rel="noopener"><span data-l="en">Join the group</span><span data-l="ja">グループに参加</span> <span class="arr">↗</span></a></li>
+          <li><span class="no">02</span>
+            <h3><span data-l="en">Become a tester</span><span data-l="ja">テスターになる</span></h3>
+            <p data-l="en">Open the test page on Google Play and tap “Become a tester”. If it isn't ready yet, give it a few minutes.</p>
+            <p data-l="ja">Google Playのテストページを開いて「テスターになる」をタップ。まだ表示されない場合は数分待ってください。</p>
+            <a class="btn js-optin" href="https://play.google.com/apps/testing/app.sumi" target="_blank" rel="noopener"><span data-l="en">Become a tester</span><span data-l="ja">テスターになる</span> <span class="arr">↗</span></a></li>
+          <li><span class="no">03</span>
+            <h3><span data-l="en">Install and keep it</span><span data-l="ja">インストールして使い続ける</span></h3>
+            <p data-l="en">Install Sumi from that page and keep it for 14 days. Opening it now and then is all it takes. Thank you!</p>
+            <p data-l="ja">そのページからSumiをインストールして、14日間入れておいてください。ときどき開くだけで大丈夫です。ありがとうございます！</p>
+            <a class="btn dim js-optin" href="https://play.google.com/apps/testing/app.sumi" target="_blank" rel="noopener"><span data-l="en">Open Google Play</span><span data-l="ja">Google Playを開く</span> <span class="arr">↗</span></a></li>
+        </ol>
+        <p class="small"><span data-l="en">Stuck, or have a question? Write to</span><span data-l="ja">うまくいかないときは</span> <button type="button" id="copy">sushilraj0177@gmail.com</button><span data-l="en"> (tap to copy).</span><span data-l="ja">までご連絡ください（タップでコピー）。</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= faq ======================= -->
+  <section id="faq" style="padding-top:20px">
+    <div class="wrap faq">
+      <div>
+        <p class="kicker rv"><span class="kj">問</span><span data-l="en">Questions</span><span data-l="ja">よくある質問</span></p>
+        <h2 class="rv"><span data-l="en">Good to know</span><span data-l="ja">知っておくこと</span></h2>
+      </div>
+      <div class="rv">
+        <details><summary><span data-l="en">Does it cost anything?</span><span data-l="ja">お金はかかりますか？</span><span class="pl"></span></summary>
+          <p data-l="en">No. Sumi is free, with no ads and nothing to buy. Sumi-chan uses your own Gemini key from Google AI Studio, which has a free tier.</p>
+          <p data-l="ja">いいえ。Sumiは無料で、広告も課金もありません。すみちゃんはGoogle AI Studioで作るご自身のGeminiキーを使い、無料枠があります。</p></details>
+        <details><summary><span data-l="en">Do I need a Gemini key?</span><span data-l="ja">Geminiのキーは必要ですか？</span><span class="pl"></span></summary>
+          <p data-l="en">Only for Sumi-chan's letters and her Gemini voice. Lessons, stroke order, quizzes, writing, widgets and everything else work without it. Getting one takes about 20 seconds, and the app walks you through it.</p>
+          <p data-l="ja">すみちゃんの手紙とGeminiの声にだけ必要です。レッスン、書き順、クイズ、書き取り、ウィジェットなどはキーなしで使えます。取得は20秒ほどで、アプリが手順を案内します。</p></details>
+        <details><summary><span data-l="en">Do I need to know Japanese already?</span><span data-l="ja">日本語ができないと使えませんか？</span><span class="pl"></span></summary>
+          <p data-l="en">No. It starts at N5, the first level, and the app is in English. Kana charts are built in if you're still learning hiragana and katakana.</p>
+          <p data-l="ja">いいえ。最初のレベルのN5から始まり、アプリは英語です。ひらがな・カタカナを学習中の人のために、かな表も入っています。</p></details>
+        <details><summary><span data-l="en">What does testing involve?</span><span data-l="ja">テストでは何をすればいいですか？</span><span class="pl"></span></summary>
+          <p data-l="en">Keep Sumi installed for 14 days and use it now and then. Feedback is welcome but optional; you can send it privately from Sumi's page on Google Play, or by email.</p>
+          <p data-l="ja">14日間Sumiを入れたままにして、ときどき使ってください。感想は大歓迎ですが任意です。Google PlayのSumiのページから非公開で送るか、メールでどうぞ。</p></details>
+        <details><summary><span data-l="en">Can I leave the test?</span><span data-l="ja">途中でやめられますか？</span><span class="pl"></span></summary>
+          <p data-l="en">Any time, from the same Google Play test page. It helps most if you stay the full 14 days, since Google only counts testers who stay.</p>
+          <p data-l="ja">同じGoogle Playのテストページからいつでもやめられます。ただ、Googleは参加し続けたテスターだけを数えるので、14日間続けてもらえると一番助かります。</p></details>
+        <details><summary><span data-l="en">I have an iPhone.</span><span data-l="ja">iPhoneしか持っていません。</span><span class="pl"></span></summary>
+          <p data-l="en">Sorry, Sumi is Android only for now.</p>
+          <p data-l="ja">ごめんなさい、今のところSumiはAndroid専用です。</p></details>
+        <details><summary><span data-l="en">Is it affiliated with the JLPT?</span><span data-l="ja">JLPTの公式アプリですか？</span><span class="pl"></span></summary>
+          <p data-l="en">No. Sumi is an independent app, not affiliated with the Japan Foundation, JEES or the JLPT.</p>
+          <p data-l="ja">いいえ。Sumiは個人が開発したアプリで、国際交流基金、日本国際教育支援協会、JLPTとは関係ありません。</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="credits">
+      <div><b style="color:var(--ink)">Sumi</b> · <span data-l="en">made by</span><span data-l="ja">制作</span> <a href="/">Sushil Raj</a></div>
+      <div data-l="en">Kanji data: KANJIDIC2 and JMdict (EDRDG, CC BY-SA 4.0). Stroke order: KanjiVG (Ulrich Apel, CC BY-SA 3.0).</div>
+      <div data-l="ja">漢字データ：KANJIDIC2・JMdict（EDRDG、CC BY-SA 4.0）。書き順：KanjiVG（Ulrich Apel、CC BY-SA 3.0）。</div>
+    </div>
+    <div class="links">
+      <a href="/sumi/privacy/"><span data-l="en">Privacy policy</span><span data-l="ja">プライバシーポリシー</span></a>
+      <a href="#join"><span data-l="en">Join the beta</span><span data-l="ja">ベータに参加</span></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var r = document.documentElement;
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  var ja = function () { return r.lang === 'ja'; };
+
+  // language and theme
+  document.getElementById('lang').addEventListener('click', function () {
+    r.lang = ja() ? 'en' : 'ja'; store('sr-lang', r.lang); render();
+  });
+  document.getElementById('theme').addEventListener('click', function () {
+    var dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    r.dataset.theme = dark ? 'light' : 'dark'; store('sr-theme', r.dataset.theme);
+  });
+
+  // links to the closed test
+  [].forEach.call(document.querySelectorAll('.js-group'), function (a) { a.href = GROUP; });
+  [].forEach.call(document.querySelectorAll('.js-optin'), function (a) { a.href = OPTIN; });
+
+  // the bar gets a line under it once the page has scrolled
+  var top = document.getElementById('top');
+  addEventListener('scroll', function () { top.classList.toggle('stuck', scrollY > 8); }, { passive: true });
+
+  // reveal on scroll
+  var rv = [].slice.call(document.querySelectorAll('.rv'));
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -8% 0px' });
+    rv.forEach(function (el) { io.observe(el); });
+  } else rv.forEach(function (el) { el.classList.add('in'); });
+
+  // the 62 sets
+  var LV = [5,5,5,5,5,5,5,5,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];
+  var SETS = [10,10,10,10,10,10,10,9,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,6,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,7];
+  var g = document.getElementById('grid62');
+  g.innerHTML = LV.map(function (l, i) { return '<i class="l' + l + '" style="--i:' + i + '"></i>'; }).join('');
+  if ('IntersectionObserver' in window) new IntersectionObserver(function (es, ob) { if (es[0].isIntersecting) { g.classList.add('in'); ob.disconnect(); } }, { threshold: .3 }).observe(g);
+  else g.classList.add('in');
+
+  // ---------- the letter demo ----------
+  // Which set teaches each kanji (from Sumi's own kanji data; sets count from 0) and its first meaning.
+  var K = {"雨":[7,"Rain"],"中":[0,"Middle"],"駅":[22,"Station"],"歩":[20,"Walk"],"陽":[57,"Sunshine"],"花":[21,"Flower"],"東":[2,"East"],"京":[10,"Capital"],"電":[5,"Electricity"],"車":[6,"Car"],"大":[0,"Big"],"月":[1,"Moon"],"見":[1,"See"],"今":[2,"Now"],"日":[0,"Sun"],"家":[12,"House"],"本":[0,"Book"],"読":[7,"Read"]};
+  // A word: parts of [text, reading-if-kanji], its meaning, and its dictionary form with that form's reading.
+  // P() is the rest of a phrase; a phrase ends in a space, as letters are spaced in the app.
+  function W(parts, m, dict, dr) { return { p: parts, m: m, d: dict, dr: dr }; }
+  function P(t, sp) { return { p: [[t]], sp: sp }; }
+  var LETTERS = [
+    { time: '10:58', en: 'I walked to the station in the rain. The hydrangeas were so pretty!', ja: '雨の中、駅まで歩いたよ。紫陽花がすごくきれいだった！',
+      w: [W([['雨', 'あめ']], 'rain'), P('の', 1), W([['中', 'なか']], 'middle; in'), P('、', 1), W([['駅', 'えき']], 'station'), P('まで', 1),
+          W([['歩', 'ある'], ['いた']], 'walked', '歩く', 'あるく'), P('よ。'), W([['紫陽花', 'あじさい']], 'hydrangea'), P('が', 1),
+          W([['すごく']], 'really, so', 'すごい', 'すごい'), P('', 1), W([['きれい']], 'pretty'), P('だった！')] },
+    { time: '6:12', en: 'I saw a huge moon from the train in Tokyo. It was beautiful.', ja: '東京の電車から大きい月が見えたよ。',
+      w: [W([['東京', 'とうきょう']], 'Tokyo'), P('の', 1), W([['電車', 'でんしゃ']], 'train'), P('から', 1), W([['大', 'おお'], ['きい']], 'big'), P('', 1),
+          W([['月', 'つき']], 'moon'), P('が', 1), W([['見', 'み'], ['えた']], 'could be seen', '見える', 'みえる'), P('よ。'), W([['きれい']], 'beautiful'), P('だったな。')] },
+    { time: '8:40', en: 'Rainy today, huh. Might be nice to stay in and read a book slowly.', ja: '今日は雨だね。家でゆっくり本を読むのも…',
+      w: [W([['今日', 'きょう']], 'today'), P('は', 1), W([['雨', 'あめ']], 'rain'), P('だね。', 1), W([['家', 'いえ']], 'home, house'), P('で', 1),
+          W([['ゆっくり']], 'slowly, at ease'), P('', 1), W([['本', 'ほん']], 'book'), P('を', 1), W([['読', 'よ'], ['む']], 'to read'), P('のも', 1), P('いいかもね。')] }
+  ];
+  var state = { sets: 13, mode: 'furigana', letter: 0, kana: false, en: false, sel: null };
+  var $ = function (id) { return document.getElementById(id); };
+  var slider = $('sets'), bar = $('bar'), letterEl = $('letter'), sheet = $('sheet');
+  bar.innerHTML = LV.map(function (l) { return '<i class="l' + l + '"></i>'; }).join('');
+  var bars = bar.children;
+
+  function kanjiOf(w) { var s = ''; w.p.forEach(function (x) { if (x[1]) s += x[0]; }); return s.replace(/[^一-鿿]/g, ''); }
+  function known(ch) { return K[ch] && K[ch][0] < state.sets; }
+  function learned(w) { var ks = kanjiOf(w); if (!ks) return true; for (var i = 0; i < ks.length; i++) if (!known(ks[i])) return false; return true; }
+  function reading(w) { return w.p.map(function (x) { return x[1] || x[0]; }).join(''); }
+  function surface(w) { return w.p.map(function (x) { return x[0]; }).join(''); }
+  function esc(s) { return s.replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+  function show(w) {
+    if (learned(w)) return esc(surface(w));
+    if (state.mode === 'kana') return esc(reading(w));
+    return w.p.map(function (x) { return x[1] ? '<ruby>' + esc(x[0]) + '<rt>' + esc(x[1]) + '</rt></ruby>' : esc(x[0]); }).join('');
+  }
+  var prev = {};
+  function render() {
+    var L = LETTERS[state.letter], html = '';
+    L.w.forEach(function (w, i) {
+      var key = state.letter + ':' + i, inner = show(w), changed = prev[key] !== undefined && prev[key] !== inner;
+      prev[key] = inner;
+      html += w.m ? '<span class="w tap' + (state.sel === i ? ' sel' : '') + (changed ? ' fresh' : '') + '" role="button" tabindex="0" data-i="' + i + '">' + inner + '</span>'
+                  : '<span class="w">' + inner + '</span>';
+      if (w.sp) html += '<span class="sp"></span>';
+    });
+    letterEl.innerHTML = html;
+    $('kana').textContent = L.w.map(reading).join('');
+    $('en').textContent = L.en;
+    $('kana').hidden = !state.kana; $('en').hidden = !state.en;
+    // the readout
+    var n = 0; for (var i = 0; i < state.sets; i++) n += SETS[i];
+    var lv = state.sets === 0 ? '' : state.sets <= 8 ? 'N5' : state.sets <= 25 ? 'N4' : 'N3';
+    $('readout').innerHTML = ja()
+      ? '<b>' + state.sets + '</b> / 62 セット · <b>' + n + '</b>字'
+      : '<b>' + state.sets + '</b> of 62 sets · <b>' + n + '</b> kanji';
+    for (i = 0; i < bars.length; i++) bars[i].classList.toggle('on', i < state.sets);
+    [].forEach.call(document.querySelectorAll('#presets .chip'), function (c) { c.setAttribute('aria-pressed', String(+c.dataset.v === state.sets)); });
+    [].forEach.call(document.querySelectorAll('.seg button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)); });
+    if (state.sel !== null) fillSheet();
+    tabs();
+  }
+  function tabs() {
+    var t = $('tabs');
+    t.innerHTML = LETTERS.map(function (L, i) {
+      return '<button role="tab" type="button" aria-selected="' + (i === state.letter) + '" data-i="' + i + '"><span class="t"><i></i>' + L.time + '</span><span class="p" lang="ja">' + L.ja + '</span></button>';
+    }).join('');
+  }
+  function fillSheet() {
+    var w = LETTERS[state.letter].w[state.sel];
+    $('sheetR').textContent = w.d ? (w.dr === w.d ? '' : w.dr) : (kanjiOf(w) ? reading(w) : '');
+    $('sheetWord').textContent = w.d || surface(w);
+    $('sheetGl').textContent = w.d ? (ja() ? '手紙では「' + surface(w) + '」' : 'written 「' + surface(w) + '」 in the letter') : '';
+    $('sheetM').textContent = w.m.charAt(0).toUpperCase() + w.m.slice(1);
+    var ks = kanjiOf(w), out = '';
+    for (var i = 0; i < ks.length; i++) {
+      var ch = ks[i], k = K[ch];
+      var status = !k ? (ja() ? 'コース外' : 'Not in the course')
+        : known(ch) ? (ja() ? '覚えた · セット' + (k[0] + 1) : 'Learned · set ' + (k[0] + 1))
+        : (ja() ? 'まだ · セット' + (k[0] + 1) : 'Not yet · set ' + (k[0] + 1));
+      out += '<span class="kc' + (k && known(ch) ? ' ok' : '') + '"><span class="c" lang="ja">' + ch + '</span><span class="d">' + (k ? k[1] : '—') + '<small>' + status + '</small></span></span>';
+    }
+    $('sheetK').innerHTML = out || '<span class="gl">' + (ja() ? 'かなだけの単語です' : 'Written in kana only') + '</span>';
+  }
+  function open(i) { state.sel = i; render(); sheet.classList.add('open'); $('sheetX').focus({ preventScroll: true }); }
+  function close() { state.sel = null; sheet.classList.remove('open'); render(); }
+
+  slider.addEventListener('input', function () { state.sets = +slider.value; render(); });
+  $('presets').addEventListener('click', function (e) { var c = e.target.closest('.chip'); if (!c) return; state.sets = +c.dataset.v; slider.value = state.sets; render(); });
+  document.querySelector('.seg').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; state.mode = b.dataset.mode; render(); });
+  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; state.letter = +b.dataset.i; state.sel = null; sheet.classList.remove('open'); prev = {}; render(); });
+  letterEl.addEventListener('click', function (e) { var t = e.target.closest('.tap'); if (t) open(+t.dataset.i); });
+  letterEl.addEventListener('keydown', function (e) { var t = e.target.closest('.tap'); if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); open(+t.dataset.i); } });
+  $('sheetX').addEventListener('click', close);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheet.classList.contains('open')) close(); });
+  $('togKana').addEventListener('click', function () { state.kana = !state.kana; this.setAttribute('aria-pressed', String(state.kana)); render(); });
+  $('togEn').addEventListener('click', function () { state.en = !state.en; this.setAttribute('aria-pressed', String(state.en)); render(); });
+  render();
+
+  // copy the email address
+  var copy = $('copy');
+  copy.addEventListener('click', function () {
+    var was = copy.textContent, done = function () { copy.textContent = ja() ? 'コピーしました' : 'Copied'; setTimeout(function () { copy.textContent = was; }, 1400); };
+    if (navigator.clipboard) navigator.clipboard.writeText(MAIL).then(done, function () { location.href = 'mailto:' + MAIL; }); else location.href = 'mailto:' + MAIL;
+  });
+})();
+</script>
+</body>
+</html>
