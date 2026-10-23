@@ -82,12 +82,12 @@ a:hover { text-decoration-thickness: 2px; }
 /* the policy itself: plain HTML, copied from the app's repository and styled here */
 main { position: relative; max-width: 720px; padding-top: 64px; }
 main::before { content: "私"; position: absolute; right: -40px; top: 10px; font: 260px/1 var(--brush); color: var(--decor); pointer-events: none; z-index: -1; }
-main > h1 { margin: 0; color: var(--ink); font: 900 clamp(40px, 6vw, 60px)/1.02 var(--round); letter-spacing: -.03em; }
+main > h1 { margin: 0; color: var(--ink); font: 700 clamp(40px, 6vw, 60px)/1.02 var(--sans); letter-spacing: -.03em; }
 main > h1 + p { margin: 18px 0 0; }
 main > h1 + p em { display: inline-flex; align-items: center; gap: 8px; font-style: normal; font-size: 13.5px; font-weight: 500; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px 5px 10px; }
 main > h1 + p em::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
 main > h1 + p + p { font-size: 18.5px; line-height: 1.65; color: var(--ink-2); margin: 22px 0 0; }
-main h2 { margin: 64px 0 14px; color: var(--ink); font: 800 26px/1.2 var(--round); letter-spacing: -.015em; display: flex; align-items: baseline; gap: 12px; }
+main h2 { margin: 64px 0 14px; color: var(--ink); font: 600 26px/1.2 var(--sans); letter-spacing: -.015em; display: flex; align-items: baseline; gap: 12px; }
 main h2 .n { font: 600 13px/1 var(--sans); color: var(--ink-3); letter-spacing: .04em; min-width: 22px; }
 main h2 .hash { opacity: 0; font: 500 18px/1 var(--sans); color: var(--ink-3); text-decoration: none; transition: opacity .2s; }
 main h2:hover .hash, main h2 .hash:focus-visible { opacity: 1; }
