@@ -14,15 +14,15 @@
 <meta name="theme-color" content="#101015" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/sumi/icon.png">
 <link rel="apple-touch-icon" href="/sumi/icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@800;900&family=Zen+Kaku+Gothic+New:wght@500&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&text=墨私&display=swap">
+<link rel="preload" href="/sumi/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <script>
   // theme follows the main site's choice
   (function () { try { var t = localStorage.getItem('sr-theme'); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t; } catch (e) {} })();
 </script>
 <style>
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400 700; font-display: swap; src: url(/sumi/fonts/inter-latin.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Nunito"; font-weight: 800 900; font-display: block; src: url(/sumi/fonts/nunito-sumi.woff2) format("woff2"); }
+@font-face { font-family: "Yuji Syuku"; font-display: swap; src: url(/sumi/fonts/yuji.woff2) format("woff2"); }
 /* Sumi's palette, as on /sumi/ */
 :root {
   --bg: #f7f5f0; --bg-2: #f1ece1; --surface: #ffffff; --sunken: #efece5;
@@ -57,7 +57,7 @@ a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 
 /* top bar */
-.top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 84%, transparent); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); border-bottom: 1px solid var(--line); }
+.top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 94%, transparent); border-bottom: 1px solid var(--line); }
 .top .in { max-width: 1120px; margin: 0 auto; padding: 0 28px; height: 62px; display: flex; align-items: center; gap: 14px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font: 800 18px/1 var(--round); }
 .brand img { width: 30px; height: 30px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.12); }

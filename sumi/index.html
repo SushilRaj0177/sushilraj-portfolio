@@ -19,10 +19,9 @@
 <meta name="theme-color" content="#101015" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/sumi/icon.png">
 <link rel="apple-touch-icon" href="/sumi/icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@800;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&text=墨字&display=swap">
+<link rel="preload" href="/sumi/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/sumi/fonts/nunito-sumi.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/sumi/fonts/zkg-500.woff2" as="font" type="font/woff2" crossorigin>
 <script>
   // ── The closed test ───────────────────────────────────────────────────────────────────────────────────
   // Testers sign themselves up: join the Google Group (Play Console's tester list), then opt in on Play.
@@ -39,6 +38,14 @@
   })();
 </script>
 <style>
+/* Fonts are hosted here, one small file each. The Japanese face holds only the characters these pages use (Google
+   serves it in hundreds of pieces, which made the first layout take over a second); after changing Japanese text,
+   rebuild zkg-*.woff2 with the new characters. Nunito is only for the word "Sumi"; Yuji Syuku only for 墨, 字 and 私. */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400 700; font-display: swap; src: url(/sumi/fonts/inter-latin.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 400 600; font-display: swap; src: url(/sumi/fonts/zkg-500.woff2) format("woff2"); }
+@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 700 900; font-display: swap; src: url(/sumi/fonts/zkg-700.woff2) format("woff2"); }
+@font-face { font-family: "Nunito"; font-weight: 800 900; font-display: block; src: url(/sumi/fonts/nunito-sumi.woff2) format("woff2"); }
+@font-face { font-family: "Yuji Syuku"; font-display: swap; src: url(/sumi/fonts/yuji.woff2) format("woff2"); }
 /* Sumi's own palette, taken from the app: warm paper, ink, aizome indigo and a vermilion seal */
 :root {
   --bg: #f7f5f0; --bg-2: #f1ece1; --surface: #ffffff; --sunken: #efece5;
@@ -92,13 +99,16 @@ html:lang(ja) [data-l="en"], html:not(:lang(ja)) [data-l="ja"] { display: none !
 [lang="ja"], .j { font-family: var(--jp); }
 
 /* ---------- top bar ---------- */
-.top { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 82%, transparent); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); border-bottom: 1px solid transparent; transition: border-color .3s; }
+.top { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 94%, transparent); border-bottom: 1px solid transparent; transition: border-color .3s; }
 .top.stuck { border-bottom-color: var(--line); }
 .top .wrap { display: flex; align-items: center; gap: 16px; height: 64px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 800 19px/1 var(--round); letter-spacing: -.01em; }
 .brand img { width: 32px; height: 32px; border-radius: 9px; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
 .top nav { display: flex; gap: 22px; margin-left: 28px; font-size: 14.5px; color: var(--ink-2); }
-.top nav a { text-decoration: none; transition: color .2s; }
+.top nav a { position: relative; text-decoration: none; padding: 6px 0; transition: color .2s; }
+.top nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; border-radius: 2px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+.top nav a:hover::after, .top nav a.on::after { transform: scaleX(1); }
+.top nav a.on { color: var(--ink); }
 .top nav a:hover { color: var(--ink); }
 .top .sp { flex: 1; }
 .pill-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; cursor: pointer; font-size: 13.5px; font-weight: 500; text-decoration: none; transition: background .2s, color .2s, border-color .2s; }
@@ -115,7 +125,9 @@ html:lang(ja) [data-l="en"], html:not(:lang(ja)) [data-l="ja"] { display: none !
 /* ---------- buttons ---------- */
 .btn { display: inline-flex; align-items: center; gap: 10px; height: 54px; padding: 0 26px; border-radius: 999px; font: 600 16px/1 var(--sans); text-decoration: none; border: 1.5px solid var(--accent); background: var(--accent); color: var(--on-accent); cursor: pointer; transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, background .2s, color .2s; box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--accent) 70%, transparent); }
 html:lang(ja) .btn { font-family: var(--jp); font-weight: 700; }
-.btn:hover { transform: translateY(-2px); box-shadow: 0 16px 36px -14px color-mix(in srgb, var(--accent) 80%, transparent); }
+.btn:hover { transform: translateY(-2px); }
+.btn:active, .pill-btn:active, .chip:active, .tog:active, .seg button:active { transform: scale(.97); }
+button, a, [role="button"], summary { -webkit-tap-highlight-color: transparent; }
 .btn .arr { transition: transform .25s; } .btn:hover .arr { transform: translateX(3px); }
 .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-2); box-shadow: none; }
 .btn.ghost:hover { border-color: var(--ink); }
@@ -126,8 +138,9 @@ html:lang(ja) .btn { font-family: var(--jp); font-weight: 700; }
 .hero::before { content: "墨"; position: absolute; right: -4%; top: -6%; font: 520px/1 var(--brush); color: var(--decor); pointer-events: none; z-index: 0; }
 .hero .wrap { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 40px; align-items: center; }
 .badge { display: inline-flex; align-items: center; gap: 10px; padding: 7px 14px 7px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; font-weight: 500; color: var(--ink-2); box-shadow: 0 1px 2px rgba(0,0,0,.04); }
-.badge i { width: 8px; height: 8px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 50%, transparent); animation: live 2.4s infinite; }
-@keyframes live { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 45%, transparent); } 70%, 100% { box-shadow: 0 0 0 9px transparent; } }
+.badge i { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+.badge i::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--good); animation: live 2.4s cubic-bezier(.2,.8,.2,1) infinite; }
+@keyframes live { 0% { transform: scale(1); opacity: .5; } 70%, 100% { transform: scale(3.2); opacity: 0; } }
 .hero h1 { margin: 22px 0 0; font: 900 clamp(64px, 9vw, 120px)/.9 var(--round); letter-spacing: -.035em; display: flex; align-items: center; gap: 18px; }
 .hero h1 .seal { display: inline-grid; place-items: center; width: 1.5em; height: 1.5em; border-radius: .2em; background: var(--seal); color: #fff; font: 400 .3em/1 var(--brush); letter-spacing: 0; transform: translateY(.35em) rotate(-4deg); box-shadow: 0 6px 16px -6px var(--seal); }
 .hero .sub { margin: 14px 0 0; font: 600 clamp(22px, 2.6vw, 30px)/1.25 var(--sans); letter-spacing: -.01em; color: var(--ink-2); }
@@ -171,7 +184,8 @@ h3 { margin: 0; font: 600 21px/1.25 var(--sans); letter-spacing: -.01em; }
 html:lang(ja) h3 { font-family: var(--jp); font-weight: 700; }
 
 /* reveal on scroll */
-.rv { opacity: 0; transform: translateY(26px); transition: opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1); transition-delay: var(--d, 0s); }
+.rv { opacity: 0; transform: translateY(18px); transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1); transition-delay: var(--d, 0s); }
+.js-off .rv { opacity: 1; transform: none; }
 .rv.in { opacity: 1; transform: none; }
 .no-js .rv { opacity: 1; transform: none; }
 
@@ -285,7 +299,10 @@ html:lang(ja) .demo-head .lbl { letter-spacing: .02em; }
 /* ---------- accuracy ---------- */
 .acc { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 56px; }
 .acc .c { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 24px; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(0,0,0,.03); transition: transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s; }
-.acc .c:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.acc .c { position: relative; }
+.acc .c::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: var(--shadow); opacity: 0; transition: opacity .4s; pointer-events: none; }
+.acc .c:hover { transform: translateY(-4px); }
+.acc .c:hover::after { opacity: 1; }
 .acc .vis { height: 200px; border-radius: 16px; background: var(--sunken); margin-bottom: 22px; position: relative; overflow: hidden; display: grid; place-items: center; }
 .acc p { margin: 8px 0 0; color: var(--ink-2); font-size: 15.5px; }
 .chk { display: grid; gap: 10px; width: 84%; }
@@ -341,6 +358,14 @@ html:lang(ja) .priv .big { font: 700 30px/1.2 var(--jp); }
 /* ---------- join ---------- */
 .join { background: var(--ink); color: var(--bg); border-radius: 36px; padding: 64px; position: relative; overflow: hidden; }
 .join::after { content: "字"; position: absolute; right: -50px; bottom: -150px; font: 420px/1 var(--brush); color: color-mix(in srgb, var(--bg) 7%, transparent); pointer-events: none; }
+/* the code people scan from a computer screen to carry on on their phone (made in Kehai QR Studio) */
+.scan { position: absolute; right: 64px; top: 64px; z-index: 1; width: 236px; margin: 0; padding: 16px 16px 18px; background: #fff; border-radius: 26px; box-shadow: 0 30px 70px -30px rgba(0,0,0,.6); transform: rotate(2deg); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+.scan:hover { transform: rotate(0) scale(1.03); }
+.scan img { display: block; width: 100%; height: auto; border-radius: 12px; }
+.scan figcaption { margin-top: 10px; font-size: 13px; line-height: 1.4; color: #5c5b63; text-align: center; }
+.scan figcaption b { display: block; color: #1b1b1f; font-weight: 600; font-size: 14px; }
+.join h2, .join .intro, .join .count { max-width: calc(100% - 300px); }
+@media (max-width: 1020px) { .scan { display: none; } .join h2, .join .intro, .join .count { max-width: none; } }
 .join .kicker { color: color-mix(in srgb, var(--bg) 70%, var(--accent)); }
 .join h2 { color: var(--bg); }
 .join .intro { color: color-mix(in srgb, var(--bg) 72%, transparent); }
@@ -369,6 +394,17 @@ html:lang(ja) .priv .big { font: 700 30px/1.2 var(--jp); }
 .faq details[open] summary .pl { transform: rotate(45deg); background: var(--sunken); }
 .faq details p { margin: -6px 0 22px; color: var(--ink-2); max-width: 40em; }
 
+/* phones: once past the top, a join button waits at the bottom of the screen (hidden again at the join section) */
+.dock { display: none; }
+@media (max-width: 760px) {
+  .dock { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 60; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border-radius: 20px; background: color-mix(in srgb, var(--surface) 96%, transparent); border: 1px solid var(--line); box-shadow: 0 18px 40px -18px rgba(0,0,0,.35); transform: translateY(calc(100% + 30px)); transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+  .dock.show { transform: none; }
+  .dock img { width: 34px; height: 34px; border-radius: 9px; }
+  .dock .t { flex: 1; min-width: 0; font-size: 13px; line-height: 1.3; color: var(--ink-2); }
+  .dock .t b { display: block; color: var(--ink); font-size: 14.5px; }
+  .dock .btn { height: 42px; padding: 0 16px; font-size: 14.5px; box-shadow: none; }
+  footer { padding-bottom: 110px; }
+}
 footer { border-top: 1px solid var(--line); padding: 40px 0 56px; font-size: 13.5px; color: var(--ink-3); }
 footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px; }
 footer .credits { max-width: 46em; line-height: 1.7; }
@@ -429,7 +465,7 @@ footer .links { display: flex; gap: 18px; }
 <body>
 <header class="top" id="top">
   <div class="wrap">
-    <a class="brand" href="#hero" aria-label="Sumi"><img src="img/icon.webp" width="32" height="32" alt="">Sumi</a>
+    <a class="brand" href="#hero" aria-label="Sumi"><img decoding="async" src="img/icon.webp" width="32" height="32" alt="">Sumi</a>
     <nav aria-label="Sections">
       <a href="#day"><span data-l="en">How it works</span><span data-l="ja">使い方</span></a>
       <a href="#chan"><span data-l="en">Sumi-chan</span><span data-l="ja">すみちゃん</span></a>
@@ -447,6 +483,7 @@ footer .links { display: flex; gap: 18px; }
   </div>
 </header>
 
+<span id="topSentinel" aria-hidden="true" style="position:absolute;top:0;height:8px;width:1px"></span>
 <main>
   <!-- ======================= hero ======================= -->
   <section class="hero" id="hero">
@@ -468,9 +505,9 @@ footer .links { display: flex; gap: 18px; }
         </ul>
       </div>
       <div class="trio" aria-hidden="true">
-        <div class="phone p1 rv" style="--d:.15s"><img src="img/stroke.webp" width="560" height="1019" alt=""></div>
-        <div class="phone p2 rv" style="--d:.05s"><img src="img/today.webp" width="560" height="1019" alt=""></div>
-        <div class="phone p3 rv" style="--d:.25s"><img src="img/letters.webp" width="560" height="1019" alt=""></div>
+        <div class="phone p1 rv" style="--d:.15s"><img decoding="async" src="img/stroke.webp" width="560" height="1019" alt=""></div>
+        <div class="phone p2 rv" style="--d:.05s"><img decoding="async" fetchpriority="high" src="img/today.webp" width="560" height="1019" alt=""></div>
+        <div class="phone p3 rv" style="--d:.25s"><img decoding="async" src="img/letters.webp" width="560" height="1019" alt=""></div>
         <div class="note n1 rv" style="--d:.45s"><span class="k">歩</span><span><b data-l="en">Walk</b><b data-l="ja">歩く</b> · <span data-l="en">set 21, N4</span><span data-l="ja">セット21・N4</span></span></div>
         <div class="note n2 rv" style="--d:.55s"><span class="dot"></span><span data-l="en"><b>New letter</b> from Sumi-chan</span><span data-l="ja">すみちゃんから<b>新しい手紙</b></span></div>
       </div>
@@ -486,28 +523,28 @@ footer .links { display: flex; gap: 18px; }
       <p class="intro rv" data-l="ja">1セットは短いレッスンです。漢字に出会い、書き順を見て、クイズに答え、自分で書いてみます。</p>
       <div class="day">
         <div class="step rv">
-          <div class="shot"><div class="phone"><img src="img/today.webp" width="560" height="1019" alt="Today screen with set 14 and its ten kanji" loading="lazy"></div></div>
+          <div class="shot"><div class="phone"><img decoding="async" src="img/today.webp" width="560" height="1019" alt="Today screen with set 14 and its ten kanji" loading="lazy"></div></div>
           <div class="cap"><span class="num"></span>
             <h3><span data-l="en">Learn a set</span><span data-l="ja">セットを学ぶ</span></h3>
             <p data-l="en">Readings come in the order real words use them, with example words you'll actually meet.</p>
             <p data-l="ja">読み方は実際の単語でよく使われる順。よく出会う例語も一緒に。</p></div>
         </div>
         <div class="step rv" style="--d:.08s">
-          <div class="shot"><div class="phone"><img src="img/stroke.webp" width="560" height="1019" alt="The kanji 五 drawn stroke by stroke" loading="lazy"></div></div>
+          <div class="shot"><div class="phone"><img decoding="async" src="img/stroke.webp" width="560" height="1019" alt="The kanji 五 drawn stroke by stroke" loading="lazy"></div></div>
           <div class="cap"><span class="num"></span>
             <h3><span data-l="en">Watch the strokes</span><span data-l="ja">書き順を見る</span></h3>
             <p data-l="en">Every kanji is drawn for you stroke by stroke, in the right order and direction.</p>
             <p data-l="ja">すべての漢字を、正しい順番と向きで一画ずつ描いて見せます。</p></div>
         </div>
         <div class="step rv" style="--d:.16s">
-          <div class="shot"><div class="phone"><img src="img/quiz.webp" width="560" height="1019" alt="A quiz asking what 本 means, answered correctly" loading="lazy"></div></div>
+          <div class="shot"><div class="phone"><img decoding="async" src="img/quiz.webp" width="560" height="1019" alt="A quiz asking what 本 means, answered correctly" loading="lazy"></div></div>
           <div class="cap"><span class="num"></span>
             <h3><span data-l="en">Take the quiz</span><span data-l="ja">クイズに答える</span></h3>
             <p data-l="en">It waits for you: see the answer, hear it, then continue. Misses come back at the end.</p>
             <p data-l="ja">急かしません。答えを見て、聞いてから次へ。間違えた問題は最後にもう一度。</p></div>
         </div>
         <div class="step rv" style="--d:.24s">
-          <div class="shot"><div class="phone"><img src="img/write.webp" width="560" height="1019" alt="The writing pad pointing out where stroke 1 of 五 goes" loading="lazy"></div></div>
+          <div class="shot"><div class="phone"><img decoding="async" src="img/write.webp" width="560" height="1019" alt="The writing pad pointing out where stroke 1 of 五 goes" loading="lazy"></div></div>
           <div class="cap"><span class="num"></span>
             <h3><span data-l="en">Write it yourself</span><span data-l="ja">自分で書く</span></h3>
             <p data-l="en">The pad checks each stroke's shape, direction and order, and shows you where it goes.</p>
@@ -649,7 +686,7 @@ footer .links { display: flex; gap: 18px; }
           <p data-l="ja">AIは読み方を間違えることがあります。手紙のすべての単語を、表示する前にスマホ内のJMdict辞書（約19万語）で確認します。</p>
         </div>
         <div class="c rv" style="--d:.08s">
-          <div class="vis write"><img src="img/write.webp" width="560" height="1019" alt="" loading="lazy"></div>
+          <div class="vis write"><img decoding="async" src="img/write.webp" width="560" height="1019" alt="" loading="lazy"></div>
           <h3><span data-l="en">Real stroke checking</span><span data-l="ja">本物の書き取り判定</span></h3>
           <p data-l="en">The writing pad compares each stroke with KanjiVG's stroke data: its shape, its direction and its place in the order.</p>
           <p data-l="ja">書き取りパッドは、一画ごとの形・向き・書き順をKanjiVGの筆画データと照らし合わせます。</p>
@@ -732,6 +769,10 @@ footer .links { display: flex; gap: 18px; }
     <div class="wrap">
       <div class="join rv">
         <p class="kicker"><span class="kj">参加</span><span data-l="en">Join the beta</span><span data-l="ja">ベータに参加</span></p>
+        <figure class="scan" aria-hidden="true">
+          <img decoding="async" loading="lazy" src="img/qr-join.webp" width="480" height="480" alt="">
+          <figcaption><b data-l="en">On a computer?</b><b data-l="ja">パソコンで見ていますか？</b><span data-l="en">Scan with your Android phone to join there.</span><span data-l="ja">Androidスマホでスキャンして、そのまま参加できます。</span></figcaption>
+        </figure>
         <h2><span data-l="en">Help Sumi reach Google Play.</span><span data-l="ja">SumiをGoogle Playへ。</span></h2>
         <p class="intro" data-l="en">Before an app can go public, Google Play needs <b>12 testers</b> to keep it for <b>14 days</b>. It takes about two minutes to join, and it's free.</p>
         <p class="intro" data-l="ja">アプリを一般公開する前に、Google Playの規定で<b>12人</b>のテスターに<b>14日間</b>使ってもらう必要があります。参加は2分ほどで、無料です。</p>
@@ -792,6 +833,12 @@ footer .links { display: flex; gap: 18px; }
   </section>
 </main>
 
+<div class="dock" id="dock" aria-hidden="true">
+  <img decoding="async" src="img/icon.webp" width="34" height="34" alt="">
+  <span class="t"><b>Sumi</b><span data-l="en">Closed beta · free · Android</span><span data-l="ja">クローズドベータ・無料・Android</span></span>
+  <a class="btn" href="#join" tabindex="-1"><span data-l="en">Join the beta</span><span data-l="ja">参加する</span></a>
+</div>
+
 <footer>
   <div class="wrap">
     <div class="credits">
@@ -825,16 +872,43 @@ footer .links { display: flex; gap: 18px; }
   [].forEach.call(document.querySelectorAll('.js-group'), function (a) { a.href = GROUP; });
   [].forEach.call(document.querySelectorAll('.js-optin'), function (a) { a.href = OPTIN; });
 
-  // the bar gets a line under it once the page has scrolled
+  // Everything below is driven by IntersectionObserver rather than scroll events, so scrolling itself does no work.
+  var IO = 'IntersectionObserver' in window;
+  if (!IO) r.classList.add('js-off');
   var top = document.getElementById('top');
-  addEventListener('scroll', function () { top.classList.toggle('stuck', scrollY > 8); }, { passive: true });
 
-  // reveal on scroll
+  // the bar gets a line under it once the page has moved
+  if (IO) new IntersectionObserver(function (es) { top.classList.toggle('stuck', !es[0].isIntersecting); }).observe(document.getElementById('topSentinel'));
+
+  // reveal: the top of the page comes in as soon as it's ready; the rest just before it scrolls into view
   var rv = [].slice.call(document.querySelectorAll('.rv'));
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -8% 0px' });
+  if (IO) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px 12% 0px' });
     rv.forEach(function (el) { io.observe(el); });
-  } else rv.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  // the section being read is marked in the bar
+  var links = [].slice.call(document.querySelectorAll('.top nav a'));
+  if (IO) {
+    var seen = {};
+    var so = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { seen[e.target.id] = e.isIntersecting; });
+      var cur = null; links.forEach(function (a) { var id = a.getAttribute('href').slice(1); if (!cur && seen[id]) cur = id; });
+      if (seen.end) cur = links[links.length - 1].getAttribute('href').slice(1);   // at the very bottom, the last section
+      links.forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + cur); });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    links.forEach(function (a) { var el = document.querySelector(a.getAttribute('href')); if (el) so.observe(el); });
+    var foot = document.querySelector('footer'); if (foot) { foot.id = foot.id || 'end'; so.observe(foot); }
+  }
+
+  // phones: the join button at the bottom shows between the top of the page and the join section
+  var dock = document.getElementById('dock');
+  if (IO && dock) {
+    var past = false, atJoin = false;
+    var upd = function () { dock.classList.toggle('show', past && !atJoin); };
+    new IntersectionObserver(function (es) { past = !es[0].isIntersecting; upd(); }).observe(document.querySelector('.hero .cta'));
+    new IntersectionObserver(function (es) { atJoin = es[0].isIntersecting; upd(); }, { rootMargin: '0px 0px -20% 0px' }).observe(document.getElementById('join'));
+  }
 
   // the 62 sets
   var LV = [5,5,5,5,5,5,5,5,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];
@@ -904,7 +978,6 @@ footer .links { display: flex; gap: 18px; }
     [].forEach.call(document.querySelectorAll('#presets .chip'), function (c) { c.setAttribute('aria-pressed', String(+c.dataset.v === state.sets)); });
     [].forEach.call(document.querySelectorAll('.seg button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)); });
     if (state.sel !== null) fillSheet();
-    tabs();
   }
   function tabs() {
     var t = $('tabs');
@@ -934,14 +1007,14 @@ footer .links { display: flex; gap: 18px; }
   slider.addEventListener('input', function () { state.sets = +slider.value; render(); });
   $('presets').addEventListener('click', function (e) { var c = e.target.closest('.chip'); if (!c) return; state.sets = +c.dataset.v; slider.value = state.sets; render(); });
   document.querySelector('.seg').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; state.mode = b.dataset.mode; render(); });
-  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; state.letter = +b.dataset.i; state.sel = null; sheet.classList.remove('open'); prev = {}; render(); });
+  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; state.letter = +b.dataset.i; state.sel = null; sheet.classList.remove('open'); prev = {}; tabs(); render(); });
   letterEl.addEventListener('click', function (e) { var t = e.target.closest('.tap'); if (t) open(+t.dataset.i); });
   letterEl.addEventListener('keydown', function (e) { var t = e.target.closest('.tap'); if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); open(+t.dataset.i); } });
   $('sheetX').addEventListener('click', close);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheet.classList.contains('open')) close(); });
   $('togKana').addEventListener('click', function () { state.kana = !state.kana; this.setAttribute('aria-pressed', String(state.kana)); render(); });
   $('togEn').addEventListener('click', function () { state.en = !state.en; this.setAttribute('aria-pressed', String(state.en)); render(); });
-  render();
+  tabs(); render();
 
   // copy the email address
   var copy = $('copy');
