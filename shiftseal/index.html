@@ -11,7 +11,7 @@
 <meta property="og:description" content="Every hour counted. Every rupee explained. The AI understands, code decides, nothing reaches a worker unchecked.">
 <meta property="og:url" content="https://sushilraj.dev/shiftseal/">
 <meta property="og:image" content="https://sushilraj.dev/shiftseal/img/dashboard.webp">
-<meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111115" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon-32.png">
 <link rel="preload" href="/sumi/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -23,8 +23,8 @@
 <style>
 @font-face { font-family: "Inter"; font-weight: 400 700; font-display: swap; src: url(/sumi/fonts/inter-latin.woff2) format("woff2"); }
 :root {
-  --bg: #f7f5f0; --surface: #fff; --sunken: #efece5; --ink: #1b1b1f; --ink-2: #55545c; --line: #e4dfd5;
-  --accent: #2b4c8c; --accent-soft: #e6ecf6; --good: #256643; --danger: #a11f17;
+  --bg: #f7f8fa; --surface: #fff; --sunken: #eef0f4; --ink: #0f172a; --ink-2: #5b6475; --line: #e4e7ec;
+  --accent: #1f3a6e; --accent-soft: #e9eef7; --good: #256643; --danger: #a11f17;
   --shadow: 0 1px 2px rgba(27,27,31,.04), 0 18px 40px -24px rgba(27,27,31,.28);
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
@@ -113,7 +113,7 @@ section { padding: 96px 0; }
 .top nav .nav-cta { color: var(--bg); background: var(--accent); padding: 8px 14px; border-radius: 999px; font-weight: 600; }
 .top nav .nav-cta:hover { color: var(--bg); background: var(--ink); }
 #join { padding-top: 24px; }
-.join { background: #13213f; color: #f4f2ec; border-radius: 36px; padding: 64px; position: relative; overflow: hidden; }
+.join { background: #13213f; color: #f4f6fb; border-radius: 36px; padding: 64px; position: relative; overflow: hidden; }
 .join::after { content: "12"; position: absolute; right: -30px; bottom: -120px; font: 800 380px/1 "Inter", sans-serif; letter-spacing: -.06em; color: rgba(244, 242, 236, .05); pointer-events: none; }
 .scan { position: absolute; right: 64px; top: 64px; z-index: 1; width: 236px; margin: 0; padding: 16px 16px 18px; background: #fff; border-radius: 26px; box-shadow: 0 30px 70px -30px rgba(0,0,0,.6); transform: rotate(2deg); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
 .scan:hover { transform: rotate(0) scale(1.03); }
@@ -122,21 +122,21 @@ section { padding: 96px 0; }
 .scan figcaption b { display: block; color: #1b1b1f; font-weight: 600; font-size: 14px; }
 .join h2, .join .intro, .join .count { max-width: calc(100% - 300px); }
 .join .kicker { color: #d3a95d; }
-.join h2 { color: #f4f2ec; margin-top: 12px; }
+.join h2 { color: #f4f6fb; margin-top: 12px; }
 .join .intro { margin-top: 16px; font-size: 18px; color: rgba(244, 242, 236, .74); }
-.join .intro b { color: #f4f2ec; }
+.join .intro b { color: #f4f6fb; }
 .count { display: flex; align-items: center; gap: 14px; margin-top: 26px; font-size: 14px; color: rgba(244, 242, 236, .7); }
 .count .dots { display: flex; gap: 5px; }
 .count .dots i { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid rgba(244, 242, 236, .35); }
 .steps { list-style: none; padding: 0; margin: 44px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; position: relative; z-index: 1; }
 .steps li { background: rgba(244, 242, 236, .07); border: 1px solid rgba(244, 242, 236, .13); border-radius: 24px; padding: 24px; display: flex; flex-direction: column; }
 .steps .no { font-weight: 700; font-size: 15px; color: rgba(244, 242, 236, .55); margin-bottom: 18px; }
-.steps h3 { color: #f4f2ec; font-size: 20px; }
+.steps h3 { color: #f4f6fb; font-size: 20px; }
 .steps p { margin: 8px 0 20px; color: rgba(244, 242, 236, .72); font-size: 15px; flex: 1; }
-.steps .btn { align-self: flex-start; background: #f4f2ec; color: #13213f; height: 46px; font-size: 15px; padding: 0 20px; }
-.steps .btn.dim { background: transparent; color: #f4f2ec; border: 1px solid rgba(244, 242, 236, .3); }
+.steps .btn { align-self: flex-start; background: #f4f6fb; color: #13213f; height: 46px; font-size: 15px; padding: 0 20px; }
+.steps .btn.dim { background: transparent; color: #f4f6fb; border: 1px solid rgba(244, 246, 251, .3); }
 .join .small { position: relative; z-index: 1; margin-top: 26px; font-size: 14px; color: rgba(244, 242, 236, .62); }
-.join .small button { color: #f4f2ec; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font: inherit; }
+.join .small button { color: #f4f6fb; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font: inherit; }
 @media (max-width: 1020px) { .scan { display: none; } .join h2, .join .intro, .join .count { max-width: none; } }
 @media (max-width: 900px) { .steps { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { .join { padding: 40px 22px; border-radius: 26px; } .join::after { font-size: 260px; bottom: -60px; } }
@@ -328,7 +328,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
             <p>Install Shiftseal from that page and keep it for 14 days. Opening it now and then is all it takes. Thank you!</p>
             <a class="btn dim" href="https://play.google.com/store/apps/details?id=dev.sushilraj.shiftseal" target="_blank" rel="noopener">Open Google Play ↗</a></li>
         </ol>
-        <p class="small">Stuck, or have a question? Write to <button type="button" id="copy">sushilraj0177@gmail.com</button> (tap to copy). How your data is handled: <a href="privacy/" style="color:#f4f2ec">privacy policy</a>.</p>
+        <p class="small">Stuck, or have a question? Write to <button type="button" id="copy">sushilraj0177@gmail.com</button> (tap to copy). How your data is handled: <a href="privacy/" style="color:#f4f6fb">privacy policy</a>.</p>
       </div>
     </div>
   </section>
